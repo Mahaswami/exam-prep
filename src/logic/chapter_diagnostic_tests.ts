@@ -1,0 +1,57 @@
+import { RESOURCE, DETAIL_RESOURCES } from "../views/chapter_diagnostic_tests"
+
+export const ChapterDiagnosticTestsLogic: any = {
+    resource: RESOURCE,
+    afterCreate: [],
+    afterDelete: [],
+    afterDeleteMany: [],
+    afterGetList: [(params: any) => {
+        console.log('ChapterDiagnosticTestsLogic: Sample: afterGetList hook executed');
+        return params;
+    }],
+    afterGetMany: [],
+    afterGetManyReference: [],
+    afterGetOne: [],
+    afterUpdate: [],
+    afterUpdateMany: [],
+    beforeCreate: [],
+    beforeDelete: [],
+    beforeDeleteMany: [],
+    beforeGetList: [],
+    beforeGetMany: [],
+    beforeGetManyReference: [],
+    beforeGetOne: [],
+    beforeUpdate: [],
+    beforeUpdateMany: [],
+    beforeSave: [],
+    afterRead: [],
+    afterSave: [],
+}
+
+export const DiagnosticTestAnswersLogic: any = {
+    resource: DETAIL_RESOURCES[0],
+    afterCreate: [],
+    afterDelete: [],
+    afterDeleteMany: [],
+    afterGetList: [(params: any) => {
+        console.log('DiagnosticTestAnswersLogic: Sample: afterGetList hook executed');
+        return params;
+    }],
+    afterGetMany: [],
+    afterGetManyReference: [],
+    afterGetOne: [],
+    afterUpdate: [],
+    afterUpdateMany: [],
+    beforeCreate: [],
+    beforeDelete: [],
+    beforeDeleteMany: [],
+    beforeGetList: [],
+    beforeGetMany: [],
+    beforeGetManyReference: [],
+    beforeGetOne: [],
+    beforeUpdate: [],
+    beforeUpdateMany: [],
+    beforeSave: [],
+    afterRead: [],
+    afterSave: [],
+}

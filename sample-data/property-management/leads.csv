@@ -1,0 +1,4 @@
+id,property_unit_id,customer_name,customer_phone,customer_email,inquiry_date,status
+1,8,Fresh Foods Mumbai,+91-9876541230,sanjay@freshfoods.in,2025-10-01,Converted
+2,3,TechStart Innovations,+91-9123456789,contact@techstart.io,2025-11-15,Negotiating
+3,5,Mr. Anil Deshmukh,+91-9988112233,anil.deshmukh@gmail.com,2025-12-10,New

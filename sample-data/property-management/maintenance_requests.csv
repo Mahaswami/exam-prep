@@ -1,0 +1,5 @@
+id,customer_id,property_unit_id,maintenance_type,request_date,status,completed_date
+1,1,1,Plumbing,2025-10-15,Completed,2025-10-16
+2,2,2,Electrical,2025-11-05,Completed,2025-11-06
+3,3,4,Plumbing,2025-12-01,In Progress,
+4,5,8,HVAC,2025-11-20,Open,

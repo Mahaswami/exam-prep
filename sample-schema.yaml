@@ -1,0 +1,259 @@
+version: "1.0"
+projectName: Property Management System
+
+choices:
+  property_type:
+    - Residential
+    - Commercial
+    - Mixed Use
+    - Industrial
+  business_type:
+    - IT Services
+    - Retail
+    - Manufacturing
+    - Healthcare
+    - Education
+    - Consulting
+  vendor_type:
+    - Plumbing
+    - Electrical
+    - Cleaning
+    - Security
+    - HVAC
+    - General Maintenance
+  maintenance_type:
+    - Plumbing
+    - Electrical
+    - HVAC
+    - Cleaning
+    - Pest Control
+    - Structural
+    - General
+  unit_status:
+    - Available
+    - Reserved
+    - Occupied
+    - Under Maintenance
+  rental_status:
+    - Draft
+    - Active
+    - Terminated
+    - Expired
+  lead_status:
+    - New
+    - Contacted
+    - Site Visit Scheduled
+    - Negotiating
+    - Lost
+    - Converted
+  request_status:
+    - Open
+    - In Progress
+    - Cancelled
+    - Completed
+  invoice_type:
+    - Rent
+    - Maintenance
+    - Security Deposit
+    - Late Fee
+  payment_status:
+    - Pending
+    - Partially Paid
+    - Overdue
+    - Paid
+  payment_method:
+    - Cash
+    - Cheque
+    - Bank Transfer
+    - UPI
+    - Card
+  # document_type:
+  #   - Rental Agreement
+  #   - Lease Deed
+  #   - NOC
+  #   - Termination Notice
+  #   - Rent Receipt
+
+resources:
+  properties:
+    type: master-detail
+    columns:
+      - name:*:+
+      - property_type:select:*
+      - address_line_1
+      - city:*
+      - state
+      - pin_code
+      - notes:multiline
+    fieldChoices:
+      property_type: property_type
+    details:
+      - name: property_units
+        menu: true  # Adds PropertyUnitsMenu to sidebar
+        columns:
+          - suite:*:+
+          - floor
+          - sqft_number
+          - rent_per_sqft_price
+          - maintenance_per_sqft_price
+          - status:select:*
+          - is_vacant
+          - description:rich
+        fieldChoices:
+          status: unit_status
+
+  customers:
+    type: wizard
+    columns:
+      - business_name:*
+      - business_type:select:*
+      - business_pan:*:+
+      - gstin:*:+
+      - primary_contact_name:*
+      - primary_contact_phone:*
+      - primary_contact_email:*:+
+      - secondary_contact_name
+      - secondary_contact_phone
+      - secondary_contact_email
+      - registered_building_name
+      - registered_suite
+      - registered_address_line_1
+      - registered_city
+      - registered_state
+      - registered_pin_code
+      - incorporation_certificate_attachment_file_id
+      - memorandum_of_articles_attachment_file_id
+      - articles_of_association_attachment_file_id
+      - gst_registration_attachment_file_id
+    fieldChoices:
+      business_type: business_type
+    steps:
+      - name: BusinessInformation
+        label: Business Information
+        columns:
+          - business_name:*
+          - business_type:select:*
+          - business_pan:*:+
+          - gstin:*:+
+      - name: Contacts
+        label: Contacts
+        columns:
+          - primary_contact_name:*
+          - primary_contact_phone:*
+          - primary_contact_email:*:+
+          - secondary_contact_name
+          - secondary_contact_phone
+          - secondary_contact_email
+      - name: AddressDocuments
+        label: Address & Documents
+        columns:
+          - registered_building_name
+          - registered_suite
+          - registered_address_line_1
+          - registered_city
+          - registered_state
+          - registered_pin_code
+          - incorporation_certificate_attachment_file_id
+          - memorandum_of_articles_attachment_file_id
+          - articles_of_association_attachment_file_id
+          - gst_registration_attachment_file_id
+
+  property_rentals:
+    type: resource
+    columns:
+      - property_unit_id:*
+      - customer_id:*
+      - status:select:*
+      - rental_start_date:*
+      - rental_end_date
+      - agreement_date
+      - rent_amount:*
+      - maintenance_amount
+      - security_deposit_amount
+      - rental_agreement_attachment_file_id
+    fieldChoices:
+      status: rental_status
+
+  leads:
+    type: resource
+    columns:
+      - property_unit_id:*
+      - status:select:*
+      - inquiry_date:*
+      - customer_name:*
+      - customer_phone
+      - customer_email
+    fieldChoices:
+      status: lead_status
+
+  invoices:
+    type: resource
+    columns:
+      - invoice_no:*:auto_assign
+      - invoice_date:*
+      - invoice_type:select:*
+      - property_rental_id:*
+      - payment_status:select:*
+      - due_date:*
+      - base_amount
+      - gst_amount
+      - total_amount:*
+    fieldChoices:
+      invoice_type: invoice_type
+      payment_status: payment_status
+
+  payments:
+    type: resource
+    columns:
+      - invoice_id:*
+      - payment_reference
+      - payment_date:*
+      - payment_method:select:*
+      - payment_amount:*
+    fieldChoices:
+      payment_method: payment_method
+
+  # This is now supplied by framework but kept here for big picture understaning
+  # document_templates:
+  #   type: resource
+  #   columns:
+  #     - name:*:+
+  #     - document_type:select
+  #     - document_attachment_file_id
+  #   fieldChoices:
+  #     document_type: document_type
+
+  vendors:
+    type: resource
+    columns:
+      - name:*:+
+      - vendor_type:select:*
+      - notes:multiline
+    fieldChoices:
+      vendor_type: vendor_type
+
+  maintenance_records:
+    type: resource
+    columns:
+      - property_unit_id:*
+      - maintenance_date:*
+      - maintenance_type:select:*
+      - vendor_id
+      - maintenance_request_id
+      - maintenance_amount
+      - notes:multiline
+    fieldChoices:
+      maintenance_type: maintenance_type
+
+  maintenance_requests:
+    type: resource
+    columns:
+      - property_unit_id:*
+      - customer_id
+      - maintenance_type:select:*
+      - status:select:*
+      - request_date:*
+      - completed_date
+    fieldChoices:
+      maintenance_type: maintenance_type
+      status: request_status

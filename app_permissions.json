@@ -1,0 +1,38 @@
+{
+    "roles": {
+        "super_admin": {
+            "name": "Super Admin",
+            "description": "Super Admins have access to everything"
+        },
+        "admin": {
+            "name": "Admin",
+            "description": "Admins have access to most things"
+        }
+    },
+    "permissions": {
+        "super_admin": {"*": "*"},
+        "admin": {
+            "session_records": "list",
+            "document_templates": "*",
+            "digital_signatures": "*",
+            "error_logs": "list",            
+            "subjects": "*",
+    "chapters": "*",
+    "concepts": "*",
+    "questions": "*",
+    "chapter_diagnostic_questions": "*",
+    "payments": "*",
+    "concept_scores": "*",
+    "chapter_diagnostic_tests": "*",
+    "diagnostic_test_answers": "*",
+    "concept_revision_rounds": "*",
+    "revision_round_questions": "*",
+    "concept_test_rounds": "*",
+    "test_round_questions": "*",
+    "activities": "*",
+    "__SWAN_INSERT_PERMISSION__": "placeholder",
+            "history": "list,show,restoreHistory",
+            "users": "*"
+        }
+    }
+}

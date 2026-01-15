@@ -1,0 +1,3 @@
+id,maintenance_date,property_unit_id,vendor_id,maintenance_request_id,maintenance_type,maintenance_amount,notes
+1,2025-10-16,1,1,1,Plumbing,3500,Fixed leaking pipe in restroom
+2,2025-11-06,2,2,2,Electrical,5200,Replaced faulty circuit breaker

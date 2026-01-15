@@ -1,0 +1,45 @@
+{
+  "name": "exam-prep-v1",
+  "title": "Exam Prep V1",
+  "file_storage": {
+    "engine": "r2"
+  },
+  "email": {
+    "engine": "gmail",
+    "region": ""
+  },
+  "layout": "vertical",
+  "default_currency": "INR",
+  "default_locale": "en-IN",
+  "logo": "swan_app_logo.svg",
+  "environments": {
+    "dev": {
+      "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
+      "d1": "d1-db1-shoud not work!!",
+      "hd": "hd-placeholder-value",
+      "pg": "pg-placeholder-value",
+      "default": "gsheet",
+      "xservice_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
+      "service_url": "http://localhost:8787",
+      "file_storage": {
+        "bucket": "guru-krupa-bucket"
+      },
+      "domains": [
+        "localhost"
+      ],
+      "email": {
+        "sender_email": "swanstack@mahaswami.com",
+        "engine": "gmail",
+        "region": "us-east-1"
+      }
+    }
+  },
+  "templateId": "starter",
+  "protectedResources": [
+    "history",
+    "users",
+    "document_templates",
+    "digital_signatures",
+    "session_records"	
+  ]
+}
