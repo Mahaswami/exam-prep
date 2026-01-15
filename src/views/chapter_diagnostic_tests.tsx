@@ -280,7 +280,7 @@ export const DiagnosticTestAnswersResource = (
 )
 
 export const ChapterDiagnosticTestsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Chapter Diagnostic Tests" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Diagnostic Tests" leftIcon={<ICON />} />
 );
 
 export const DiagnosticTestAnswersMenu = () => (

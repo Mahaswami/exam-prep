@@ -263,7 +263,7 @@ export const RevisionRoundQuestionsResource = (
 )
 
 export const ConceptRevisionRoundsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Concept Revision Rounds" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
 );
 
 export const RevisionRoundQuestionsMenu = () => (

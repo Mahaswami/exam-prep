@@ -113,5 +113,5 @@ export const ChapterDiagnosticQuestionsResource =  (
     />
 )
 export const ChapterDiagnosticQuestionsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Chapter Diagnostic Questions" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Diagnostic Questions" leftIcon={<ICON />} />
 )
