@@ -1,0 +1,8 @@
+id,user_id,chapter_id,started_timestamp,completed_timestamp,status,total_questions_number,correct_answers_number
+1,10,1,2026-01-11 14:00:00,2026-01-11 14:25:00,Completed,6,4
+2,10,2,2026-01-11 15:00:00,2026-01-11 15:20:00,Completed,3,2
+3,11,1,2026-01-12 10:00:00,2026-01-12 10:30:00,Completed,6,5
+4,11,4,2026-01-12 11:00:00,2026-01-12 11:25:00,Completed,4,3
+5,12,5,2026-01-13 09:00:00,2026-01-13 09:15:00,Completed,3,1
+6,10,8,2026-01-14 10:00:00,2026-01-14 10:30:00,Completed,4,4
+7,10,4,2026-01-15 09:00:00,,In Progress,4,0

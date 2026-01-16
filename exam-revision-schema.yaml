@@ -1,0 +1,177 @@
+version: "1.0"
+projectName: Exam Revision Platform
+
+choices:
+  subject_name:
+    - Maths
+    - English
+  question_type:
+    - MCQ
+    - 2 Marks
+    - 4 Marks
+    - 5 Marks
+  difficulty_level:
+    - Easy
+    - Medium
+    - Hard
+  comfort_level:
+    - Needs Improvement
+    - Good
+    - Very Good
+  activity_type:
+    - Diagnostic Test
+    - Revision Round
+    - Test Round
+  round_status:
+    - In Progress
+    - Completed
+    - Abandoned
+  payment_status:
+    - Pending
+    - Completed
+    - Failed
+    - Refunded
+
+resources:
+  # ========== MASTER DATA ==========
+  subjects:
+    type: resource
+    columns:
+      - name:*:+
+      - code:+
+      - is_active
+
+  chapters:
+    type: resource
+    columns:
+      - subject_id:*
+      - chapter_number:*
+      - name:*:+
+      - is_active
+
+  concepts:
+    type: resource
+    columns:
+      - chapter_id:*
+      - concept_order_number
+      - name:*
+      - is_active
+
+  questions:
+    type: resource
+    columns:
+      - concept_id:*
+      - question_type:select:*
+      - difficulty_level:select
+      - question_html:rich:*
+      - option_a
+      - option_b
+      - option_c
+      - option_d
+      - correct_answer
+      - hint_html:rich
+      - solution_html:rich
+      - marks_number:*
+      - is_active
+    fieldChoices:
+      question_type: question_type
+      difficulty_level: difficulty_level
+
+  chapter_diagnostic_questions:
+    type: resource
+    columns:
+      - chapter_id:*
+      - question_id:*
+      - question_order_number
+
+  # ========== USER/PAYMENT ==========
+  payments:
+    type: resource
+    columns:
+      - user_id:*
+      - razorpay_payment_no
+      - razorpay_order_no
+      - payment_amount:*
+      - payment_status:select:*
+      - payment_timestamp
+    fieldChoices:
+      payment_status: payment_status
+
+  # ========== LEARNING DATA ==========
+  concept_scores:
+    type: resource
+    columns:
+      - user_id:*
+      - concept_id:*
+      - initial_comfort_level:select
+      - comfort_level:select:*
+      - updated_timestamp
+    fieldChoices:
+      initial_comfort_level: comfort_level
+      comfort_level: comfort_level
+
+  chapter_diagnostic_tests:
+    type: master-detail
+    columns:
+      - user_id:*
+      - chapter_id:*
+      - started_timestamp:*
+      - completed_timestamp
+      - status:select:*
+      - total_questions_number
+      - correct_answers_number
+    fieldChoices:
+      status: round_status
+    details:
+      - name: diagnostic_test_answers
+        columns:
+          - question_id:*
+          - selected_answer
+          - is_correct
+          - time_taken_seconds_number
+
+  concept_revision_rounds:
+    type: master-detail
+    columns:
+      - user_id:*
+      - concept_id:*
+      - round_number:*
+      - started_timestamp:*
+      - completed_timestamp
+      - status:select:*
+    fieldChoices:
+      status: round_status
+    details:
+      - name: revision_round_questions
+        columns:
+          - question_id:*
+          - viewed_timestamp
+
+  concept_test_rounds:
+    type: master-detail
+    columns:
+      - user_id:*
+      - concept_id:*
+      - round_number:*
+      - started_timestamp:*
+      - completed_timestamp
+      - status:select:*
+      - comfort_score:select
+    fieldChoices:
+      status: round_status
+      comfort_score: comfort_level
+    details:
+      - name: test_round_questions
+        columns:
+          - question_id:*
+
+  activities:
+    type: resource
+    columns:
+      - user_id:*
+      - activity_timestamp:*
+      - activity_type:select:*
+      - chapter_id
+      - concept_id
+    fieldChoices:
+      activity_type: activity_type

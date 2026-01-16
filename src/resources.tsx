@@ -1,6 +1,9 @@
 
 import StartIcon from '@mui/icons-material/Start';
 import HandymanIcon from '@mui/icons-material/Handyman';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import SchoolIcon from '@mui/icons-material/School';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import { Box, Typography } from '@mui/material';
 import { Menu } from "react-admin";
 import { CustomRoutes, Title} from "react-admin";
@@ -11,6 +14,7 @@ import { DocumentTemplatesMenu, DocumentTemplatesResource } from './views/docume
 import { DigitalSignaturesResource } from './views/digital_signatures.tsx';
 import { isHistoryModuleActive, isDocumentGenerationModuleActive } from '@mahaswami/swan-frontend';
 import { AutoLayoutMenu } from '@mahaswami/swan-frontend';
+import { AdminDashboard, StudentDashboard } from './analytics';
 
 import { SubjectsResource, SubjectsMenu } from './views/subjects.tsx';
 import { ChaptersResource, ChaptersMenu } from './views/chapters.tsx';
@@ -52,6 +56,8 @@ export const configureResources = (permissions: any) => {
     let result = [
         <CustomRoutes key={103}>
             <Route path="/welcome" element={<Welcome />} />
+            <Route path="/analytics/admin" element={<AdminDashboard />} />
+            <Route path="/analytics/student" element={<StudentDashboard />} />
         </CustomRoutes>,
         HistoryResource,
         UsersResource,    
@@ -88,6 +94,8 @@ export const configureMenus = (permissions: any) => {
         const adminMenusAll = 
         <>
             <AutoLayoutMenu>
+                <Menu.Item to="/analytics/admin" primaryText="Dashboard" leftIcon={<DashboardIcon />} />
+                <Menu.Item to="/analytics/student" primaryText="Student Progress" leftIcon={<AssessmentIcon />} />
                 {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
                 <SubjectsMenu />
             <ChaptersMenu />
@@ -109,6 +117,7 @@ export const configureMenus = (permissions: any) => {
         const studentMenus = 
         <>
             <AutoLayoutMenu maxCount={6}>
+            <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
             <ConceptScoresMenu />
             <ChapterDiagnosticTestsMenu />
             <ConceptRevisionRoundsMenu />
@@ -132,10 +141,14 @@ export const configureMenus = (permissions: any) => {
 export const configureLandingPage = (permissions: any) => {
     let startPage = undefined 
     if ([ 'admin'].includes( permissions )) {
-        startPage = "/welcome"
+        startPage = "/analytics/admin"
+    }
+    if ([ 'student'].includes( permissions )) {
+        startPage = "/analytics/student"
     }
     return {
         "super_admin": "/tenants",
         "admin": startPage,
+        "student": startPage,
     }
 }

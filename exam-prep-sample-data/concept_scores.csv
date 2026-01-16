@@ -1,0 +1,13 @@
+id,user_id,concept_id,initial_comfort_level,comfort_level,updated_timestamp
+1,10,1,needs_improvement,good,2026-01-11 15:30:00
+2,10,2,good,very_good,2026-01-11 16:45:00
+3,10,3,needs_improvement,needs_improvement,2026-01-11 17:00:00
+4,10,5,needs_improvement,good,2026-01-12 10:00:00
+5,11,1,good,very_good,2026-01-12 11:30:00
+6,11,2,good,very_good,2026-01-12 12:00:00
+7,11,12,needs_improvement,good,2026-01-12 14:00:00
+8,12,17,needs_improvement,needs_improvement,2026-01-13 09:00:00
+9,12,18,needs_improvement,good,2026-01-13 10:30:00
+10,10,28,good,very_good,2026-01-14 11:00:00
+11,10,29,good,very_good,2026-01-14 11:30:00
+12,10,31,needs_improvement,good,2026-01-14 12:00:00

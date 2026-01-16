@@ -6,13 +6,27 @@ import { Resource, createDefaults, tableDefaults,
 import { Assessment } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, DateField, DateInput, DateTimeInput, SelectField, SelectInput, AutocompleteInput, required } from "react-admin";
+    TextField, TextInput, type ListProps, DateField, DateInput, DateTimeInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext, ReferenceField } from "react-admin";
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
+import { ChaptersReferenceField } from './chapters';
+
+// Custom field to show chapter name via concept relationship
+const ChapterViaConceptField = () => {
+    const record = useRecordContext();
+    if (!record?.concept_id) return null;
+    return (
+        <ReferenceField source="concept_id" reference="concepts" link={false}>
+            <ReferenceField source="chapter_id" reference="chapters" link={false}>
+                <TextField source="name" />
+            </ReferenceField>
+        </ReferenceField>
+    );
+};
 
 export const RESOURCE = "concept_scores"
 export const ICON = Assessment
-export const PREFETCH: string[] = ["users", "concepts"]
+export const PREFETCH: string[] = ["users", "concepts", "chapters"]
 
 export const ConceptScoresReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ConceptScoresReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
@@ -21,13 +35,15 @@ export const comfortLevelChoices = [{ id: 'needs_improvement', name: 'Needs Impr
 const filters = [
     <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <ChoicesLiveFilter source="comfort_level" label="Comfort Level" choiceLabels={comfortLevelChoices} />,
+    <ChoicesLiveFilter source="initial_comfort_level" label="Initial Level" choiceLabels={comfortLevelChoices} />,
+    <ChoicesLiveFilter source="comfort_level" label="Current Level" choiceLabels={comfortLevelChoices} />,
     <DateLiveFilter source="updated_timestamp" label="Updated Timestamp" />
 ]
 
 const studentFilters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <ChoicesLiveFilter source="comfort_level" label="Comfort Level" choiceLabels={comfortLevelChoices} />,
+    <ChoicesLiveFilter source="initial_comfort_level" label="Initial Level" choiceLabels={comfortLevelChoices} />,
+    <ChoicesLiveFilter source="comfort_level" label="Current Level" choiceLabels={comfortLevelChoices} />,
     <DateLiveFilter source="updated_timestamp" label="Updated Timestamp" />
 ]
 
@@ -37,8 +53,10 @@ export const ConceptScoresList = (props: ListProps) => {
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                <DataTable.Col source="chapter" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
-                <DataTable.Col source="comfort_level" field={(props: any) => <SelectField {...props} choices={comfortLevelChoices} />}/>
+                <DataTable.Col source="initial_comfort_level" label="Initial" field={(props: any) => <SelectField {...props} choices={comfortLevelChoices} />}/>
+                <DataTable.Col source="comfort_level" label="Current" field={(props: any) => <SelectField {...props} choices={comfortLevelChoices} />}/>
                 <DataTable.Col source="updated_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
                 <RowActions/>
             </DataTable>
@@ -67,7 +85,8 @@ const ConceptScoreForm = (props: any) => {
             <ConceptsReferenceInput source="concept_id">
                 <AutocompleteInput validate={required()} />
             </ConceptsReferenceInput>
-            <SelectInput source="comfort_level" choices={comfortLevelChoices} validate={required()} />
+            <SelectInput source="initial_comfort_level" label="Initial Level" choices={comfortLevelChoices} />
+            <SelectInput source="comfort_level" label="Current Level" choices={comfortLevelChoices} validate={required()} />
             <DateTimeInput source="updated_timestamp" />
         </SimpleForm>
     )
@@ -96,7 +115,8 @@ const ConceptScoreShow = (props: any) => {
             <SimpleShowLayout>
                 <UsersReferenceField source="user_id" />
                 <ConceptsReferenceField source="concept_id" />
-                <SelectField source="comfort_level" choices={comfortLevelChoices} />
+                <SelectField source="initial_comfort_level" label="Initial Level" choices={comfortLevelChoices} />
+                <SelectField source="comfort_level" label="Current Level" choices={comfortLevelChoices} />
                 <DateField source="updated_timestamp" showTime />
             </SimpleShowLayout>
         </Show>
@@ -113,6 +133,7 @@ export const ConceptScoresResource =  (
         fieldSchema={{
             user_id: { required: true, resource: 'users' },
             concept_id: { required: true, resource: 'concepts' },
+            initial_comfort_level: { type: 'choice', ui: 'select', choices: comfortLevelChoices },
             comfort_level: { type: 'choice', ui: 'select', required: true, choices: comfortLevelChoices },
             updated_timestamp: {}
         }}
@@ -123,6 +144,7 @@ export const ConceptScoresResource =  (
         show={<ConceptScoreShow/>}
         hasDialog
         hasLiveUpdate
+        hasImport
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

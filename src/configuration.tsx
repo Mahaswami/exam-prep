@@ -65,8 +65,69 @@ export const themes = (defaultThemes: any) => {
     return defaultThemes;
 }
 
+const STUDENT_SCOPED_RESOURCES = [
+    'concept_scores',
+    'chapter_diagnostic_tests',
+    'concept_revision_rounds',
+    'concept_test_rounds',
+    'activities',
+];
+
+const getStudentFilter = (): { user_id: string } | null => {
+    const role = getLocalStorage('role');
+    if (role !== 'student') return null;
+    try {
+        const user = JSON.parse(getLocalStorage('user') || '{}');
+        return user.id ? { user_id: user.id } : null;
+    } catch {
+        return null;
+    }
+};
+
 export const wrapCustomDataProvider = (queryClient: any, dataProvider: any) => {
-    return dataProvider;
+    return {
+        ...dataProvider,
+
+        getList: (resource: string, params: any) => {
+            const studentFilter = getStudentFilter();
+            if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
+                params = { ...params, filter: { ...params.filter, ...studentFilter } };
+            }
+            return dataProvider.getList(resource, params);
+        },
+
+        getOne: async (resource: string, params: any) => {
+            const result = await dataProvider.getOne(resource, params);
+            const studentFilter = getStudentFilter();
+            if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
+                if (result.data?.user_id !== studentFilter.user_id) {
+                    throw new Error('Access denied');
+                }
+            }
+            return result;
+        },
+
+        getMany: async (resource: string, params: any) => {
+            const result = await dataProvider.getMany(resource, params);
+            const studentFilter = getStudentFilter();
+            if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
+                const validData = result.data.filter((record: any) => record.user_id === studentFilter.user_id);
+                if (validData.length !== result.data.length) {
+                    throw new Error('Access denied');
+                }
+                return { ...result, data: validData };
+            }
+            return result;
+        },
+
+        getManyReference: (resource: string, params: any) => {
+            const studentFilter = getStudentFilter();
+            if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
+                params = { ...params, filter: { ...params.filter, ...studentFilter } };
+            }
+            return dataProvider.getManyReference(resource, params);
+        },
+    };
 }
 
 import polyglotI18nProvider from 'ra-i18n-polyglot';

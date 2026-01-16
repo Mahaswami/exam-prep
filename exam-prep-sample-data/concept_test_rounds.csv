@@ -1,0 +1,11 @@
+id,user_id,concept_id,round_number,started_timestamp,completed_timestamp,status,comfort_score
+1,10,1,1,2026-01-11 15:30:00,2026-01-11 15:45:00,completed,good
+2,10,2,1,2026-01-11 16:35:00,2026-01-11 16:50:00,completed,very_good
+3,10,3,1,2026-01-12 09:35:00,2026-01-12 09:50:00,completed,needs_improvement
+4,11,1,1,2026-01-12 11:25:00,2026-01-12 11:40:00,completed,very_good
+5,11,2,1,2026-01-12 11:45:00,2026-01-12 12:00:00,completed,very_good
+6,12,17,1,2026-01-13 10:05:00,2026-01-13 10:20:00,completed,needs_improvement
+7,12,18,1,2026-01-13 11:05:00,2026-01-13 11:20:00,completed,good
+8,10,28,1,2026-01-14 11:05:00,2026-01-14 11:15:00,completed,very_good
+9,10,29,1,2026-01-14 11:20:00,2026-01-14 11:30:00,completed,very_good
+10,10,31,1,2026-01-14 11:50:00,2026-01-14 12:05:00,completed,good

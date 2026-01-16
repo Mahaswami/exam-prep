@@ -1,0 +1,40 @@
+id,chapter_id,concept_order_number,name,is_active
+1,1,1,Euclid's Division Lemma,true
+2,1,2,Fundamental Theorem of Arithmetic,true
+3,1,3,Irrational Numbers,true
+4,1,4,Decimal Expansion of Rational Numbers,true
+5,2,1,Zeros of a Polynomial,true
+6,2,2,Relationship between Zeros and Coefficients,true
+7,2,3,Division Algorithm for Polynomials,true
+8,3,1,Graphical Method of Solution,true
+9,3,2,Algebraic Methods - Substitution,true
+10,3,3,Algebraic Methods - Elimination,true
+11,3,4,Cross-Multiplication Method,true
+12,4,1,Standard Form of Quadratic Equation,true
+13,4,2,Solution by Factorization,true
+14,4,3,Solution by Completing the Square,true
+15,4,4,Quadratic Formula,true
+16,4,5,Nature of Roots - Discriminant,true
+17,5,1,Introduction to AP,true
+18,5,2,nth Term of an AP,true
+19,5,3,Sum of First n Terms of an AP,true
+20,6,1,Similar Figures,true
+21,6,2,Similarity of Triangles,true
+22,6,3,Criteria for Similarity - AAA AA SSS SAS,true
+23,6,4,Areas of Similar Triangles,true
+24,6,5,Pythagoras Theorem,true
+25,7,1,Distance Formula,true
+26,7,2,Section Formula,true
+27,7,3,Area of Triangle using Coordinates,true
+28,8,1,Trigonometric Ratios,true
+29,8,2,Trigonometric Ratios of Specific Angles,true
+30,8,3,Trigonometric Ratios of Complementary Angles,true
+31,8,4,Trigonometric Identities,true
+32,15,1,Theme and Message,true
+33,15,2,Character Analysis - Lencho,true
+34,15,3,Faith and Irony,true
+35,15,4,Vocabulary and Expressions,true
+36,16,1,Apartheid and Its Effects,true
+37,16,2,Mandela's Vision for South Africa,true
+38,16,3,Courage and Sacrifice,true
+39,16,4,Comprehension and Summary,true
