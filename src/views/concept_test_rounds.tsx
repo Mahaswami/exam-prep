@@ -34,7 +34,8 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
+    getLocalStorage
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
@@ -64,11 +65,21 @@ const filters = [
     <ChoicesLiveFilter source="comfort_score" label="Comfort Score" choiceLabels={comfortScoreChoices} />
 ]
 
+const studentFilters = [
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
+    <NumberLiveFilter source="round_number" label="Round" />,
+    <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
+    <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
+    <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
+    <ChoicesLiveFilter source="comfort_score" label="Comfort Score" choiceLabels={comfortScoreChoices} />
+]
+
 export const ConceptTestRoundsList = (props: ListProps) => {
+    const isStudent = getLocalStorage('role') === 'student';
     return (
-        <List {...listDefaults(props)}>
+        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                <DataTable.Col source="user_id" field={UsersReferenceField}/>
+                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="round_number" field={NumberField}/>
                 <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>

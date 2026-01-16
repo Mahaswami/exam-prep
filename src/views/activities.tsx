@@ -2,7 +2,7 @@ import { Resource, createDefaults, tableDefaults,
 	editDefaults, formDefaults, listDefaults, 
 	showDefaults, RowActions, CardGrid,
 	createReferenceField,
-	createReferenceInput, ReferenceLiveFilter, DateLiveFilter, ChoicesLiveFilter, recordRep  } from '@mahaswami/swan-frontend';
+	createReferenceInput, ReferenceLiveFilter, DateLiveFilter, ChoicesLiveFilter, recordRep, getLocalStorage  } from '@mahaswami/swan-frontend';
 import { LocalActivity } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
@@ -27,11 +27,19 @@ const filters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />
 ]
 
+const studentFilters = [
+    <DateLiveFilter source="activity_timestamp" label="Activity Timestamp" />,
+    <ChoicesLiveFilter source="activity_type" label="Activity Type" choiceLabels={activityTypeChoices} />,
+    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />
+]
+
 export const ActivitiesList = (props: ListProps) => {
+    const isStudent = getLocalStorage('role') === 'student';
     return (
-        <List {...listDefaults(props)}>
+        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                <DataTable.Col source="user_id" field={UsersReferenceField}/>
+                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="activity_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
                 <DataTable.Col source="activity_type" field={(props: any) => <SelectField {...props} choices={activityTypeChoices} />}/>
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>

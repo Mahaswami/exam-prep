@@ -88,7 +88,6 @@ export const configureMenus = (permissions: any) => {
         const adminMenusAll = 
         <>
             <AutoLayoutMenu>
-                <Menu.Item to="/welcome" primaryText="Welcome" leftIcon={<StartIcon />} />    
                 {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
                 <SubjectsMenu />
             <ChaptersMenu />

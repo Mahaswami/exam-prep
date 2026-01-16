@@ -36,7 +36,8 @@ import {
     TextLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
+    getLocalStorage
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
@@ -65,11 +66,21 @@ const filters = [
     <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
 ]
 
+const studentFilters = [
+    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+    <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
+    <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
+    <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
+    <NumberLiveFilter source="total_questions_number" label="Total Questions" />,
+    <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
+]
+
 export const ChapterDiagnosticTestsList = (props: ListProps) => {
+    const isStudent = getLocalStorage('role') === 'student';
     return (
-        <List {...listDefaults(props)}>
+        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                <DataTable.Col source="user_id" field={UsersReferenceField}/>
+                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
                 <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
                 <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
