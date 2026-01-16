@@ -274,7 +274,7 @@ export const DiagnosticTestAnswersResource = (
         edit={<DiagnosticTestAnswerEdit/>}
         show={<DiagnosticTestAnswerShow/>}
         hasDialog
-        hasLiveUpdate
+        hasLiveUpdate        
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

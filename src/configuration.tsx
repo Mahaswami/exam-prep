@@ -74,14 +74,14 @@ import englishMessages from './i18n/en';
 import frenchMessages from './i18n/fr';
 
 const messages = {
-    fr: frenchMessages,
+    // fr: frenchMessages,
     en: englishMessages,
 } as any;
 
 export const customizeI18nProvider = () => {
     const supportedLanguagesList = [
             { locale: 'en', name: 'English', key: 'en' },
-            { locale: 'fr', name: 'Français', key: 'fr' },
+            // { locale: 'fr', name: 'Français', key: 'fr' },
         ]
     if (navigator.language.startsWith('en-') || navigator.language === 'en' ) {
         supportedLanguagesList[0].locale = navigator.language;

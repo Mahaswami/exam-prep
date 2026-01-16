@@ -105,14 +105,27 @@ export const configureMenus = (permissions: any) => {
                 {isHistoryModuleActive() && <HistoryMenu />}
                 <UsersMenu />
             </AutoLayoutMenu>
-        </>    
+        </>   
+        
+        const studentMenus = 
+        <>
+            <AutoLayoutMenu maxCount={6}>
+            <ConceptScoresMenu />
+            <ChapterDiagnosticTestsMenu />
+            <ConceptRevisionRoundsMenu />
+            <ConceptTestRoundsMenu />
+            </AutoLayoutMenu>
+        </>            
         
         if ('super_admin' === permissions) {
             return superAdminMenus;
         }
         if ('admin' === permissions) {
             return adminMenusAll;
-        }        
+        }      
+        if ('student' === permissions) {
+            return studentMenus;
+        }  
         return null;
 
 }
