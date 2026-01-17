@@ -9,6 +9,7 @@
     "region": ""
   },
   "layout": "vertical",
+  "theme": "house",
   "default_currency": "INR",
   "default_locale": "en-IN",
   "logo": "swan_app_logo.svg",

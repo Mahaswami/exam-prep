@@ -9,12 +9,11 @@ const ADMIN_WIDGETS: WidgetConfig[] = [
         measures: [{ field: 'user_id', aggregation: 'countDistinct' }]
     },
     {
-        id: 'active-this-week',
+        id: 'active-this-period',
         type: 'kpi',
-        title: 'Active This Week',
+        title: 'Active This Period',
         layout: { columnSpan: 3 },
         measures: [{ field: 'user_id', aggregation: 'countDistinct' }],
-        filters: { activity_timestamp: { $gte: 'now-7d' } }
     },
     {
         id: 'total-sessions',

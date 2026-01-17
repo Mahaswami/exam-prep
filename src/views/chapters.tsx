@@ -104,6 +104,7 @@ export const ChaptersResource =  (
             name: { required: true, unique: true },
             is_active: {}
         }}
+        recordRepresentation={(r) => r.subject.code + ' ' + r.name }
         filters={filters}
         list={<ChaptersList/>}
         create={<ChapterCreate/>}

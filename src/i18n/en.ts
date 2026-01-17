@@ -22,8 +22,8 @@ const customEnglishMessages: TranslationMessages = {
         diagnostic_test_answers: {
             name: 'Diagnostic Test Answers',
         },
-        chapter_diagnostic_tests: {
-            name: 'Chapter Diagnostic Tests',
+        diagnostic_tests: {
+            name: 'Diagnostic Tests',
         },
         concept_scores: {
             name: 'Concept Scores',

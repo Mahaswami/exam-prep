@@ -8,6 +8,7 @@ import {
     EditProps,
     List,
     Menu,
+    ReferenceField,
     Show,
     ShowProps,
     SimpleForm,
@@ -40,12 +41,13 @@ import {
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
+import { ChaptersReferenceField } from './chapters';
 
 export const RESOURCE = "concept_revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_questions"]
 export const ICON = AssignmentTurnedIn
 export const DETAIL_ICONS = [Category]
-export const PREFETCH: string[] = ["users", "concepts"]
+export const PREFETCH: string[] = ["users", "concepts", "chapters"]
 export const DETAIL_PREFETCH = [[RESOURCE, "questions"]]
 
 export const ConceptRevisionRoundsReferenceField = createReferenceField(RESOURCE, PREFETCH);
@@ -71,12 +73,19 @@ const studentFilters = [
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />
 ]
 
+const ChapterViaConceptField = (props: any) => (
+    <ReferenceField source="concept_id" reference="concepts" link={false} {...props}>
+        <ChaptersReferenceField source="chapter_id" />
+    </ReferenceField>
+);
+
 export const ConceptRevisionRoundsList = (props: ListProps) => {
     const isStudent = getLocalStorage('role') === 'student';
     return (
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="round_number" field={NumberField}/>
                 <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>

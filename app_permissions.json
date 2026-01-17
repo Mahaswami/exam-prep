@@ -27,7 +27,7 @@
             "chapter_diagnostic_questions": "*",
             "payments": "*",
             "concept_scores": "*",
-            "chapter_diagnostic_tests": "*",
+            "diagnostic_tests": "*",
             "diagnostic_test_answers": "*",
             "concept_revision_rounds": "*",
             "revision_round_questions": "*",
@@ -39,7 +39,7 @@
             "users": "*"
         },
         "student": {
-            "chapter_diagnostic_tests": "create,list,show",
+            "diagnostic_tests": "create,list,show",
             "diagnostic_test_answers": "create,list,show",
             "concept_scores": "list,show",
             "concept_revision_rounds": "create,list,show",

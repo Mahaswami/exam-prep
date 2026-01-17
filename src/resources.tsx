@@ -23,7 +23,7 @@ import { QuestionsResource, QuestionsMenu } from './views/questions.tsx';
 import { ChapterDiagnosticQuestionsResource, ChapterDiagnosticQuestionsMenu } from './views/chapter_diagnostic_questions.tsx';
 import { PaymentsResource, PaymentsMenu } from './views/payments.tsx';
 import { ConceptScoresResource, ConceptScoresMenu } from './views/concept_scores.tsx';
-import { ChapterDiagnosticTestsResource, DiagnosticTestAnswersResource, ChapterDiagnosticTestsMenu } from './views/chapter_diagnostic_tests.tsx';
+import { DiagnosticTestsResource, DiagnosticTestAnswersResource, DiagnosticTestsMenu } from './views/diagnostic_tests.tsx';
 import { ConceptRevisionRoundsResource, RevisionRoundQuestionsResource, ConceptRevisionRoundsMenu } from './views/concept_revision_rounds.tsx';
 import { ConceptTestRoundsResource, TestRoundQuestionsResource, ConceptTestRoundsMenu } from './views/concept_test_rounds.tsx';
 import { ActivitiesResource, ActivitiesMenu } from './views/activities.tsx';
@@ -70,7 +70,7 @@ export const configureResources = (permissions: any) => {
     ChapterDiagnosticQuestionsResource,
     PaymentsResource,
     ConceptScoresResource,
-    ChapterDiagnosticTestsResource,
+    DiagnosticTestsResource,
     DiagnosticTestAnswersResource,
     ConceptRevisionRoundsResource,
     RevisionRoundQuestionsResource,
@@ -104,7 +104,7 @@ export const configureMenus = (permissions: any) => {
             <ChapterDiagnosticQuestionsMenu />
             <PaymentsMenu />
             <ConceptScoresMenu />
-            <ChapterDiagnosticTestsMenu />
+            <DiagnosticTestsMenu />
             <ConceptRevisionRoundsMenu />
             <ConceptTestRoundsMenu />
             <ActivitiesMenu />
@@ -119,7 +119,7 @@ export const configureMenus = (permissions: any) => {
             <AutoLayoutMenu maxCount={6}>
             <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
             <ConceptScoresMenu />
-            <ChapterDiagnosticTestsMenu />
+            <DiagnosticTestsMenu />
             <ConceptRevisionRoundsMenu />
             <ConceptTestRoundsMenu />
             </AutoLayoutMenu>

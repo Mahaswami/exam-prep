@@ -1,8 +1,16 @@
 import { AnalyticsDashboard, WidgetConfig, getLocalStorage } from '@mahaswami/swan-frontend';
 import { useEffect, useState } from 'react';
-import { useDataProvider, useGetList } from 'react-admin';
-import { Box, Typography, Paper, Autocomplete, TextField } from '@mui/material';
+import { useDataProvider, useGetList} from 'react-admin';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Box, Typography, Paper, Autocomplete, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import TimerIcon from '@mui/icons-material/Timer';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import SearchIcon from '@mui/icons-material/Search';
+import TrackChangesIcon from '@mui/icons-material/TrackChanges';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 const STUDENT_WIDGETS: WidgetConfig[] = [
     // Row 1: Key metrics (4 KPIs)
@@ -81,13 +89,23 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
     }
 ];
 
+type ActionType = 'diagnostic' | 'practice' | 'test' | null;
+
 export const StudentDashboard = () => {
     const role = getLocalStorage('role');
     const isStudent = role === 'student';
     const dataProvider = useDataProvider();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     
     const [computedWidgets, setComputedWidgets] = useState<WidgetConfig[]>(STUDENT_WIDGETS);
     const [selectedStudentId, setSelectedStudentId] = useState<number | undefined>(undefined);
+    const [actionDialog, setActionDialog] = useState<ActionType>(null);
+    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
+    const [onboardingSubjectId, setOnboardingSubjectId] = useState<number | null>(null);
+    const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
+    const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
     
     // Admin needs explicit filter; students are auto-filtered by DataProvider wrapper
     const effectiveUserId = isStudent ? undefined : selectedStudentId;
@@ -112,6 +130,7 @@ export const StudentDashboard = () => {
                     }),
                     dataProvider.getList('chapters', {
                         pagination: { page: 1, perPage: 1000 },
+                        meta: {prefetch: ["subjects"]},
                         sort: { field: 'id', order: 'ASC' },
                         filter: {}
                     })
@@ -121,17 +140,28 @@ export const StudentDashboard = () => {
                 const concepts = conceptsRes.data;
                 const chapters = chaptersRes.data;
                 
-                // Build lookup maps
-                const conceptToChapter = new Map(concepts.map((c: any) => [c.id, c.chapter_id]));
-                const chapterNames = new Map(chapters.map((c: any) => [c.id, c.name]));
+                // Filter by subject if selected
+                const filteredChapters = filterSubjectId 
+                    ? chapters.filter((c: any) => c.subject_id === filterSubjectId)
+                    : chapters;
+                const filteredChapterIds = new Set(filteredChapters.map((c: any) => c.id));
+                const filteredConcepts = concepts.filter((c: any) => filteredChapterIds.has(c.chapter_id));
+                const filteredConceptIds = new Set(filteredConcepts.map((c: any) => c.id));
+                const filteredData = filterSubjectId 
+                    ? data.filter((d: any) => filteredConceptIds.has(d.concept_id))
+                    : data;
                 
-                const total = data.length;
-                const mastered = data.filter((d: any) => d.comfort_level === 'very_good').length;
+                // Build lookup maps
+                const conceptToChapter = new Map(filteredConcepts.map((c: any) => [c.id, c.chapter_id]));
+                const chapterNames = new Map(filteredChapters.map((c: any) => [c.id, c.name]));
+                
+                const total = filteredData.length;
+                const mastered = filteredData.filter((d: any) => d.comfort_level === 'very_good').length;
                 const masteryRate = total > 0 ? mastered / total : 0;
                 
                 // Count improved: current level > initial level
                 const levelOrder = { 'needs_improvement': 0, 'good': 1, 'very_good': 2 };
-                const improved = data.filter((d: any) => {
+                const improved = filteredData.filter((d: any) => {
                     if (!d.initial_comfort_level) return false;
                     return (levelOrder[d.comfort_level as keyof typeof levelOrder] || 0) > 
                            (levelOrder[d.initial_comfort_level as keyof typeof levelOrder] || 0);
@@ -139,7 +169,7 @@ export const StudentDashboard = () => {
 
                 // Compute progress by chapter
                 const chapterStats = new Map<number, { total: number; mastered: number }>();
-                data.forEach((d: any) => {
+                filteredData.forEach((d: any) => {
                     const chapterId = conceptToChapter.get(d.concept_id);
                     if (!chapterId) return;
                     const stats = chapterStats.get(chapterId) || { total: 0, mastered: 0 };
@@ -180,11 +210,8 @@ export const StudentDashboard = () => {
         };
         
         computeMasteryData();
-    }, [dataProvider, effectiveUserId]);
+    }, [dataProvider, effectiveUserId, filterSubjectId]);
 
-    const availableFilters = isStudent 
-        ? [{ field: 'comfort_level', label: 'Comfort Level' }]
-        : [{ field: 'comfort_level', label: 'Comfort Level' }];
     
     // Fetch users for admin student picker
     const { data: users = [] } = useGetList('users', {
@@ -192,6 +219,33 @@ export const StudentDashboard = () => {
         sort: { field: 'first_name', order: 'ASC' },
         filter: { role: 'student' }
     }, { enabled: !isStudent });
+
+    const { data: chapters = [] } = useGetList('chapters', {
+        pagination: { page: 1, perPage: 100 },
+        meta: {prefetch: ['subjects']},
+        sort: { field: 'sequence_number', order: 'ASC' },
+        filter: {}
+    });
+
+    const { data: diagnosticTests = [], isLoading: loadingDiagnostics } = useGetList('diagnostic_tests', {
+        pagination: { page: 1, perPage: 1 },
+        sort: { field: 'id', order: 'DESC' },
+        filter: {}
+    }, { enabled: isStudent });
+
+    const { data: subjects = [] } = useGetList('subjects', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'name', order: 'ASC' },
+        filter: {}
+    });
+
+    const chaptersForSubject = chapters.filter((c: any) => c.subject_id === onboardingSubjectId);
+
+    const { data: conceptsForChapter = [] } = useGetList('concepts', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'name', order: 'ASC' },
+        filter: selectedChapterId ? { chapter_id: selectedChapterId } : {}
+    }, { enabled: !!selectedChapterId && actionDialog !== 'diagnostic' });
 
     // For admin without selected student, show message in computed widgets
     const displayWidgets = (!isStudent && !selectedStudentId) 
@@ -228,6 +282,119 @@ export const StudentDashboard = () => {
 
     const selectedUser = users.find((u: any) => u.id === selectedStudentId);
 
+    const forceOnboarding = searchParams.get('onboarding') === 'true';
+    const hasNoDiagnostics = isStudent && (forceOnboarding || (!loadingDiagnostics && diagnosticTests.length === 0));
+
+    if (hasNoDiagnostics) {
+        return (
+            <Box sx={{ 
+                position: 'fixed', 
+                inset: 0, 
+                zIndex: 1300, 
+                bgcolor: 'background.default',
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center' 
+            }}>
+                <Paper sx={{ p: 5, textAlign: 'center', maxWidth: 500 }}>
+                    <RocketLaunchIcon sx={{ fontSize: 72, color: 'primary.main', mb: 2 }} />
+                    <Typography variant="h4" gutterBottom>Let's Get Started!</Typography>
+                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                        Take a diagnostic test to assess your current knowledge and personalize your learning path.
+                    </Typography>
+                    <Stack spacing={1.5} sx={{ mb: 4, textAlign: 'left' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <SearchIcon sx={{ color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="subtitle2">Identify Gaps</Typography>
+                                <Typography variant="caption" color="text.secondary">Find what needs attention</Typography>
+                            </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <TrackChangesIcon sx={{ color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="subtitle2">Personalized Path</Typography>
+                                <Typography variant="caption" color="text.secondary">Study what matters most</Typography>
+                            </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <TrendingUpIcon sx={{ color: 'primary.main' }} />
+                            <Box>
+                                <Typography variant="subtitle2">Track Growth</Typography>
+                                <Typography variant="caption" color="text.secondary">See your improvement over time</Typography>
+                            </Box>
+                        </Box>
+                    </Stack>
+                    <Autocomplete
+                        options={subjects}
+                        getOptionLabel={(option: any) => option.name || `Subject ${option.id}`}
+                        onChange={(_, value) => {
+                            setOnboardingSubjectId(value?.id || null);
+                            setOnboardingChapterId(null);
+                        }}
+                        renderInput={(params) => <TextField {...params} label="Select Subject" />}
+                        fullWidth
+                        sx={{ mb: 2 }}
+                    />
+                    {onboardingSubjectId && (
+                        <Autocomplete
+                            options={chaptersForSubject}
+                            getOptionLabel={(option: any) => option.name || `Chapter ${option.id}`}
+                            onChange={(_, value) => setOnboardingChapterId(value?.id || null)}
+                            renderInput={(params) => <TextField {...params} label="Select Chapter" />}
+                            fullWidth
+                            sx={{ mb: 3 }}
+                        />
+                    )}
+                    <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<AssignmentIcon />}
+                        disabled={!onboardingChapterId}
+                        onClick={() => navigate(`/diagnostic_tests/create?chapter_id=${onboardingChapterId}`)}
+                        fullWidth
+                    >
+                        Start Diagnostic Test
+                    </Button>
+                </Paper>
+            </Box>
+        );
+    }
+
+    const handleActionClick = (type: ActionType) => {
+        setActionDialog(type);
+        setSelectedChapterId(null);
+        setSelectedConceptId(null);
+    };
+
+    const handleDialogConfirm = () => {
+        if (!selectedChapterId) return;
+        const needsConcept = actionDialog === 'practice' || actionDialog === 'test';
+        if (needsConcept && !selectedConceptId) return;
+        
+        const routes: Record<string, string> = {
+            diagnostic: `/diagnostic_tests/create?chapter_id=${selectedChapterId}`,
+            practice: `/concept_revision_rounds/create?concept_id=${selectedConceptId}`,
+            test: `/concept_test_rounds/create?concept_id=${selectedConceptId}`
+        };
+        
+        if (actionDialog && routes[actionDialog]) {
+            navigate(routes[actionDialog]);
+        }
+        setActionDialog(null);
+    };
+
+    const needsConceptSelection = actionDialog === 'practice' || actionDialog === 'test';
+    const canConfirm = actionDialog === 'diagnostic' 
+        ? !!selectedChapterId 
+        : !!selectedChapterId && !!selectedConceptId;
+
+    const dialogTitles: Record<string, string> = {
+        diagnostic: 'Start Diagnostic Test',
+        practice: 'Start Practice Round',
+        test: 'Start Test Round'
+    };
+
     return (
         <Box>
             {!isStudent && (
@@ -242,16 +409,103 @@ export const StudentDashboard = () => {
                         renderInput={(params) => <TextField {...params} placeholder="Select Student" />}
                         sx={{ minWidth: 250 }}
                     />
+                    <Autocomplete
+                        size="small"
+                        options={[{ id: null, name: 'All Subjects' }, ...subjects]}
+                        value={subjects.find((s: any) => s.id === filterSubjectId) || { id: null, name: 'All Subjects' }}
+                        getOptionLabel={(option: any) => option.name || 'All Subjects'}
+                        onChange={(_, value) => setFilterSubjectId(value?.id || null)}
+                        renderInput={(params) => <TextField {...params} label="Subject" />}
+                        sx={{ minWidth: 180 }}
+                        disableClearable
+                    />
                 </Box>
             )}
+            {isStudent && (
+                <Box sx={{ px: 3, pt: 2, pb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>👋 Welcome Back! <Typography component="span" variant="h6" color="text.secondary">Track your progress</Typography></Typography>
+                    <Autocomplete
+                        size="small"
+                        options={[{ id: null, name: 'All Subjects' }, ...subjects]}
+                        value={subjects.find((s: any) => s.id === filterSubjectId) || { id: null, name: 'All Subjects' }}
+                        getOptionLabel={(option: any) => option.name || 'All Subjects'}
+                        onChange={(_, value) => setFilterSubjectId(value?.id || null)}
+                        renderInput={(params) => <TextField {...params} label="Subject" />}
+                        sx={{ width: 180 }}
+                        disableClearable
+                    />
+                    <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<AssignmentIcon />}
+                            onClick={() => handleActionClick('diagnostic')}
+                        >
+                            Diagnostic Test
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<RefreshIcon />}
+                            onClick={() => handleActionClick('practice')}
+                        >
+                            Practice Round
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            color="warning"
+                            startIcon={<TimerIcon />}
+                            onClick={() => handleActionClick('test')}
+                        >
+                            Test Round
+                        </Button>
+                    </Stack>
+                </Box>
+            )}
+
+            <Dialog open={!!actionDialog} onClose={() => setActionDialog(null)} maxWidth="sm" fullWidth>
+                <DialogTitle>{actionDialog && dialogTitles[actionDialog]}</DialogTitle>
+                <DialogContent>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
+                        {needsConceptSelection ? 'Select a chapter and concept to begin' : 'Select a chapter to begin'}
+                    </Typography>
+                    <Autocomplete
+                        options={chapters}
+                        getOptionLabel={(option: any) => option.subject.code + ' : ' + option.name || `Chapter ${option.id}`}
+                        onChange={(_, value) => {
+                            setSelectedChapterId(value?.id || null);
+                            setSelectedConceptId(null);
+                        }}
+                        renderInput={(params) => <TextField {...params} label="Select Chapter" />}
+                        fullWidth
+                        sx={{ mb: 2 }}
+                    />
+                    {needsConceptSelection && selectedChapterId && (
+                        <Autocomplete
+                            options={conceptsForChapter}
+                            getOptionLabel={(option: any) => option.name || `Concept ${option.id}`}
+                            onChange={(_, value) => setSelectedConceptId(value?.id || null)}
+                            renderInput={(params) => <TextField {...params} label="Select Concept" />}
+                            fullWidth
+                        />
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setActionDialog(null)}>Cancel</Button>
+                    <Button onClick={handleDialogConfirm} variant="contained" disabled={!canConfirm}>
+                        Start
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <AnalyticsDashboard
                 // @ts-ignore - types.d.ts is outdated, actual component supports these props
-                title={isStudent ? "My Progress" : "Student Progress"}
+                title={isStudent ? false : "Student Progress"}
                 dataset="concept_scores"
                 enablePeriodSelector={false}
                 enableComparison={false}
-                enableGlobalFilters={true}
-                availableFilters={availableFilters}
+                enableGlobalFilters={false}
                 widgets={displayWidgets}
             />
         </Box>

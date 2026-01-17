@@ -67,7 +67,7 @@ export const themes = (defaultThemes: any) => {
 
 const STUDENT_SCOPED_RESOURCES = [
     'concept_scores',
-    'chapter_diagnostic_tests',
+    'diagnostic_tests',
     'concept_revision_rounds',
     'concept_test_rounds',
     'activities',
@@ -100,7 +100,7 @@ export const wrapCustomDataProvider = (queryClient: any, dataProvider: any) => {
             const result = await dataProvider.getOne(resource, params);
             const studentFilter = getStudentFilter();
             if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
-                if (result.data?.user_id !== studentFilter.user_id) {
+                if (String(result.data?.user_id) !== String(studentFilter.user_id)) {
                     throw new Error('Access denied');
                 }
             }
@@ -111,7 +111,7 @@ export const wrapCustomDataProvider = (queryClient: any, dataProvider: any) => {
             const result = await dataProvider.getMany(resource, params);
             const studentFilter = getStudentFilter();
             if (studentFilter && STUDENT_SCOPED_RESOURCES.includes(resource)) {
-                const validData = result.data.filter((record: any) => record.user_id === studentFilter.user_id);
+                const validData = result.data.filter((record: any) => String(record.user_id) === String(studentFilter.user_id));
                 if (validData.length !== result.data.length) {
                     throw new Error('Access denied');
                 }

@@ -1,12 +1,12 @@
-import { RESOURCE, DETAIL_RESOURCES } from "../views/chapter_diagnostic_tests"
+import { RESOURCE, DETAIL_RESOURCES } from "../views/diagnostic_tests"
 
-export const ChapterDiagnosticTestsLogic: any = {
+export const DiagnosticTestsLogic: any = {
     resource: RESOURCE,
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
-        console.log('ChapterDiagnosticTestsLogic: Sample: afterGetList hook executed');
+        console.log('DiagnosticTestsLogic: Sample: afterGetList hook executed');
         return params;
     }],
     afterGetMany: [],

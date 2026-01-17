@@ -110,7 +110,7 @@ resources:
       initial_comfort_level: comfort_level
       comfort_level: comfort_level
 
-  chapter_diagnostic_tests:
+  diagnostic_tests:
     type: master-detail
     columns:
       - user_id:*

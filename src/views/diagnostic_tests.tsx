@@ -43,15 +43,15 @@ import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 
-export const RESOURCE = "chapter_diagnostic_tests"
+export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_answers"]
 export const ICON = Article
 export const DETAIL_ICONS = [Category]
 export const PREFETCH: string[] = ["users", "chapters"]
 export const DETAIL_PREFETCH = [[RESOURCE, "questions"]]
 
-export const ChapterDiagnosticTestsReferenceField = createReferenceField(RESOURCE, PREFETCH);
-export const ChapterDiagnosticTestsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
+export const DiagnosticTestsReferenceField = createReferenceField(RESOURCE, PREFETCH);
+export const DiagnosticTestsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 export const DiagnosticTestAnswersReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const DiagnosticTestAnswersReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
@@ -75,7 +75,7 @@ const studentFilters = [
     <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
 ]
 
-export const ChapterDiagnosticTestsList = (props: ListProps) => {
+export const DiagnosticTestsList = (props: ListProps) => {
     const isStudent = getLocalStorage('role') === 'student';
     return (
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
@@ -92,7 +92,7 @@ export const ChapterDiagnosticTestsList = (props: ListProps) => {
 }
 
 
-export const ChapterDiagnosticTestsCardGrid = (props: ListProps) => {
+export const DiagnosticTestsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<UsersReferenceField source="user_id" variant='h6' />}>
@@ -109,7 +109,7 @@ const DetailResources = (props: any) => (
     </TabbedDetailLayout> 
 )
 
-const ChapterDiagnosticTestForm = (props: Omit<SimpleFormProps, "children">) => {
+const DiagnosticTestForm = (props: Omit<SimpleFormProps, "children">) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <Box width="100%" display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap="1rem">
@@ -130,23 +130,23 @@ const ChapterDiagnosticTestForm = (props: Omit<SimpleFormProps, "children">) => 
     );
 };
 
-const ChapterDiagnosticTestCreate = (props: CreateProps) => {
+const DiagnosticTestCreate = (props: CreateProps) => {
     return (
         <Create {...createDefaults(props)}>
-            <ChapterDiagnosticTestForm />
+            <DiagnosticTestForm />
         </Create>
     );
 };
 
-const ChapterDiagnosticTestEdit = (props: EditProps) => {
+const DiagnosticTestEdit = (props: EditProps) => {
     return (
         <Edit {...editDefaults(props)}>
-            <ChapterDiagnosticTestForm/>
+            <DiagnosticTestForm/>
         </Edit>
     );
 };
 
-const ChapterDiagnosticTestShow = (props: ShowProps) => {
+const DiagnosticTestShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout
@@ -241,7 +241,7 @@ const DiagnosticTestAnswerShow = (props: any) => {
     )
 }
 
-export const ChapterDiagnosticTestsResource = (
+export const DiagnosticTestsResource = (
     <Resource
         name={RESOURCE}
         icon={ICON}
@@ -257,12 +257,13 @@ export const ChapterDiagnosticTestsResource = (
             correct_answers_number: {}
         }}
         filters={filters}
-        list={<ChapterDiagnosticTestsList/>}
-        create={<ChapterDiagnosticTestCreate/>}
-        edit={<ChapterDiagnosticTestEdit/>}
-        show={<ChapterDiagnosticTestShow/>}
+        list={<DiagnosticTestsList/>}
+        create={<DiagnosticTestCreate/>}
+        edit={<DiagnosticTestEdit/>}
+        show={<DiagnosticTestShow/>}
         hasDialog
         hasLiveUpdate
+        hasImport
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
@@ -272,7 +273,7 @@ export const DiagnosticTestAnswersResource = (
         name={DETAIL_RESOURCES[0]}
         icon={DETAIL_ICONS[0]}
         prefetch={DETAIL_PREFETCH[0]}
-        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.chapter_diagnostic_test)} ${recordRep('questions', record.question)}`}
+        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.diagnostic_test)} ${recordRep('questions', record.question)}`}
         fieldSchema={{
             question_id: { required: true, resource: 'questions' },
             selected_answer: {},
@@ -290,7 +291,7 @@ export const DiagnosticTestAnswersResource = (
     />
 )
 
-export const ChapterDiagnosticTestsMenu = () => (
+export const DiagnosticTestsMenu = () => (
     <Menu.Item to={`/${RESOURCE}`} primaryText="Diagnostic Tests" leftIcon={<ICON />} />
 );
 
