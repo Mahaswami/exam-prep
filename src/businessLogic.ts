@@ -5,9 +5,9 @@ import { QuestionsLogic } from './logic/questions.ts';
 import { ChapterDiagnosticQuestionsLogic } from './logic/chapter_diagnostic_questions.ts';
 import { PaymentsLogic } from './logic/payments.ts';
 import { ConceptScoresLogic } from './logic/concept_scores.ts';
-import { DiagnosticTestsLogic, DiagnosticTestAnswersLogic } from './logic/diagnostic_tests.ts';
-import { ConceptRevisionRoundsLogic, RevisionRoundQuestionsLogic } from './logic/concept_revision_rounds.ts';
-import { ConceptTestRoundsLogic, TestRoundQuestionsLogic } from './logic/concept_test_rounds.ts';
+import { DiagnosticTestsLogic, DiagnosticTestDetailsLogic } from './logic/diagnostic_tests.ts';
+import { RevisionRoundsLogic, RevisionRoundDetailsLogic } from './logic/revision_rounds.ts';
+import { TestRoundsLogic, TestRoundDetailsLogic } from './logic/test_rounds.ts';
 import { ActivitiesLogic } from './logic/activities.ts';
 // {{SWAN:INSERT:LOGIC_IMPORTS}}
 
@@ -22,11 +22,11 @@ export const businessLogic = () => {
     PaymentsLogic,
     ConceptScoresLogic,
     DiagnosticTestsLogic,
-    DiagnosticTestAnswersLogic,
-    ConceptRevisionRoundsLogic,
-    RevisionRoundQuestionsLogic,
-    ConceptTestRoundsLogic,
-    TestRoundQuestionsLogic,
+    DiagnosticTestDetailsLogic,
+    RevisionRoundsLogic,
+    RevisionRoundDetailsLogic,
+    TestRoundsLogic,
+    TestRoundDetailsLogic,
     ActivitiesLogic,
     // {{SWAN:INSERT:LOGIC}}
     ]; 

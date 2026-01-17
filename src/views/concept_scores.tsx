@@ -81,7 +81,7 @@ const ConceptScoreRowActions = () => {
                     size="small"
                     onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/concept_revision_rounds/create?concept_id=${record.concept_id}`);
+                        navigate(`/revision_rounds/create?concept_id=${record.concept_id}`);
                     }}
                 >
                     <Refresh fontSize="small" />
@@ -92,7 +92,7 @@ const ConceptScoreRowActions = () => {
                     size="small"
                     onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/concept_test_rounds/create?concept_id=${record.concept_id}`);
+                        navigate(`/test_rounds/create?concept_id=${record.concept_id}`);
                     }}
                 >
                     <Timer fontSize="small" />

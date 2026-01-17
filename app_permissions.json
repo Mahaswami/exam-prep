@@ -28,11 +28,11 @@
             "payments": "*",
             "concept_scores": "*",
             "diagnostic_tests": "*",
-            "diagnostic_test_answers": "*",
-            "concept_revision_rounds": "*",
-            "revision_round_questions": "*",
-            "concept_test_rounds": "*",
-            "test_round_questions": "*",
+            "diagnostic_test_details": "*",
+            "revision_rounds": "*",
+            "revision_round_details": "*",
+            "test_rounds": "*",
+            "test_round_details": "*",
             "activities": "*",
             "__SWAN_INSERT_PERMISSION__": "placeholder",
             "history": "list,show,restoreHistory",
@@ -40,12 +40,12 @@
         },
         "student": {
             "diagnostic_tests": "create,list,show",
-            "diagnostic_test_answers": "create,list,show",
+            "diagnostic_test_details": "create,list,show",
             "concept_scores": "list,show",
-            "concept_revision_rounds": "create,list,show",
-            "revision_round_questions": "create,list,show",
-            "concept_test_rounds": "create,list,show",
-            "test_round_questions": "create,list,show"
+            "revision_rounds": "create,list,show",
+            "revision_round_details": "create,list,show",
+            "test_rounds": "create,list,show",
+            "test_round_details": "create,list,show"
         }    
     }
 }

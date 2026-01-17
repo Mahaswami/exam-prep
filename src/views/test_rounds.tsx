@@ -43,17 +43,17 @@ import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
 
-export const RESOURCE = "concept_test_rounds"
-export const DETAIL_RESOURCES = ["test_round_questions"]
+export const RESOURCE = "test_rounds"
+export const DETAIL_RESOURCES = ["test_round_details"]
 export const ICON = Quiz
 export const DETAIL_ICONS = [Category]
 export const PREFETCH: string[] = ["users", "concepts", "chapters"]
 export const DETAIL_PREFETCH = [[RESOURCE, "questions"]]
 
-export const ConceptTestRoundsReferenceField = createReferenceField(RESOURCE, PREFETCH);
-export const ConceptTestRoundsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
-export const TestRoundQuestionsReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
-export const TestRoundQuestionsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const TestRoundsReferenceField = createReferenceField(RESOURCE, PREFETCH);
+export const TestRoundsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
+export const TestRoundDetailsReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const TestRoundDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 export const comfortScoreChoices = [{ id: 'needs_improvement', name: 'Needs Improvement' }, { id: 'good', name: 'Good' }, { id: 'very_good', name: 'Very Good' }];
 
@@ -82,7 +82,7 @@ const ChapterViaConceptField = (props: any) => (
     </ReferenceField>
 );
 
-export const ConceptTestRoundsList = (props: ListProps) => {
+export const TestRoundsList = (props: ListProps) => {
     const isStudent = getLocalStorage('role') === 'student';
     return (
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
@@ -100,7 +100,7 @@ export const ConceptTestRoundsList = (props: ListProps) => {
 }
 
 
-export const ConceptTestRoundsCardGrid = (props: ListProps) => {
+export const TestRoundsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<UsersReferenceField source="user_id" variant='h6' />}>
@@ -113,11 +113,11 @@ export const ConceptTestRoundsCardGrid = (props: ListProps) => {
 
 const DetailResources = (props: any) => (
     <TabbedDetailLayout {...props}>
-        <TestRoundQuestionsList resource={DETAIL_RESOURCES[0]}/>
+        <TestRoundDetailsList resource={DETAIL_RESOURCES[0]}/>
     </TabbedDetailLayout> 
 )
 
-const ConceptTestRoundForm = (props: Omit<SimpleFormProps, "children">) => {
+const TestRoundForm = (props: Omit<SimpleFormProps, "children">) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <Box width="100%" display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap="1rem">
@@ -138,23 +138,23 @@ const ConceptTestRoundForm = (props: Omit<SimpleFormProps, "children">) => {
     );
 };
 
-const ConceptTestRoundCreate = (props: CreateProps) => {
+const TestRoundCreate = (props: CreateProps) => {
     return (
         <Create {...createDefaults(props)}>
-            <ConceptTestRoundForm />
+            <TestRoundForm />
         </Create>
     );
 };
 
-const ConceptTestRoundEdit = (props: EditProps) => {
+const TestRoundEdit = (props: EditProps) => {
     return (
         <Edit {...editDefaults(props)}>
-            <ConceptTestRoundForm/>
+            <TestRoundForm/>
         </Edit>
     );
 };
 
-const ConceptTestRoundShow = (props: ShowProps) => {
+const TestRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout
@@ -178,7 +178,7 @@ const detail0Filters = [
     <ReferenceLiveFilter source="question_id" reference="questions" label="Question" />
 ]
 
-const TestRoundQuestionForm = (props: any) => {
+const TestRoundDetailForm = (props: any) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <QuestionsReferenceInput source="question_id">
@@ -188,7 +188,7 @@ const TestRoundQuestionForm = (props: any) => {
     )
 }
 
-export const TestRoundQuestionsList = (props: ListProps) => {
+export const TestRoundDetailsList = (props: ListProps) => {
     return (
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(props)}>
@@ -200,7 +200,7 @@ export const TestRoundQuestionsList = (props: ListProps) => {
 }
 
 
-export const TestRoundQuestionsCardGrid = (props: ListProps) => {
+export const TestRoundDetailsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<QuestionsReferenceField source="question_id" variant='h6' />}>
@@ -209,23 +209,23 @@ export const TestRoundQuestionsCardGrid = (props: ListProps) => {
     )
 }
 
-const TestRoundQuestionCreate = (props: any) => {
+const TestRoundDetailCreate = (props: any) => {
     return (
     	<Create {...createDefaults(props)}>
-            <TestRoundQuestionForm />
+            <TestRoundDetailForm />
         </Create>
     )
 }
 
-const TestRoundQuestionEdit = (props: any) => {
+const TestRoundDetailEdit = (props: any) => {
     return (
         <Edit {...editDefaults(props)}>
-            <TestRoundQuestionForm />
+            <TestRoundDetailForm />
         </Edit>
     )
 }
 
-const TestRoundQuestionShow = (props: any) => {
+const TestRoundDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout>
@@ -235,7 +235,7 @@ const TestRoundQuestionShow = (props: any) => {
     )
 }
 
-export const ConceptTestRoundsResource = (
+export const TestRoundsResource = (
     <Resource
         name={RESOURCE}
         icon={ICON}
@@ -251,40 +251,40 @@ export const ConceptTestRoundsResource = (
             comfort_score: { type: 'choice', ui: 'select', choices: comfortScoreChoices }
         }}
         filters={filters}
-        list={<ConceptTestRoundsList/>}
-        create={<ConceptTestRoundCreate/>}
-        edit={<ConceptTestRoundEdit/>}
-        show={<ConceptTestRoundShow/>}
+        list={<TestRoundsList/>}
+        create={<TestRoundCreate/>}
+        edit={<TestRoundEdit/>}
+        show={<TestRoundShow/>}
         hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
 
-export const TestRoundQuestionsResource = (
+export const TestRoundDetailsResource = (
     <Resource
         name={DETAIL_RESOURCES[0]}
         icon={DETAIL_ICONS[0]}
         prefetch={DETAIL_PREFETCH[0]}
-        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.concept_test_round)} ${recordRep('questions', record.question)}`}
+        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.test_round)} ${recordRep('questions', record.question)}`}
         fieldSchema={{
             question_id: { required: true, resource: 'questions' }
         }}
         filters={detail0Filters}
-        list={<TestRoundQuestionsList/>}
-        create={<TestRoundQuestionCreate/>}
-        edit={<TestRoundQuestionEdit/>}
-        show={<TestRoundQuestionShow/>}
+        list={<TestRoundDetailsList/>}
+        create={<TestRoundDetailCreate/>}
+        edit={<TestRoundDetailEdit/>}
+        show={<TestRoundDetailShow/>}
         hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
 
-export const ConceptTestRoundsMenu = () => (
+export const TestRoundsMenu = () => (
     <Menu.Item to={`/${RESOURCE}`} primaryText="Test Rounds" leftIcon={<ICON />} />
 );
 
-export const TestRoundQuestionsMenu = () => (
-    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Test Round Questions" leftIcon={<Category />} />
+export const TestRoundDetailsMenu = () => (
+    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Test Round Details" leftIcon={<Category />} />
 );

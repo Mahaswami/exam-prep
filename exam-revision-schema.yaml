@@ -123,14 +123,14 @@ resources:
     fieldChoices:
       status: round_status
     details:
-      - name: diagnostic_test_answers
+      - name: diagnostic_test_details
         columns:
           - question_id:*
           - selected_answer
           - is_correct
           - time_taken_seconds_number
 
-  concept_revision_rounds:
+  revision_rounds:
     type: master-detail
     columns:
       - user_id:*
@@ -142,12 +142,12 @@ resources:
     fieldChoices:
       status: round_status
     details:
-      - name: revision_round_questions
+      - name: revision_round_details
         columns:
           - question_id:*
           - viewed_timestamp
 
-  concept_test_rounds:
+  test_rounds:
     type: master-detail
     columns:
       - user_id:*
@@ -161,7 +161,7 @@ resources:
       status: round_status
       comfort_score: comfort_level
     details:
-      - name: test_round_questions
+      - name: test_round_details
         columns:
           - question_id:*
 

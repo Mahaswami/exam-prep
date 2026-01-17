@@ -28,13 +28,13 @@ export const DiagnosticTestsLogic: any = {
     afterSave: [],
 }
 
-export const DiagnosticTestAnswersLogic: any = {
+export const DiagnosticTestDetailsLogic: any = {
     resource: DETAIL_RESOURCES[0],
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
-        console.log('DiagnosticTestAnswersLogic: Sample: afterGetList hook executed');
+        console.log('DiagnosticTestDetailsLogic: Sample: afterGetList hook executed');
         return params;
     }],
     afterGetMany: [],

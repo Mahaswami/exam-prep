@@ -44,7 +44,7 @@ import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 
 export const RESOURCE = "diagnostic_tests"
-export const DETAIL_RESOURCES = ["diagnostic_test_answers"]
+export const DETAIL_RESOURCES = ["diagnostic_test_details"]
 export const ICON = Article
 export const DETAIL_ICONS = [Category]
 export const PREFETCH: string[] = ["users", "chapters"]
@@ -52,8 +52,8 @@ export const DETAIL_PREFETCH = [[RESOURCE, "questions"]]
 
 export const DiagnosticTestsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const DiagnosticTestsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
-export const DiagnosticTestAnswersReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
-export const DiagnosticTestAnswersReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const DiagnosticTestDetailsReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const DiagnosticTestDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
 const filters = [
@@ -105,7 +105,7 @@ export const DiagnosticTestsCardGrid = (props: ListProps) => {
 
 const DetailResources = (props: any) => (
     <TabbedDetailLayout {...props}>
-        <DiagnosticTestAnswersList resource={DETAIL_RESOURCES[0]}/>
+        <DiagnosticTestDetailsList resource={DETAIL_RESOURCES[0]}/>
     </TabbedDetailLayout> 
 )
 
@@ -173,7 +173,7 @@ const detail0Filters = [
     <NumberLiveFilter source="time_taken_seconds_number" label="Time Taken Seconds" />
 ]
 
-const DiagnosticTestAnswerForm = (props: any) => {
+const DiagnosticTestDetailForm = (props: any) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <QuestionsReferenceInput source="question_id">
@@ -186,7 +186,7 @@ const DiagnosticTestAnswerForm = (props: any) => {
     )
 }
 
-export const DiagnosticTestAnswersList = (props: ListProps) => {
+export const DiagnosticTestDetailsList = (props: ListProps) => {
     return (
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(props)}>
@@ -201,7 +201,7 @@ export const DiagnosticTestAnswersList = (props: ListProps) => {
 }
 
 
-export const DiagnosticTestAnswersCardGrid = (props: ListProps) => {
+export const DiagnosticTestDetailsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<QuestionsReferenceField source="question_id" variant='h6' />}>
@@ -212,23 +212,23 @@ export const DiagnosticTestAnswersCardGrid = (props: ListProps) => {
     )
 }
 
-const DiagnosticTestAnswerCreate = (props: any) => {
+const DiagnosticTestDetailCreate = (props: any) => {
     return (
     	<Create {...createDefaults(props)}>
-            <DiagnosticTestAnswerForm />
+            <DiagnosticTestDetailForm />
         </Create>
     )
 }
 
-const DiagnosticTestAnswerEdit = (props: any) => {
+const DiagnosticTestDetailEdit = (props: any) => {
     return (
         <Edit {...editDefaults(props)}>
-            <DiagnosticTestAnswerForm />
+            <DiagnosticTestDetailForm />
         </Edit>
     )
 }
 
-const DiagnosticTestAnswerShow = (props: any) => {
+const DiagnosticTestDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout>
@@ -268,7 +268,7 @@ export const DiagnosticTestsResource = (
     />
 )
 
-export const DiagnosticTestAnswersResource = (
+export const DiagnosticTestDetailsResource = (
     <Resource
         name={DETAIL_RESOURCES[0]}
         icon={DETAIL_ICONS[0]}
@@ -281,10 +281,10 @@ export const DiagnosticTestAnswersResource = (
             time_taken_seconds_number: {}
         }}
         filters={detail0Filters}
-        list={<DiagnosticTestAnswersList/>}
-        create={<DiagnosticTestAnswerCreate/>}
-        edit={<DiagnosticTestAnswerEdit/>}
-        show={<DiagnosticTestAnswerShow/>}
+        list={<DiagnosticTestDetailsList/>}
+        create={<DiagnosticTestDetailCreate/>}
+        edit={<DiagnosticTestDetailEdit/>}
+        show={<DiagnosticTestDetailShow/>}
         hasDialog
         hasLiveUpdate        
         // {{SWAN:RESOURCE_OPTIONS}}
@@ -295,6 +295,6 @@ export const DiagnosticTestsMenu = () => (
     <Menu.Item to={`/${RESOURCE}`} primaryText="Diagnostic Tests" leftIcon={<ICON />} />
 );
 
-export const DiagnosticTestAnswersMenu = () => (
-    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Diagnostic Test Answers" leftIcon={<Category />} />
+export const DiagnosticTestDetailsMenu = () => (
+    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Diagnostic Test Details" leftIcon={<Category />} />
 );

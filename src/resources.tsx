@@ -23,9 +23,9 @@ import { QuestionsResource, QuestionsMenu } from './views/questions.tsx';
 import { ChapterDiagnosticQuestionsResource, ChapterDiagnosticQuestionsMenu } from './views/chapter_diagnostic_questions.tsx';
 import { PaymentsResource, PaymentsMenu } from './views/payments.tsx';
 import { ConceptScoresResource, ConceptScoresMenu } from './views/concept_scores.tsx';
-import { DiagnosticTestsResource, DiagnosticTestAnswersResource, DiagnosticTestsMenu } from './views/diagnostic_tests.tsx';
-import { ConceptRevisionRoundsResource, RevisionRoundQuestionsResource, ConceptRevisionRoundsMenu } from './views/concept_revision_rounds.tsx';
-import { ConceptTestRoundsResource, TestRoundQuestionsResource, ConceptTestRoundsMenu } from './views/concept_test_rounds.tsx';
+import { DiagnosticTestsResource, DiagnosticTestDetailsResource, DiagnosticTestsMenu } from './views/diagnostic_tests.tsx';
+import { RevisionRoundsResource, RevisionRoundDetailsResource, RevisionRoundsMenu } from './views/revision_rounds.tsx';
+import { TestRoundsResource, TestRoundDetailsResource, TestRoundsMenu } from './views/test_rounds.tsx';
 import { ActivitiesResource, ActivitiesMenu } from './views/activities.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
@@ -71,11 +71,11 @@ export const configureResources = (permissions: any) => {
     PaymentsResource,
     ConceptScoresResource,
     DiagnosticTestsResource,
-    DiagnosticTestAnswersResource,
-    ConceptRevisionRoundsResource,
-    RevisionRoundQuestionsResource,
-    ConceptTestRoundsResource,
-    TestRoundQuestionsResource,
+    DiagnosticTestDetailsResource,
+    RevisionRoundsResource,
+    RevisionRoundDetailsResource,
+    TestRoundsResource,
+    TestRoundDetailsResource,
     ActivitiesResource,
     // SWAN:INSERT:RESOURCE_ENTRY
     ]
@@ -105,8 +105,8 @@ export const configureMenus = (permissions: any) => {
             <PaymentsMenu />
             <ConceptScoresMenu />
             <DiagnosticTestsMenu />
-            <ConceptRevisionRoundsMenu />
-            <ConceptTestRoundsMenu />
+            <RevisionRoundsMenu />
+            <TestRoundsMenu />
             <ActivitiesMenu />
             {/* {{SWAN:INSERT:MENU_ENTRY}} */}
                 {isHistoryModuleActive() && <HistoryMenu />}
@@ -120,8 +120,8 @@ export const configureMenus = (permissions: any) => {
             <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
             <ConceptScoresMenu />
             <DiagnosticTestsMenu />
-            <ConceptRevisionRoundsMenu />
-            <ConceptTestRoundsMenu />
+            <RevisionRoundsMenu />
+            <TestRoundsMenu />
             </AutoLayoutMenu>
         </>            
         

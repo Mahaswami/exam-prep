@@ -43,17 +43,17 @@ import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
 
-export const RESOURCE = "concept_revision_rounds"
-export const DETAIL_RESOURCES = ["revision_round_questions"]
+export const RESOURCE = "revision_rounds"
+export const DETAIL_RESOURCES = ["revision_round_details"]
 export const ICON = AssignmentTurnedIn
 export const DETAIL_ICONS = [Category]
 export const PREFETCH: string[] = ["users", "concepts", "chapters"]
 export const DETAIL_PREFETCH = [[RESOURCE, "questions"]]
 
-export const ConceptRevisionRoundsReferenceField = createReferenceField(RESOURCE, PREFETCH);
-export const ConceptRevisionRoundsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
-export const RevisionRoundQuestionsReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
-export const RevisionRoundQuestionsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const RevisionRoundsReferenceField = createReferenceField(RESOURCE, PREFETCH);
+export const RevisionRoundsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
+export const RevisionRoundDetailsReferenceField = createReferenceField(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
+export const RevisionRoundDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
 const filters = [
@@ -79,7 +79,7 @@ const ChapterViaConceptField = (props: any) => (
     </ReferenceField>
 );
 
-export const ConceptRevisionRoundsList = (props: ListProps) => {
+export const RevisionRoundsList = (props: ListProps) => {
     const isStudent = getLocalStorage('role') === 'student';
     return (
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
@@ -97,7 +97,7 @@ export const ConceptRevisionRoundsList = (props: ListProps) => {
 }
 
 
-export const ConceptRevisionRoundsCardGrid = (props: ListProps) => {
+export const RevisionRoundsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<UsersReferenceField source="user_id" variant='h6' />}>
@@ -110,11 +110,11 @@ export const ConceptRevisionRoundsCardGrid = (props: ListProps) => {
 
 const DetailResources = (props: any) => (
     <TabbedDetailLayout {...props}>
-        <RevisionRoundQuestionsList resource={DETAIL_RESOURCES[0]}/>
+        <RevisionRoundDetailsList resource={DETAIL_RESOURCES[0]}/>
     </TabbedDetailLayout> 
 )
 
-const ConceptRevisionRoundForm = (props: Omit<SimpleFormProps, "children">) => {
+const RevisionRoundForm = (props: Omit<SimpleFormProps, "children">) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <Box width="100%" display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} gap="1rem">
@@ -134,23 +134,23 @@ const ConceptRevisionRoundForm = (props: Omit<SimpleFormProps, "children">) => {
     );
 };
 
-const ConceptRevisionRoundCreate = (props: CreateProps) => {
+const RevisionRoundCreate = (props: CreateProps) => {
     return (
         <Create {...createDefaults(props)}>
-            <ConceptRevisionRoundForm />
+            <RevisionRoundForm />
         </Create>
     );
 };
 
-const ConceptRevisionRoundEdit = (props: EditProps) => {
+const RevisionRoundEdit = (props: EditProps) => {
     return (
         <Edit {...editDefaults(props)}>
-            <ConceptRevisionRoundForm/>
+            <RevisionRoundForm/>
         </Edit>
     );
 };
 
-const ConceptRevisionRoundShow = (props: ShowProps) => {
+const RevisionRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout
@@ -174,7 +174,7 @@ const detail0Filters = [
     <DateLiveFilter source="viewed_timestamp" label="Viewed Timestamp" />
 ]
 
-const RevisionRoundQuestionForm = (props: any) => {
+const RevisionRoundDetailForm = (props: any) => {
     return (
         <SimpleForm {...formDefaults(props)}>
             <QuestionsReferenceInput source="question_id">
@@ -185,7 +185,7 @@ const RevisionRoundQuestionForm = (props: any) => {
     )
 }
 
-export const RevisionRoundQuestionsList = (props: ListProps) => {
+export const RevisionRoundDetailsList = (props: ListProps) => {
     return (
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(props)}>
@@ -198,7 +198,7 @@ export const RevisionRoundQuestionsList = (props: ListProps) => {
 }
 
 
-export const RevisionRoundQuestionsCardGrid = (props: ListProps) => {
+export const RevisionRoundDetailsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<QuestionsReferenceField source="question_id" variant='h6' />}>
@@ -208,23 +208,23 @@ export const RevisionRoundQuestionsCardGrid = (props: ListProps) => {
     )
 }
 
-const RevisionRoundQuestionCreate = (props: any) => {
+const RevisionRoundDetailCreate = (props: any) => {
     return (
     	<Create {...createDefaults(props)}>
-            <RevisionRoundQuestionForm />
+            <RevisionRoundDetailForm />
         </Create>
     )
 }
 
-const RevisionRoundQuestionEdit = (props: any) => {
+const RevisionRoundDetailEdit = (props: any) => {
     return (
         <Edit {...editDefaults(props)}>
-            <RevisionRoundQuestionForm />
+            <RevisionRoundDetailForm />
         </Edit>
     )
 }
 
-const RevisionRoundQuestionShow = (props: any) => {
+const RevisionRoundDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout>
@@ -235,7 +235,7 @@ const RevisionRoundQuestionShow = (props: any) => {
     )
 }
 
-export const ConceptRevisionRoundsResource = (
+export const RevisionRoundsResource = (
     <Resource
         name={RESOURCE}
         icon={ICON}
@@ -250,41 +250,41 @@ export const ConceptRevisionRoundsResource = (
             status: { type: 'choice', ui: 'select', required: true, choices: statusChoices }
         }}
         filters={filters}
-        list={<ConceptRevisionRoundsList/>}
-        create={<ConceptRevisionRoundCreate/>}
-        edit={<ConceptRevisionRoundEdit/>}
-        show={<ConceptRevisionRoundShow/>}
+        list={<RevisionRoundsList/>}
+        create={<RevisionRoundCreate/>}
+        edit={<RevisionRoundEdit/>}
+        show={<RevisionRoundShow/>}
         hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
 
-export const RevisionRoundQuestionsResource = (
+export const RevisionRoundDetailsResource = (
     <Resource
         name={DETAIL_RESOURCES[0]}
         icon={DETAIL_ICONS[0]}
         prefetch={DETAIL_PREFETCH[0]}
-        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.concept_revision_round)} ${recordRep('questions', record.question)}`}
+        recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.revision_round)} ${recordRep('questions', record.question)}`}
         fieldSchema={{
             question_id: { required: true, resource: 'questions' },
             viewed_timestamp: {}
         }}
         filters={detail0Filters}
-        list={<RevisionRoundQuestionsList/>}
-        create={<RevisionRoundQuestionCreate/>}
-        edit={<RevisionRoundQuestionEdit/>}
-        show={<RevisionRoundQuestionShow/>}
+        list={<RevisionRoundDetailsList/>}
+        create={<RevisionRoundDetailCreate/>}
+        edit={<RevisionRoundDetailEdit/>}
+        show={<RevisionRoundDetailShow/>}
         hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
 
-export const ConceptRevisionRoundsMenu = () => (
+export const RevisionRoundsMenu = () => (
     <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
 );
 
-export const RevisionRoundQuestionsMenu = () => (
-    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Revision Round Questions" leftIcon={<Category />} />
+export const RevisionRoundDetailsMenu = () => (
+    <Menu.Item to={`/${DETAIL_RESOURCES[0]}`} primaryText="Revision Round Details" leftIcon={<Category />} />
 );

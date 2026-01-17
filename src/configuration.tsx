@@ -68,8 +68,8 @@ export const themes = (defaultThemes: any) => {
 const STUDENT_SCOPED_RESOURCES = [
     'concept_scores',
     'diagnostic_tests',
-    'concept_revision_rounds',
-    'concept_test_rounds',
+    'revision_rounds',
+    'test_rounds',
     'activities',
 ];
 

@@ -1,12 +1,12 @@
-import { RESOURCE, DETAIL_RESOURCES } from "../views/concept_test_rounds"
+import { RESOURCE, DETAIL_RESOURCES } from "../views/test_rounds"
 
-export const ConceptTestRoundsLogic: any = {
+export const TestRoundsLogic: any = {
     resource: RESOURCE,
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
-        console.log('ConceptTestRoundsLogic: Sample: afterGetList hook executed');
+        console.log('TestRoundsLogic: Sample: afterGetList hook executed');
         return params;
     }],
     afterGetMany: [],
@@ -28,13 +28,13 @@ export const ConceptTestRoundsLogic: any = {
     afterSave: [],
 }
 
-export const TestRoundQuestionsLogic: any = {
+export const TestRoundDetailsLogic: any = {
     resource: DETAIL_RESOURCES[0],
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
-        console.log('TestRoundQuestionsLogic: Sample: afterGetList hook executed');
+        console.log('TestRoundDetailsLogic: Sample: afterGetList hook executed');
         return params;
     }],
     afterGetMany: [],

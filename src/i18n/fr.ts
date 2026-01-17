@@ -7,20 +7,20 @@ const customFrenchMessages: TranslationMessages = {
         activities: {
             name: 'Activities',
         },
-        test_round_questions: {
-            name: 'Test Round Questions',
+        test_round_details: {
+            name: 'Test Round Details',
         },
-        concept_test_rounds: {
-            name: 'Concept Test Rounds',
+        test_rounds: {
+            name: 'Test Rounds',
         },
-        revision_round_questions: {
-            name: 'Revision Round Questions',
+        revision_round_details: {
+            name: 'Revision Round Details',
         },
-        concept_revision_rounds: {
-            name: 'Concept Revision Rounds',
+        revision_rounds: {
+            name: 'Revision Rounds',
         },
-        diagnostic_test_answers: {
-            name: 'Diagnostic Test Answers',
+        diagnostic_test_details: {
+            name: 'Diagnostic Test Details',
         },
         diagnostic_tests: {
             name: 'Diagnostic Tests',

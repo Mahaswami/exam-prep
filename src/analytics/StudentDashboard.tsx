@@ -374,8 +374,8 @@ export const StudentDashboard = () => {
         
         const routes: Record<string, string> = {
             diagnostic: `/diagnostic_tests/create?chapter_id=${selectedChapterId}`,
-            practice: `/concept_revision_rounds/create?concept_id=${selectedConceptId}`,
-            test: `/concept_test_rounds/create?concept_id=${selectedConceptId}`
+            practice: `/revision_rounds/create?concept_id=${selectedConceptId}`,
+            test: `/test_rounds/create?concept_id=${selectedConceptId}`
         };
         
         if (actionDialog && routes[actionDialog]) {
