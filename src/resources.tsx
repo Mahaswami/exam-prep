@@ -4,6 +4,8 @@ import HandymanIcon from '@mui/icons-material/Handyman';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SchoolIcon from '@mui/icons-material/School';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { Box, Typography } from '@mui/material';
 import { Menu } from "react-admin";
 import { CustomRoutes, Title} from "react-admin";
@@ -12,7 +14,7 @@ import { HistoryMenu, HistoryResource } from './views/history.tsx';
 import { UsersMenu, UsersResource } from './views/users.tsx';
 import { DocumentTemplatesMenu, DocumentTemplatesResource } from './views/document_templates.tsx';
 import { DigitalSignaturesResource } from './views/digital_signatures.tsx';
-import { isHistoryModuleActive, isDocumentGenerationModuleActive } from '@mahaswami/swan-frontend';
+import { isHistoryModuleActive, isDocumentGenerationModuleActive, NestedMenu } from '@mahaswami/swan-frontend';
 import { AutoLayoutMenu } from '@mahaswami/swan-frontend';
 import { AdminDashboard, StudentDashboard } from './analytics';
 
@@ -93,25 +95,31 @@ export const configureMenus = (permissions: any) => {
 
         const adminMenusAll = 
         <>
-            <AutoLayoutMenu>
-                <Menu.Item to="/analytics/admin" primaryText="Dashboard" leftIcon={<DashboardIcon />} />
-                <Menu.Item to="/analytics/student" primaryText="Student Progress" leftIcon={<AssessmentIcon />} />
-                {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
+            <NestedMenu label="Analytics" icon={<DashboardIcon />} defaultOpen={true}>
+                <Menu.Item to="/analytics/admin" primaryText="Dashboard" leftIcon={<AssessmentIcon />} />
+                <Menu.Item to="/analytics/student" primaryText="Student Progress" leftIcon={<SchoolIcon />} />
+            </NestedMenu>
+            <NestedMenu label="Content" icon={<MenuBookIcon />} defaultOpen={true}>
                 <SubjectsMenu />
-            <ChaptersMenu />
-            <ConceptsMenu />
-            <QuestionsMenu />
-            <ChapterDiagnosticQuestionsMenu />
-            <PaymentsMenu />
-            <ConceptScoresMenu />
-            <DiagnosticTestsMenu />
-            <RevisionRoundsMenu />
-            <TestRoundsMenu />
-            <ActivitiesMenu />
-            {/* {{SWAN:INSERT:MENU_ENTRY}} */}
-                {isHistoryModuleActive() && <HistoryMenu />}
+                <ChaptersMenu />
+                <ConceptsMenu />
+                <QuestionsMenu />
+                <ChapterDiagnosticQuestionsMenu />
+            </NestedMenu>
+            <NestedMenu label="Learning" icon={<SchoolIcon />}>
+                <ConceptScoresMenu />
+                <DiagnosticTestsMenu />
+                <RevisionRoundsMenu />
+                <TestRoundsMenu />
+                <ActivitiesMenu />
+            </NestedMenu>
+            <NestedMenu label="Settings" icon={<SettingsIcon />}>
+                <PaymentsMenu />
                 <UsersMenu />
-            </AutoLayoutMenu>
+                {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
+                {isHistoryModuleActive() && <HistoryMenu />}
+            </NestedMenu>
+            {/* {{SWAN:INSERT:MENU_ENTRY}} */}
         </>   
         
         const studentMenus = 
