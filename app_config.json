@@ -33,6 +33,22 @@
         "engine": "gmail",
         "region": "us-east-1"
       }
+    },
+    "preview": {
+      "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
+      "default": "gsheet",
+      "service_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
+      "file_storage": {
+        "bucket": "guru-krupa-bucket"
+      },
+      "domains": [
+        "exam-prep.remoteaccess.cc"
+      ],
+      "email": {
+        "sender_email": "swanstack@mahaswami.com",
+        "engine": "gmail",
+        "region": "us-east-1"
+      }
     }
   },
   "templateId": "starter",
