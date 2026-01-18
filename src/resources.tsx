@@ -29,6 +29,7 @@ import { DiagnosticTestsResource, DiagnosticTestDetailsResource, DiagnosticTests
 import { RevisionRoundsResource, RevisionRoundDetailsResource, RevisionRoundsMenu } from './views/revision_rounds.tsx';
 import { TestRoundsResource, TestRoundDetailsResource, TestRoundsMenu } from './views/test_rounds.tsx';
 import { ActivitiesResource, ActivitiesMenu } from './views/activities.tsx';
+import { SignupPage } from './views/Signup.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
@@ -56,6 +57,9 @@ const Welcome = () => {
 
 export const configureResources = (permissions: any) => {
     let result = [
+        <CustomRoutes noLayout key="public">
+            <Route path="/signup" element={<SignupPage />} />
+        </CustomRoutes>,
         <CustomRoutes key={103}>
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/analytics/admin" element={<AdminDashboard />} />
@@ -155,6 +159,7 @@ export const configureLandingPage = (permissions: any) => {
         startPage = "/analytics/student"
     }
     return {
+        "unauthenticated": "/signup",
         "super_admin": "/tenants",
         "admin": startPage,
         "student": startPage,
