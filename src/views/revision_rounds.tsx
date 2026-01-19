@@ -57,7 +57,7 @@ export const RevisionRoundDetailsReferenceInput = createReferenceInput(DETAIL_RE
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
+    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
     <NumberLiveFilter source="round_number" label="Round" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
@@ -254,8 +254,9 @@ export const RevisionRoundsResource = (
         create={<RevisionRoundCreate/>}
         edit={<RevisionRoundEdit/>}
         show={<RevisionRoundShow/>}
-        hasDialog
+                hasDialog
         hasLiveUpdate
+        filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

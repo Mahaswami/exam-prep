@@ -111,7 +111,7 @@ export const ConceptScoresReferenceInput = createReferenceInput(RESOURCE, PREFET
 export const comfortLevelChoices = [{ id: 'needs_improvement', name: 'Needs Improvement' }, { id: 'good', name: 'Good' }, { id: 'very_good', name: 'Very Good' }];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
+    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
     <ChoicesLiveFilter source="initial_comfort_level" label="Initial Level" choiceLabels={comfortLevelChoices} />,
     <ChoicesLiveFilter source="comfort_level" label="Current Level" choiceLabels={comfortLevelChoices} />,
@@ -221,9 +221,10 @@ export const ConceptScoresResource =  (
         edit={<ConceptScoreEdit/>}
         show={<ConceptScoreShow/>}
         listRowActions={<ConceptScoreRowActions />}
-        hasDialog
+                hasDialog
         hasLiveUpdate
         hasImport
+        filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

@@ -496,7 +496,7 @@ export const SignupPage = () => {
                         </a>
                         {' | '}
                         <a href="mailto:support@peak10.in" style={{ color: 'inherit' }}>
-                            support@peak10.in
+                            Contact Us
                         </a>
                     </Typography>
                 </Box>

@@ -58,7 +58,7 @@ export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 
 export const comfortScoreChoices = [{ id: 'needs_improvement', name: 'Needs Improvement' }, { id: 'good', name: 'Good' }, { id: 'very_good', name: 'Very Good' }];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
+    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
     <NumberLiveFilter source="round_number" label="Round" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
@@ -255,8 +255,9 @@ export const TestRoundsResource = (
         create={<TestRoundCreate/>}
         edit={<TestRoundEdit/>}
         show={<TestRoundShow/>}
-        hasDialog
+                hasDialog
         hasLiveUpdate
+        filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

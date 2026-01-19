@@ -57,7 +57,7 @@ export const DiagnosticTestDetailsReferenceInput = createReferenceInput(DETAIL_R
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
+    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
     <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
     <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
@@ -261,9 +261,10 @@ export const DiagnosticTestsResource = (
         create={<DiagnosticTestCreate/>}
         edit={<DiagnosticTestEdit/>}
         show={<DiagnosticTestShow/>}
-        hasDialog
+                hasDialog
         hasLiveUpdate
         hasImport
+        filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

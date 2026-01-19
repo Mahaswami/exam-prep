@@ -20,7 +20,7 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
         type: 'kpi',
         title: 'Mastered',
         layout: { columnSpan: 3 },
-        measures: [{ field: 'id', aggregation: 'count' }],
+        measures: [{ field: 'value', aggregation: 'sum' }],
         filters: { comfort_level: 'very_good' }
     },
     {
@@ -28,7 +28,7 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
         type: 'kpi',
         title: 'Good',
         layout: { columnSpan: 3 },
-        measures: [{ field: 'id', aggregation: 'count' }],
+        measures: [{ field: 'value', aggregation: 'sum' }],
         filters: { comfort_level: 'good' }
     },
     {
@@ -36,7 +36,7 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
         type: 'kpi',
         title: 'Needs Work',
         layout: { columnSpan: 3 },
-        measures: [{ field: 'id', aggregation: 'count' }],
+        measures: [{ field: 'value', aggregation: 'sum' }],
         filters: { comfort_level: 'needs_improvement' }
     },
     {
@@ -116,7 +116,7 @@ export const StudentDashboard = () => {
             try {
                 // Students: DataProvider auto-filters by user_id
                 // Admins: need explicit filter when student selected
-                const filter = effectiveUserId ? { user_id: effectiveUserId } : {};
+                const filter = effectiveUserId ? { user_id_eq: effectiveUserId } : {user_id_eq: -1};
                 
                 const [scoresRes, conceptsRes, chaptersRes] = await Promise.all([
                     dataProvider.getList('concept_scores', {
@@ -191,12 +191,50 @@ export const StudentDashboard = () => {
                     };
                 });
 
+                // Count by comfort level for KPI widgets
+                const masteredCount = filteredData.filter((d: any) => d.comfort_level === 'very_good').length;
+                const goodCount = filteredData.filter((d: any) => d.comfort_level === 'good').length;
+                const needsWorkCount = filteredData.filter((d: any) => d.comfort_level === 'needs_improvement').length;
+
+                // Pie chart data for comfort level distribution
+                const comfortLevelData = [
+                    { comfort_level: 'very_good', id: masteredCount },
+                    { comfort_level: 'good', id: goodCount },
+                    { comfort_level: 'needs_improvement', id: needsWorkCount }
+                ].filter(d => d.id > 0);
+
+                // Trend data: group by day
+                const trendByDay = new Map<string, number>();
+                filteredData.forEach((d: any) => {
+                    if (!d.updated_timestamp) return;
+                    const day = d.updated_timestamp.split('T')[0];
+                    trendByDay.set(day, (trendByDay.get(day) || 0) + 1);
+                });
+                const trendData = Array.from(trendByDay.entries())
+                    .map(([day, count]) => ({ updated_timestamp: day, id: count }))
+                    .sort((a, b) => a.updated_timestamp.localeCompare(b.updated_timestamp));
+
                 const updatedWidgets = STUDENT_WIDGETS.map(widget => {
-                    if (widget.id === 'mastery-gauge') {
-                        return { ...widget, mockData: [{ value: masteryRate }] };
+                    if (widget.id === 'concepts-mastered') {
+                        return { ...widget, mockData: [{ value: masteredCount }] };
+                    }
+                    if (widget.id === 'concepts-good') {
+                        return { ...widget, mockData: [{ value: goodCount }] };
+                    }
+                    if (widget.id === 'concepts-needs-work') {
+                        return { ...widget, mockData: [{ value: needsWorkCount }] };
                     }
                     if (widget.id === 'concepts-improved') {
                         return { ...widget, mockData: [{ value: improved }] };
+                    }
+                    if (widget.id === 'mastery-gauge') {
+                        return { ...widget, mockData: [{ value: masteryRate }] };
+                    }
+                    if (widget.id === 'comfort-level-pie') {
+                        return { ...widget, mockData: comfortLevelData };
+                    }
+                    if (widget.id === 'progress-trend') {
+                        return { ...widget, mockData: trendData };
                     }
                     if (widget.id === 'progress-by-chapter') {
                         return { ...widget, mockData: chapterProgressData };
