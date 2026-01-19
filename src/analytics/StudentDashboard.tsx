@@ -116,7 +116,7 @@ export const StudentDashboard = () => {
             try {
                 // Students: DataProvider auto-filters by user_id
                 // Admins: need explicit filter when student selected
-                const filter = effectiveUserId ? { user_id_eq: effectiveUserId } : {user_id_eq: -1};
+                const filter = effectiveUserId ? { user_id_eq: effectiveUserId } : {};
                 
                 const [scoresRes, conceptsRes, chaptersRes] = await Promise.all([
                     dataProvider.getList('concept_scores', {

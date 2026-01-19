@@ -15,7 +15,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions
 } from "react-admin";
 import {
     createDefaults,
@@ -36,8 +36,7 @@ import {
     TextLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep,
-    getLocalStorage
+    recordRep
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
@@ -56,31 +55,26 @@ export const DiagnosticTestDetailsReferenceField = createReferenceField(DETAIL_R
 export const DiagnosticTestDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
-const filters = [
-    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
-    <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
-    <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
-    <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
-    <NumberLiveFilter source="total_questions_number" label="Total Questions" />,
-    <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
-]
+const isStudent = (permissions: any) => permissions === 'student';
 
-const studentFilters = [
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+const filters = (permissions: any) => [
+    !isStudent(permissions) && <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
+    <ReferenceLiveFilter show source="chapter_id" through="subject_id" label="Subject" />,
+    <ReferenceLiveFilter source="chapter_id" show reference="chapters" label="Chapter" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
     <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
     <NumberLiveFilter source="total_questions_number" label="Total Questions" />,
     <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
-]
+].filter(Boolean) as React.ReactElement[];
 
 export const DiagnosticTestsList = (props: ListProps) => {
-    const isStudent = getLocalStorage('role') === 'student';
+    const { permissions } = usePermissions();
+    
     return (
-        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
+        <List {...listDefaults({ ...props })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
                 <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
                 <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
