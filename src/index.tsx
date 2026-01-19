@@ -1,3 +1,4 @@
+import './peak10-global.css';
 import React from "react";
 import ReactDOM from "react-dom/client";
 
@@ -13,8 +14,8 @@ import { themes } from "./configuration";
 import { wrapCustomDataProvider } from "./configuration";
 import { customizeI18nProvider } from "./configuration";
 //import {customHistoryLogger} from "./configuration";
-//import { customLogoBox } from "./configuration";
-//import { customAppTitle } from "./configuration";
+import { customLogoBox } from "./configuration";
+import { customAppTitle } from "./configuration";
 //import { customLayout } from "./configuration";
 
 const appFunctions = {
@@ -33,8 +34,8 @@ const appFunctions = {
     wrapCustomDataProvider,
     customizeI18nProvider,
     //customHistoryLogger,
-    //customLogoBox,
-    //customAppTitle,
+    customLogoBox,
+    customAppTitle,
     //customLayout
 }
 

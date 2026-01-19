@@ -1,4 +1,6 @@
-import { getLocalStorage, setLocalStorage, removeLocalStorage, OmniSearchBox } from "@mahaswami/swan-frontend";
+import { getLocalStorage, OmniSearchBox } from "@mahaswami/swan-frontend";
+import { deepmerge } from "@mui/utils";
+import { Peak10Logo } from "./components/Peak10Logo";
 
 import appConfigOptions from '../app_config.json';
 export const appTitlePrefix = () => {
@@ -19,6 +21,13 @@ export const postLogout = () => {
     
 }    
 
+export const customLogoBox = (_permissions: any, _isHorizontalLayout: boolean) => {
+    return <Peak10Logo variant="dark" size="small" />;
+}
+
+export const customAppTitle = (permissions: any, isHorizontalLayout: boolean) => {
+    return <></>;
+}
 /*
 export const customHistoryLogger = async (resource: any, params : any, type: string) => {
     //do custom history logging here
@@ -63,6 +72,78 @@ export const configureToolbarActions = (permissions: any) => {
 
 export const themes = (defaultThemes: any) => {
     return defaultThemes;
+    /*const houseTheme = defaultThemes.find((t: any) => t.name === 'house');
+    if (!houseTheme) return defaultThemes;
+
+    const peak10Overrides = {
+        light: {
+            palette: {
+                primary: { main: '#2E3A59' },
+                secondary: { main: '#34A853' },
+                background: { default: '#F4F7F6', paper: '#FFFFFF' },
+            },
+            typography: { 
+                fontFamily: "'Montserrat', sans-serif",
+                h1: { fontWeight: 800 },
+                h2: { fontWeight: 800 },
+                h3: { fontWeight: 700 },
+                h4: { fontWeight: 700 },
+                h5: { fontWeight: 600 },
+                h6: { fontWeight: 600 },
+            },
+            components: {
+                MuiButton: {
+                    styleOverrides: {
+                        root: { fontWeight: 600, textTransform: 'none' as const },
+                        contained: { boxShadow: 'none' },
+                    },
+                },
+                MuiAppBar: {
+                    styleOverrides: {
+                        root: { backgroundColor: '#2E3A59' },
+                    },
+                },
+            },
+        },
+        dark: {
+            palette: {
+                mode: 'dark' as const,
+                primary: { main: '#FFFFFF' },
+                secondary: { main: '#34A853' },
+                background: { default: '#1A1A2E', paper: '#2D2D44' },
+            },
+            typography: { 
+                fontFamily: "'Montserrat', sans-serif",
+                h1: { fontWeight: 800 },
+                h2: { fontWeight: 800 },
+                h3: { fontWeight: 700 },
+                h4: { fontWeight: 700 },
+                h5: { fontWeight: 600 },
+                h6: { fontWeight: 600 },
+            },
+            components: {
+                MuiButton: {
+                    styleOverrides: {
+                        root: { fontWeight: 600, textTransform: 'none' as const },
+                        contained: { boxShadow: 'none' },
+                    },
+                },
+                MuiAppBar: {
+                    styleOverrides: {
+                        root: { backgroundColor: '#1A1A2E' },
+                    },
+                },
+            },
+        },
+    };
+
+    const peak10Light = deepmerge(houseTheme.light, peak10Overrides.light);
+    const peak10Dark = deepmerge(houseTheme.dark, peak10Overrides.dark);
+    
+    return [
+        ...defaultThemes,
+        { name: 'house', light: peak10Light, dark: peak10Dark },
+    ]; */
 }
 
 const STUDENT_SCOPED_RESOURCES = [

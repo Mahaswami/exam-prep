@@ -13,8 +13,17 @@ export default defineConfig({
             open: false,
             gzipSize: true,
             brotliSize: true,
-          }),    
-      
+          }),
+        {
+            name: 'inject-cf-analytics',
+            transformIndexHtml(html, ctx) {
+                if (ctx.server) return html;
+                return html.replace(
+                    '</head>',
+                    `<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0c8db43c79a643afa3263a7ddcd7da31"}'></script></head>`
+                );
+            }
+        }
     ],   
      
     resolve: {

@@ -22,7 +22,7 @@ import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import SchoolIcon from '@mui/icons-material/School';
+import { Peak10Logo } from '../components/Peak10Logo';
 
 const getEnvSettings = () => {
     const appConfig = (window as any).appConfigOptions;
@@ -64,7 +64,9 @@ export const SignupPage = () => {
     const [creatingAccount, setCreatingAccount] = useState(false);
 
     const isFormValid = parentEmail && consentChecked;
-    const isPasswordValid = password.length >= 8 && password === confirmPassword;
+    const hasLetters = /[a-zA-Z]/.test(password);
+    const hasNumbers = /[0-9]/.test(password);
+    const isPasswordValid = password.length >= 8 && hasLetters && hasNumbers && password === confirmPassword;
 
     const handlePayment = async () => {
         if (!isFormValid) {
@@ -223,30 +225,38 @@ export const SignupPage = () => {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#F4F7F6', fontFamily: "'Montserrat', sans-serif" }}>
             {/* Header */}
-            <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <AppBar position="static" elevation={0} sx={{ bgcolor: '#2E3A59' }}>
                 <Toolbar>
-                    <SchoolIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6" fontWeight="bold" sx={{ flexGrow: 1 }}>
-                        Exam Prep
-                    </Typography>
-                    <Button component={Link} to="/login" variant="outlined">
+                    <Box sx={{ flexGrow: 1 }}>
+                        <Peak10Logo variant="dark" size="small" />
+                    </Box>
+                    <Button 
+                        component={Link} 
+                        to="/login" 
+                        variant="outlined" 
+                        sx={{ 
+                            color: 'white', 
+                            borderColor: 'rgba(255,255,255,0.5)',
+                            '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
+                        }}
+                    >
                         Login
                     </Button>
                 </Toolbar>
             </AppBar>
 
-            <Box sx={{ py: 2 }}>
+            <Box sx={{ py: 3 }}>
             <Container maxWidth="lg">
-                {/* Hero Section - Compact */}
-                <Box sx={{ textAlign: 'center', mb: 3 }}>
-                    <SchoolIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
-                    <Typography variant="h4" fontWeight="bold" gutterBottom>
-                        Master Your CBSE Exams
+                {/* Hero Section */}
+                <Box sx={{ textAlign: 'center', mb: 4 }}>
+                    <Peak10Logo size="large" />
+                    <Typography variant="h4" fontWeight="800" gutterBottom sx={{ mt: 2, color: '#2E3A59' }}>
+                        Reach Your Peak Performance
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-                        A smart revision tool for Class 10 Math & English. 
+                        A smart revision tool for CBSE Class 10 Math & English. 
                         Practice at your pace, track your progress, and build confidence.
                     </Typography>
                 </Box>
@@ -254,7 +264,7 @@ export const SignupPage = () => {
                 <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                     {/* Features */}
                     <Paper sx={{ flex: 1, p: 4 }}>
-                        <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
                             How It Works
                         </Typography>
                         <Stack spacing={3} sx={{ mt: 3 }}>
@@ -290,7 +300,7 @@ export const SignupPage = () => {
                     <Paper sx={{ flex: 1, p: 4 }}>
                         {!paymentComplete ? (
                             <>
-                                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                                <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
                                     Get Started Today
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -336,7 +346,7 @@ export const SignupPage = () => {
                                     <Divider />
 
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h4" fontWeight="bold" color="primary.main">
+                                        <Typography variant="h4" fontWeight="bold" sx={{ color: '#34A853' }}>
                                             ₹499
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
@@ -353,7 +363,11 @@ export const SignupPage = () => {
                                         onClick={handlePayment}
                                         disabled={!isFormValid || loading}
                                         fullWidth
-                                        sx={{ py: 1.5 }}
+                                        sx={{ 
+                                            py: 1.5, 
+                                            bgcolor: '#34A853', 
+                                            '&:hover': { bgcolor: '#2d9249' }
+                                        }}
                                     >
                                         {loading ? 'Processing...' : 'Pay & Start Learning'}
                                     </Button>
@@ -390,8 +404,12 @@ export const SignupPage = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         fullWidth
-                                        helperText="At least 8 characters"
-                                        error={password.length > 0 && password.length < 8}
+                                        helperText={
+                                            password.length === 0 
+                                                ? 'At least 8 characters with letters and numbers' 
+                                                : `${password.length >= 8 ? '✓' : '✗'} 8+ chars | ${hasLetters ? '✓' : '✗'} letters | ${hasNumbers ? '✓' : '✗'} numbers`
+                                        }
+                                        error={password.length > 0 && (!hasLetters || !hasNumbers || password.length < 8)}
                                     />
 
                                     <TextField
@@ -413,7 +431,11 @@ export const SignupPage = () => {
                                         onClick={handleCreateAccount}
                                         disabled={!isPasswordValid || creatingAccount}
                                         fullWidth
-                                        sx={{ py: 1.5 }}
+                                        sx={{ 
+                                            py: 1.5, 
+                                            bgcolor: '#34A853', 
+                                            '&:hover': { bgcolor: '#2d9249' }
+                                        }}
                                     >
                                         {creatingAccount ? (
                                             <>

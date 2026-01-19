@@ -11,6 +11,7 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { Peak10Logo } from '../components/Peak10Logo';
 
 const STUDENT_WIDGETS: WidgetConfig[] = [
     // Row 1: Key metrics (4 KPIs)
@@ -291,36 +292,42 @@ export const StudentDashboard = () => {
                 position: 'fixed', 
                 inset: 0, 
                 zIndex: 1300, 
-                bgcolor: 'background.default',
+                bgcolor: '#F4F7F6',
                 display: 'flex', 
+                flexDirection: 'column',
                 justifyContent: 'center', 
                 alignItems: 'center' 
             }}>
+                <Box sx={{ mb: 3 }}>
+                    <Peak10Logo size="large" />
+                </Box>
                 <Paper sx={{ p: 5, textAlign: 'center', maxWidth: 500 }}>
-                    <RocketLaunchIcon sx={{ fontSize: 72, color: 'primary.main', mb: 2 }} />
-                    <Typography variant="h4" gutterBottom>Let's Get Started!</Typography>
+                    <RocketLaunchIcon sx={{ fontSize: 64, color: '#34A853', mb: 2 }} />
+                    <Typography variant="h4" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
+                        Let's Get Started!
+                    </Typography>
                     <Typography color="text.secondary" sx={{ mb: 3 }}>
                         Take a diagnostic test to assess your current knowledge and personalize your learning path.
                     </Typography>
                     <Stack spacing={1.5} sx={{ mb: 4, textAlign: 'left' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <SearchIcon sx={{ color: 'primary.main' }} />
+                            <SearchIcon sx={{ color: '#34A853' }} />
                             <Box>
-                                <Typography variant="subtitle2">Identify Gaps</Typography>
+                                <Typography variant="subtitle2" fontWeight="600">Identify Gaps</Typography>
                                 <Typography variant="caption" color="text.secondary">Find what needs attention</Typography>
                             </Box>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <TrackChangesIcon sx={{ color: 'primary.main' }} />
+                            <TrackChangesIcon sx={{ color: '#34A853' }} />
                             <Box>
-                                <Typography variant="subtitle2">Personalized Path</Typography>
+                                <Typography variant="subtitle2" fontWeight="600">Personalized Path</Typography>
                                 <Typography variant="caption" color="text.secondary">Study what matters most</Typography>
                             </Box>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <TrendingUpIcon sx={{ color: 'primary.main' }} />
+                            <TrendingUpIcon sx={{ color: '#34A853' }} />
                             <Box>
-                                <Typography variant="subtitle2">Track Growth</Typography>
+                                <Typography variant="subtitle2" fontWeight="600">Track Growth</Typography>
                                 <Typography variant="caption" color="text.secondary">See your improvement over time</Typography>
                             </Box>
                         </Box>
@@ -353,6 +360,11 @@ export const StudentDashboard = () => {
                         disabled={!onboardingChapterId}
                         onClick={() => navigate(`/diagnostic_tests/create?chapter_id=${onboardingChapterId}`)}
                         fullWidth
+                        sx={{ 
+                            bgcolor: '#34A853', 
+                            '&:hover': { bgcolor: '#2d9249' },
+                            '&.Mui-disabled': { bgcolor: 'action.disabledBackground' }
+                        }}
                     >
                         Start Diagnostic Test
                     </Button>

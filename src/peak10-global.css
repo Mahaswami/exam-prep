@@ -1,0 +1,160 @@
+/* Peak10 Global UI Customizations
+   Based on branding/main.html
+   Colors: Navy #2E3A59, Green #34A853, Light BG #F4F7F6, Dark BG #1A1A2E
+   Font: Montserrat 400/600/700/800
+*/
+
+/* AppBar: Solid navy (matching landing page) */
+/* React Admin house theme applies gradient to .RaAppBar-toolbar, so we must override that */
+.MuiAppBar-root {
+  background: #2E3A59 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+.RaAppBar-toolbar,
+.MuiAppBar-root .RaAppBar-toolbar {
+  background: #2E3A59 !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+/* Font family */
+body, .MuiTypography-root {
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Headings weight hierarchy */
+.MuiTypography-h1, .MuiTypography-h2 {
+  font-weight: 800 !important;
+}
+.MuiTypography-h3, .MuiTypography-h4 {
+  font-weight: 700 !important;
+}
+.MuiTypography-h5, .MuiTypography-h6 {
+  font-weight: 600 !important;
+}
+
+/* Primary buttons: Green */
+.MuiButton-containedPrimary, .MuiButton-contained {
+  background-color: #34A853 !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: none !important;
+  text-transform: none !important;
+}
+.MuiButton-containedPrimary:hover, .MuiButton-contained:hover {
+  background-color: #2d9249 !important;
+}
+
+/* Outlined buttons (only in content areas, not AppBar) */
+.RaLayout-content .MuiButton-outlined,
+.MuiPaper-root .MuiButton-outlined,
+.MuiDialogActions-root .MuiButton-outlined {
+  border-color: #2E3A59;
+  color: #2E3A59;
+  font-weight: 600;
+  text-transform: none;
+}
+.RaLayout-content .MuiButton-outlined:hover,
+.MuiPaper-root .MuiButton-outlined:hover {
+  background-color: rgba(46, 58, 89, 0.08);
+}
+
+/* Outlined buttons in AppBar: white styling for dark background */
+.MuiAppBar-root .MuiButton-outlined {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  font-weight: 600;
+  text-transform: none;
+}
+.MuiAppBar-root .MuiButton-outlined:hover {
+  border-color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Cards: White with rounded corners (matching main.html) */
+.MuiPaper-root {
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Sidebar: Light background (Option A - modern look) */
+.MuiDrawer-paper {
+  background: #F4F7F6 !important;
+  color: #2E3A59 !important;
+  border-right: 1px solid #e0e0e0 !important;
+}
+
+/* Sidebar menu items */
+.MuiDrawer-paper .MuiListItemButton-root,
+.RaMenuItemLink {
+  color: #2E3A59 !important;
+  border-radius: 0 8px 8px 0 !important;
+  margin: 2px 8px 2px 0 !important;
+  padding-left: 16px !important;
+}
+.MuiDrawer-paper .MuiListItemButton-root:hover,
+.RaMenuItemLink:hover {
+  background: rgba(46, 58, 89, 0.08) !important;
+  color: #2E3A59 !important;
+}
+
+/* Sidebar selected item: White background, navy text, green left border */
+.MuiDrawer-paper .MuiListItemButton-root.Mui-selected,
+.RaMenuItemLink-active,
+a.RaMenuItemLink-active {
+  background: #fff !important;
+  color: #2E3A59 !important;
+  border-left: 4px solid #34A853 !important;
+  padding-left: 12px !important;
+  border-radius: 0 8px 8px 0 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+.MuiDrawer-paper .MuiListItemButton-root.Mui-selected:hover,
+.RaMenuItemLink-active:hover {
+  background: #fff !important;
+}
+
+/* Sidebar selected item icon */
+.MuiDrawer-paper .MuiListItemButton-root.Mui-selected .MuiListItemIcon-root,
+.RaMenuItemLink-active .MuiListItemIcon-root,
+.RaMenuItemLink-active .RaMenuItemLink-icon {
+  color: #34A853 !important;
+}
+
+/* Sidebar icons (non-selected) */
+.MuiDrawer-paper .MuiListItemIcon-root,
+.RaMenuItemLink .MuiListItemIcon-root,
+.RaMenuItemLink .RaMenuItemLink-icon {
+  color: #64748b !important;
+  min-width: 40px !important;
+}
+
+/* Sidebar section headers / parent menu items */
+.MuiDrawer-paper .MuiListSubheader-root {
+  background: transparent !important;
+  color: #64748b !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+/* Sidebar expand/collapse icons */
+.MuiDrawer-paper .MuiSvgIcon-root {
+  color: #64748b !important;
+}
+.RaMenuItemLink-active .MuiSvgIcon-root {
+  color: #34A853 !important;
+}
+
+/* Remove focus ring for cleaner look */
+.MuiButtonBase-root:focus {
+  outline: none !important;
+}
+
+/* Main content area light background */
+.RaLayout-content {
+  background: #F4F7F6 !important;
+}
