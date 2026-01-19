@@ -45,6 +45,10 @@ body, .MuiTypography-root {
 .MuiButton-containedPrimary:hover, .MuiButton-contained:hover {
   background-color: #2d9249 !important;
 }
+.MuiButton-contained.Mui-disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  color: rgba(0, 0, 0, 0.26) !important;
+}
 
 /* Outlined buttons (only in content areas, not AppBar) */
 .RaLayout-content .MuiButton-outlined,

@@ -15,13 +15,20 @@ import {
     Alert,
     Divider,
     CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { setLocalStorage } from '@mahaswami/swan-frontend';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { Peak10Logo } from '../components/Peak10Logo';
 
 const getEnvSettings = () => {
@@ -37,10 +44,10 @@ const getEnvSettings = () => {
 };
 
 const FeatureItem = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-        <Box sx={{ color: 'primary.main', mt: 0.5 }}>{icon}</Box>
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Box sx={{ color: 'primary.main', mt: 0.25 }}>{icon}</Box>
         <Box>
-            <Typography variant="subtitle1" fontWeight="bold">{title}</Typography>
+            <Typography variant="subtitle2" fontWeight="bold">{title}</Typography>
             <Typography variant="body2" color="text.secondary">{description}</Typography>
         </Box>
     </Box>
@@ -62,6 +69,8 @@ export const SignupPage = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creatingAccount, setCreatingAccount] = useState(false);
+    const [privacyOpen, setPrivacyOpen] = useState(false);
+    const [termsOpen, setTermsOpen] = useState(false);
 
     const isFormValid = parentEmail && consentChecked;
     const hasLetters = /[a-zA-Z]/.test(password);
@@ -225,9 +234,9 @@ export const SignupPage = () => {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#F4F7F6', fontFamily: "'Montserrat', sans-serif" }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#F4F7F6' }}>
             {/* Header */}
-            <AppBar position="static" elevation={0} sx={{ bgcolor: '#2E3A59' }}>
+            <AppBar position="static" elevation={0}>
                 <Toolbar>
                     <Box sx={{ flexGrow: 1 }}>
                         <Peak10Logo variant="dark" size="small" />
@@ -247,67 +256,76 @@ export const SignupPage = () => {
                 </Toolbar>
             </AppBar>
 
-            <Box sx={{ py: 3 }}>
-            <Container maxWidth="lg">
+            <Box sx={{ py: { xs: 2, md: 3 } }}>
+            <Container maxWidth="md">
                 {/* Hero Section */}
-                <Box sx={{ textAlign: 'center', mb: 4 }}>
-                    <Peak10Logo size="large" />
-                    <Typography variant="h4" fontWeight="800" gutterBottom sx={{ mt: 2, color: '#2E3A59' }}>
+                <Box sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}>
+                    <Typography variant="h5" fontWeight="800" gutterBottom color="primary">
                         Reach Your Peak Performance
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
                         A smart revision tool for CBSE Class 10 Math & English. 
                         Practice at your pace, track your progress, and build confidence.
                     </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 3 } }}>
                     {/* Features */}
-                    <Paper sx={{ flex: 1, p: 4 }}>
-                        <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
+                    <Paper sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
+                        <Typography variant="h6" fontWeight="700" gutterBottom color="primary">
                             How It Works
                         </Typography>
-                        <Stack spacing={3} sx={{ mt: 3 }}>
+                        <Box sx={{ 
+                            mt: 2,
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                            gap: 2
+                        }}>
                             <FeatureItem
-                                icon={<AssessmentIcon fontSize="large" />}
+                                icon={<AssessmentIcon />}
                                 title="Chapter-wise Diagnostics"
                                 description="Assess where you stand in Math & English with targeted chapter tests"
                             />
                             <FeatureItem
-                                icon={<TrackChangesIcon fontSize="large" />}
+                                icon={<TrackChangesIcon />}
                                 title="Know Your Comfort Level"
                                 description="We identify concept-level strengths and areas needing focus"
                             />
                             <FeatureItem
-                                icon={<MenuBookIcon fontSize="large" />}
+                                icon={<MenuBookIcon />}
                                 title="Practice with Solutions"
                                 description="Unlimited practice questions with step-by-step explanations to learn from"
                             />
                             <FeatureItem
-                                icon={<CheckCircleIcon fontSize="large" />}
+                                icon={<CheckCircleIcon />}
                                 title="Test & Improve"
                                 description="Take concept tests anytime, update your comfort level after each test"
                             />
                             <FeatureItem
-                                icon={<TrendingUpIcon fontSize="large" />}
+                                icon={<TrendingUpIcon />}
                                 title="Track Progress"
                                 description="Visual dashboard showing your child's learning journey and growth"
                             />
-                        </Stack>
+                            <FeatureItem
+                                icon={<DeleteSweepIcon />}
+                                title="Privacy First"
+                                description="Activity data auto-deleted 30 days post-exams to protect your child's privacy"
+                            />
+                        </Box>
                     </Paper>
 
                     {/* Signup Form */}
-                    <Paper sx={{ flex: 1, p: 4 }}>
+                    <Paper sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
                         {!paymentComplete ? (
                             <>
-                                <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
+                                <Typography variant="h6" fontWeight="700" gutterBottom color="primary">
                                     Get Started Today
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                     Parents: Sign up your child for focused exam preparation
                                 </Typography>
 
-                                <Stack spacing={3}>
+                                <Stack spacing={2}>
                                     <TextField
                                         label="Parent's Email"
                                         type="email"
@@ -345,8 +363,14 @@ export const SignupPage = () => {
 
                                     <Divider />
 
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="h4" fontWeight="bold" sx={{ color: '#34A853' }}>
+                                    <Box sx={{ 
+                                        textAlign: 'center',
+                                        bgcolor: 'rgba(52, 168, 83, 0.08)',
+                                        borderRadius: 2,
+                                        py: 1.5,
+                                        px: 2
+                                    }}>
+                                        <Typography variant="h4" fontWeight="bold" color="secondary">
                                             ₹499
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
@@ -359,15 +383,11 @@ export const SignupPage = () => {
 
                                     <Button
                                         variant="contained"
+                                        color="secondary"
                                         size="large"
                                         onClick={handlePayment}
                                         disabled={!isFormValid || loading}
                                         fullWidth
-                                        sx={{ 
-                                            py: 1.5, 
-                                            bgcolor: '#34A853', 
-                                            '&:hover': { bgcolor: '#2d9249' }
-                                        }}
                                     >
                                         {loading ? 'Processing...' : 'Pay & Start Learning'}
                                     </Button>
@@ -392,11 +412,11 @@ export const SignupPage = () => {
                                 <Typography variant="h5" fontWeight="bold" gutterBottom>
                                     Create Your Password
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                     Account: {parentEmail}
                                 </Typography>
 
-                                <Stack spacing={3}>
+                                <Stack spacing={2}>
                                     <TextField
                                         label="Password"
                                         type="password"
@@ -427,15 +447,11 @@ export const SignupPage = () => {
 
                                     <Button
                                         variant="contained"
+                                        color="secondary"
                                         size="large"
                                         onClick={handleCreateAccount}
                                         disabled={!isPasswordValid || creatingAccount}
                                         fullWidth
-                                        sx={{ 
-                                            py: 1.5, 
-                                            bgcolor: '#34A853', 
-                                            '&:hover': { bgcolor: '#2d9249' }
-                                        }}
                                     >
                                         {creatingAccount ? (
                                             <>
@@ -453,18 +469,166 @@ export const SignupPage = () => {
                 </Box>
 
                 {/* Disclaimer */}
-                <Paper sx={{ mt: 3, p: 2, bgcolor: 'grey.50' }}>
+                <Paper sx={{ mt: 2, p: 1.5, bgcolor: 'grey.50' }}>
                     <Typography variant="caption" color="text.secondary" component="div">
                         <strong>DISCLAIMER:</strong> This app is a privately owned educational product and is 
                         NOT affiliated, associated, authorized, endorsed by, or in any way officially connected 
                         with the Central Board of Secondary Education (CBSE), NCERT, or any government agency. 
-                        All past year question papers and syllabus information provided in this app are for 
-                        reference and educational purposes only. Official CBSE site: {' '}
+                        All content is for educational and practice purposes only. Official CBSE site: {' '}
                         <a href="https://cbse.gov.in" target="_blank" rel="noopener noreferrer">cbse.gov.in</a>
                     </Typography>
                 </Paper>
+
+                {/* Footer */}
+                <Box sx={{ mt: 2, py: 1.5, textAlign: 'center' }}>
+                    <Typography variant="caption" color="text.secondary">
+                        © 2026{' '}
+                        <a href="https://mahaswami.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+                            Mahaswami Software Private Limited
+                        </a>
+                        {' | '}
+                        <a href="#" onClick={(e) => { e.preventDefault(); setPrivacyOpen(true); }} style={{ color: 'inherit' }}>
+                            Privacy Policy
+                        </a>
+                        {' | '}
+                        <a href="#" onClick={(e) => { e.preventDefault(); setTermsOpen(true); }} style={{ color: 'inherit' }}>
+                            Terms & Conditions
+                        </a>
+                        {' | '}
+                        <a href="mailto:support@peak10.in" style={{ color: 'inherit' }}>
+                            support@peak10.in
+                        </a>
+                    </Typography>
+                </Box>
             </Container>
             </Box>
+
+            {/* Privacy Policy Dialog */}
+            <Dialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Privacy Policy
+                    <IconButton onClick={() => setPrivacyOpen(false)} size="small">
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Typography variant="caption" color="text.secondary" gutterBottom component="div">
+                        Last updated: January 2026
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>What we collect:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Parent email address (for account access and payment receipts)</li>
+                        <li>Student nickname (a fun alias - not their real name)</li>
+                        <li>Learning activity data (test scores, practice progress)</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Child safety - What we explicitly DON'T collect:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Real name of the student</li>
+                        <li>Age, date of birth, or school information</li>
+                        <li>Photos, location, or any personally identifiable information about the minor</li>
+                        <li>Contact information of the student</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>How we use it:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>To provide the exam preparation service</li>
+                        <li>To track your child's learning progress</li>
+                        <li>To send account-related communications to parents</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Data retention:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Learning activity data is retained only until 30 days after the 2026 exam season ends</li>
+                        <li>After this period, all activity data is permanently deleted</li>
+                        <li>Parent email may be retained for future service communications unless you request deletion</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>What we don't do:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>We don't sell or share your data with third parties</li>
+                        <li>We don't show advertisements</li>
+                        <li>We don't contact students directly</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Payment:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Payments are processed securely by Razorpay</li>
+                        <li>We don't store credit card or bank details</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Contact:</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        For any privacy concerns or data deletion requests: <a href="mailto:support@peak10.in">support@peak10.in</a>
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPrivacyOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Terms & Conditions Dialog */}
+            <Dialog open={termsOpen} onClose={() => setTermsOpen(false)} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Terms & Conditions
+                    <IconButton onClick={() => setTermsOpen(false)} size="small">
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Typography variant="caption" color="text.secondary" gutterBottom component="div">
+                        Last updated: January 2026
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Service:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Peak 10 Exam Prep provides practice questions and learning tools for CBSE Class 10 exam preparation</li>
+                        <li>Access is valid for the 2026 exam season (including improvement exams)</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Payment & Refunds:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>One-time payment of ₹499 for full access</li>
+                        <li>Refunds available within 7 days of purchase if practice content has not been accessed</li>
+                        <li>Contact support@peak10.in - no questions asked</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>User Conduct:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>Account is for personal use by the registered student only</li>
+                        <li>Sharing login credentials is not permitted</li>
+                        <li>Content may not be copied, distributed, or commercially used</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Parental Consent:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>By signing up, you confirm you are the parent/guardian</li>
+                        <li>You consent to your child using this educational service</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Limitation of Liability:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>We provide learning support, not guaranteed exam results</li>
+                        <li>Content is for practice purposes and supplements official curriculum</li>
+                        <li>We are not affiliated with CBSE or any government body</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Changes:</Typography>
+                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
+                        <li>We may update these terms with notice via email</li>
+                        <li>Continued use after changes constitutes acceptance</li>
+                    </Typography>
+
+                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Contact:</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Questions about these terms: <a href="mailto:support@peak10.in">support@peak10.in</a>
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setTermsOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
