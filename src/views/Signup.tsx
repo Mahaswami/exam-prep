@@ -61,14 +61,16 @@ export const SignupPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creatingAccount, setCreatingAccount] = useState(false);
 
-    const isFormValid = parentEmail && consentChecked;
+    // Simple email check: something@something.something (permissive to avoid blocking valid emails)
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parentEmail);
+    const isFormValid = isEmailValid && consentChecked;
     const hasLetters = /[a-zA-Z]/.test(password);
     const hasNumbers = /[0-9]/.test(password);
     const isPasswordValid = password.length >= 8 && hasLetters && hasNumbers && password === confirmPassword;
 
     const handlePayment = async () => {
         if (!isFormValid) {
-            setError('Please fill in required fields and provide consent');
+            setError(parentEmail && !isEmailValid ? 'Please enter a valid email address' : 'Please fill in required fields and provide consent');
             return;
         }
         setError('');
@@ -299,7 +301,8 @@ export const SignupPage = () => {
                                         onChange={(e) => setParentEmail(e.target.value)}
                                         required
                                         fullWidth
-                                        helperText="Used for account access and payment receipts"
+                                        error={parentEmail.length > 0 && !isEmailValid}
+                                        helperText={parentEmail.length > 0 && !isEmailValid ? 'Please enter a valid email address' : 'Used for account access and payment receipts'}
                                     />
 
                                     <TextField
@@ -309,6 +312,7 @@ export const SignupPage = () => {
                                         fullWidth
                                         placeholder="e.g., StarLearner, MathWiz"
                                         helperText="A fun name for your child's profile (real name not required)"
+                                        inputProps={{ maxLength: 25 }}
                                     />
 
                                     <FormControlLabel
