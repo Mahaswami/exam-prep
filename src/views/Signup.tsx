@@ -1,27 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    AppBar,
     Box,
     Button,
     Checkbox,
-    Container,
     FormControlLabel,
     Paper,
     Stack,
     TextField,
-    Toolbar,
     Typography,
     Alert,
     Divider,
     CircularProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    IconButton,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import { setLocalStorage } from '@mahaswami/swan-frontend';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
@@ -29,7 +20,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-import { Peak10Logo } from '../components/Peak10Logo';
+import { PublicLayout } from '../components/PublicLayout';
 
 const getEnvSettings = () => {
     const appConfig = (window as any).appConfigOptions;
@@ -69,8 +60,6 @@ export const SignupPage = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [creatingAccount, setCreatingAccount] = useState(false);
-    const [privacyOpen, setPrivacyOpen] = useState(false);
-    const [termsOpen, setTermsOpen] = useState(false);
 
     const isFormValid = parentEmail && consentChecked;
     const hasLetters = /[a-zA-Z]/.test(password);
@@ -234,32 +223,9 @@ export const SignupPage = () => {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', bgcolor: '#F4F7F6' }}>
-            {/* Header */}
-            <AppBar position="static" elevation={0}>
-                <Toolbar>
-                    <Box sx={{ flexGrow: 1 }}>
-                        <Peak10Logo variant="dark" size="small" />
-                    </Box>
-                    <Button 
-                        component={Link} 
-                        to="/login" 
-                        variant="outlined" 
-                        sx={{ 
-                            color: 'white', 
-                            borderColor: 'rgba(255,255,255,0.5)',
-                            '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
-                        }}
-                    >
-                        Login
-                    </Button>
-                </Toolbar>
-            </AppBar>
-
-            <Box sx={{ py: { xs: 2, md: 3 } }}>
-            <Container maxWidth="md">
+        <PublicLayout denseToolbar contentPadding={{ xs: 1.25, md: 1.75 }}>
                 {/* Hero Section */}
-                <Box sx={{ textAlign: 'center', mb: { xs: 2, md: 3 } }}>
+                <Box sx={{ textAlign: 'center', mb: { xs: 1.25, md: 1.75 } }}>
                     <Typography variant="h5" fontWeight="800" gutterBottom color="primary">
                         Reach Your Peak Performance
                     </Typography>
@@ -469,7 +435,7 @@ export const SignupPage = () => {
                 </Box>
 
                 {/* Disclaimer */}
-                <Paper sx={{ mt: 2, p: 1.5, bgcolor: 'grey.50' }}>
+                <Paper sx={{ mt: 1.5, p: 1.5, py: 0.35, bgcolor: 'grey.50' }}>
                     <Typography variant="caption" color="text.secondary" component="div">
                         <strong>DISCLAIMER:</strong> This app is a privately owned educational product and is 
                         NOT affiliated, associated, authorized, endorsed by, or in any way officially connected 
@@ -478,158 +444,7 @@ export const SignupPage = () => {
                         <a href="https://cbse.gov.in" target="_blank" rel="noopener noreferrer">cbse.gov.in</a>
                     </Typography>
                 </Paper>
-
-                {/* Footer */}
-                <Box sx={{ mt: 2, py: 1.5, textAlign: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">
-                        © 2026{' '}
-                        <a href="https://mahaswami.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
-                            Mahaswami Software Private Limited
-                        </a>
-                        {' | '}
-                        <a href="#" onClick={(e) => { e.preventDefault(); setPrivacyOpen(true); }} style={{ color: 'inherit' }}>
-                            Privacy Policy
-                        </a>
-                        {' | '}
-                        <a href="#" onClick={(e) => { e.preventDefault(); setTermsOpen(true); }} style={{ color: 'inherit' }}>
-                            Terms & Conditions
-                        </a>
-                        {' | '}
-                        <a href="mailto:support@peak10.in" style={{ color: 'inherit' }}>
-                            Contact Us
-                        </a>
-                    </Typography>
-                </Box>
-            </Container>
-            </Box>
-
-            {/* Privacy Policy Dialog */}
-            <Dialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Privacy Policy
-                    <IconButton onClick={() => setPrivacyOpen(false)} size="small">
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                    <Typography variant="caption" color="text.secondary" gutterBottom component="div">
-                        Last updated: January 2026
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>What we collect:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Parent email address (for account access and payment receipts)</li>
-                        <li>Student nickname (a fun alias - not their real name)</li>
-                        <li>Learning activity data (test scores, practice progress)</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Child safety - What we explicitly DON'T collect:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Real name of the student</li>
-                        <li>Age, date of birth, or school information</li>
-                        <li>Photos, location, or any personally identifiable information about the minor</li>
-                        <li>Contact information of the student</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>How we use it:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>To provide the exam preparation service</li>
-                        <li>To track your child's learning progress</li>
-                        <li>To send account-related communications to parents</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Data retention:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Learning activity data is retained only until 30 days after the 2026 exam season ends</li>
-                        <li>After this period, all activity data is permanently deleted</li>
-                        <li>Parent email may be retained for future service communications unless you request deletion</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>What we don't do:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>We don't sell or share your data with third parties</li>
-                        <li>We don't show advertisements</li>
-                        <li>We don't contact students directly</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Payment:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Payments are processed securely by Razorpay</li>
-                        <li>We don't store credit card or bank details</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Contact:</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        For any privacy concerns or data deletion requests: <a href="mailto:support@peak10.in">support@peak10.in</a>
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setPrivacyOpen(false)}>Close</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Terms & Conditions Dialog */}
-            <Dialog open={termsOpen} onClose={() => setTermsOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Terms & Conditions
-                    <IconButton onClick={() => setTermsOpen(false)} size="small">
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                    <Typography variant="caption" color="text.secondary" gutterBottom component="div">
-                        Last updated: January 2026
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Service:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Peak 10 Exam Prep provides practice questions and learning tools for CBSE Class 10 exam preparation</li>
-                        <li>Access is valid for the 2026 exam season (including improvement exams)</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Payment & Refunds:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>One-time payment of ₹499 for full access</li>
-                        <li>Refunds available within 7 days of purchase if practice content has not been accessed</li>
-                        <li>Contact support@peak10.in - no questions asked</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>User Conduct:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>Account is for personal use by the registered student only</li>
-                        <li>Sharing login credentials is not permitted</li>
-                        <li>Content may not be copied, distributed, or commercially used</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Parental Consent:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>By signing up, you confirm you are the parent/guardian</li>
-                        <li>You consent to your child using this educational service</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Limitation of Liability:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>We provide learning support, not guaranteed exam results</li>
-                        <li>Content is for practice purposes and supplements official curriculum</li>
-                        <li>We are not affiliated with CBSE or any government body</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Changes:</Typography>
-                    <Typography variant="body2" color="text.secondary" component="ul" sx={{ mt: 0 }}>
-                        <li>We may update these terms with notice via email</li>
-                        <li>Continued use after changes constitutes acceptance</li>
-                    </Typography>
-
-                    <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>Contact:</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Questions about these terms: <a href="mailto:support@peak10.in">support@peak10.in</a>
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setTermsOpen(false)}>Close</Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+        </PublicLayout>
     );
 };
 
