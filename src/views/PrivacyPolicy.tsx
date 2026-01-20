@@ -57,12 +57,6 @@ export const PrivacyPolicy = () => {
                     For any privacy concerns or data deletion requests: <a href="mailto:support@peak10.in">support@peak10.in</a>
                 </Typography>
 
-                <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        Mahaswami Software Private Limited<br />
-                        Chennai, India
-                    </Typography>
-                </Box>
             </Paper>
         </PublicLayout>
     );
