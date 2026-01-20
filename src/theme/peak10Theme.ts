@@ -164,6 +164,16 @@ const lightPalette: ThemeOptions['palette'] = {
 
 const lightComponents: ThemeOptions['components'] = {
     ...sharedComponents,
+    RaDataTable: {
+        styleOverrides: {
+            root: {
+                '& .RaDataTable-headerCell': {
+                    color: colors.navy,
+                    fontWeight: 600,
+                },
+            },
+        },
+    },
     MuiAppBar: {
         styleOverrides: {
             root: {
@@ -261,6 +271,16 @@ const darkPalette: ThemeOptions['palette'] = {
 
 const darkComponents: ThemeOptions['components'] = {
     ...sharedComponents,
+    RaDataTable: {
+        styleOverrides: {
+            root: {
+                '& .RaDataTable-headerCell': {
+                    color: '#7B9FE0',
+                    fontWeight: 600,
+                },
+            },
+        },
+    },
     MuiAppBar: {
         styleOverrides: {
             root: {
