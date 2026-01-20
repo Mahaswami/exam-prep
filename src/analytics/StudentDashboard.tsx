@@ -1,6 +1,6 @@
 import { AnalyticsDashboard, WidgetConfig, getLocalStorage } from '@mahaswami/swan-frontend';
 import { useEffect, useState } from 'react';
-import { useDataProvider, useGetList} from 'react-admin';
+import {useDataProvider, useGetList, useNotify, useRedirect} from 'react-admin';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Typography, Paper, Autocomplete, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
@@ -12,6 +12,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Peak10Logo } from '../components/Peak10Logo';
+import {createDiagnosticTestForStudent} from "../logic/diagnostics.ts";
+import {createRevisionRoundForStudent} from "../logic/revisions.ts"
+import {createTestRoundForStudent} from "../logic/tests.ts";
+
 
 const STUDENT_WIDGETS: WidgetConfig[] = [
     // Row 1: Key metrics (4 KPIs)
@@ -97,6 +101,8 @@ export const StudentDashboard = () => {
     const isStudent = role === 'student';
     const dataProvider = useDataProvider();
     const navigate = useNavigate();
+    const redirect = useRedirect();
+    const notify = useNotify()
     const [searchParams] = useSearchParams();
     
     const [computedWidgets, setComputedWidgets] = useState<WidgetConfig[]>(STUDENT_WIDGETS);
@@ -396,10 +402,13 @@ export const StudentDashboard = () => {
                         size="large"
                         startIcon={<AssignmentIcon />}
                         disabled={!onboardingChapterId}
-                        onClick={() => navigate(`/diagnostic_tests/create?chapter_id=${onboardingChapterId}`)}
+                        onClick={async () => {
+                                let diagnosticTest =  await createDiagnosticTestForStudent(selectedChapterId,notify);
+                                redirect(`/diagnostic/start/${onboardingChapterId}/${diagnosticTest?.id}`)
+                        }}
                         fullWidth
-                        sx={{ 
-                            bgcolor: '#34A853', 
+                        sx={{
+                            bgcolor: '#34A853',
                             '&:hover': { bgcolor: '#2d9249' },
                             '&.Mui-disabled': { bgcolor: 'action.disabledBackground' }
                         }}
@@ -417,19 +426,41 @@ export const StudentDashboard = () => {
         setSelectedConceptId(null);
     };
 
-    const handleDialogConfirm = () => {
+    const handleDialogConfirm = async () => {
+        let diagnosticTest = null;
+        let revisionRound = null;
+        let testRound = null;
         if (!selectedChapterId) return;
         const needsConcept = actionDialog === 'practice' || actionDialog === 'test';
         if (needsConcept && !selectedConceptId) return;
-        
+
+        try{
+            if(actionDialog === 'diagnostic' && isStudent){
+                diagnosticTest =  await createDiagnosticTestForStudent(selectedChapterId,notify);
+            }
+            if(actionDialog === 'practice' && isStudent){
+                revisionRound = await createRevisionRoundForStudent(selectedChapterId,selectedConceptId);
+                console.log("Created revision round: ", revisionRound.id);
+            }
+            if(actionDialog === 'test' && isStudent) {
+                testRound = await createTestRoundForStudent(selectedChapterId, selectedConceptId);
+                console.log("Created test round: ", testRound.id);
+            }
+
+        }
+        catch(error){
+            //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
+            console.log("Error starting action: ", error);
+            return;
+        }
         const routes: Record<string, string> = {
-            diagnostic: `/diagnostic_tests/create?chapter_id=${selectedChapterId}`,
-            practice: `/revision_rounds/create?concept_id=${selectedConceptId}`,
-            test: `/test_rounds/create?concept_id=${selectedConceptId}`
+            diagnostic: `/diagnostic/start/${selectedChapterId}/${diagnosticTest?.id}`,
+            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
+            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
         };
         
         if (actionDialog && routes[actionDialog]) {
-            navigate(routes[actionDialog]);
+            redirect(routes[actionDialog]);
         }
         setActionDialog(null);
     };

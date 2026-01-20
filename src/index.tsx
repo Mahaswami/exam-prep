@@ -17,6 +17,7 @@ import { customizeI18nProvider } from "./configuration";
 import { customLogoBox } from "./configuration";
 import { customAppTitle } from "./configuration";
 //import { customLayout } from "./configuration";
+import 'katex/dist/katex.min.css';
 
 const appFunctions = {
     appTitlePrefix,

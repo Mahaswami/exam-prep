@@ -5,12 +5,33 @@ import { Resource, createDefaults, tableDefaults,
 	createReferenceInput, ReferenceLiveFilter, ChoicesLiveFilter, DateLiveFilter, recordRep, RelativeDateField  } from '@mahaswami/swan-frontend';
 import { Assessment, TrendingUp, TrendingDown, Refresh, Timer } from '@mui/icons-material';
 import { Box, Chip, IconButton, Tooltip } from '@mui/material';
-import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    type ListProps, DateField, DateTimeInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext, ReferenceField, usePermissions } from "react-admin";
-import { useNavigate } from 'react-router-dom';
+import {
+    Create,
+    DataTable,
+    Edit,
+    List,
+    Menu,
+    Show,
+    SimpleForm,
+    SimpleShowLayout,
+    type ListProps,
+    DateField,
+    DateTimeInput,
+    SelectField,
+    SelectInput,
+    AutocompleteInput,
+    required,
+    useRecordContext,
+    ReferenceField,
+    usePermissions,
+    useRedirect
+} from "react-admin";
+import {redirect, useNavigate} from 'react-router-dom';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { ChaptersReferenceField } from './chapters';
+import {createRevisionRoundForStudent} from "../logic/revisions.ts";
+import {createTestRoundForStudent} from "../logic/tests.ts";
 
 const LEVEL_ORDER = { 'needs_improvement': 0, 'good': 1, 'very_good': 2 } as const;
 const LEVEL_COLORS = {
@@ -73,15 +94,16 @@ const ConceptScoreRowActions = () => {
     const record = useRecordContext();
     const navigate = useNavigate();
     if (!record?.concept_id) return null;
-    
+
     return (
         <>
             <Tooltip title="Practice">
                 <IconButton 
                     size="small"
-                    onClick={(e) => {
+                    onClick={async(e) => {
                         e.stopPropagation();
-                        navigate(`/revision_rounds/create?concept_id=${record.concept_id}`);
+                        const revisionRound = await createRevisionRoundForStudent(record.concept?.chapter_id, record.concept_id);
+                        navigate(`/revision/start/${record.concept?.chapter_id}/${record.concept_id}/${revisionRound?.id}`);
                     }}
                 >
                     <Refresh fontSize="small" />
@@ -90,9 +112,10 @@ const ConceptScoreRowActions = () => {
             <Tooltip title="Test">
                 <IconButton 
                     size="small"
-                    onClick={(e) => {
+                    onClick={async(e) => {
                         e.stopPropagation();
-                        navigate(`/test_rounds/create?concept_id=${record.concept_id}`);
+                        const testRound = await createTestRoundForStudent(record.concept?.chapter_id, record.concept_id);
+                        navigate(`/testrounds/start/${record.concept?.chapter_id}/${record.concept_id}/${testRound?.id}`);
                     }}
                 >
                     <Timer fontSize="small" />
