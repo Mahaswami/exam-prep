@@ -37,12 +37,12 @@
     "preview": {
       "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
       "default": "gsheet",
-      "service_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
+      "service_url": "https://swan-backend-preview.upkeep-plosive0o.workers.dev",
       "file_storage": {
         "bucket": "guru-krupa-bucket"
       },
       "domains": [
-        "exam-prep.remoteaccess.cc","www.peak10.in","peak10.in"
+        "www.preview.peak10.in","preview.peak10.in"
       ],
       "email": {
         "sender_email": "swanstack@mahaswami.com",
