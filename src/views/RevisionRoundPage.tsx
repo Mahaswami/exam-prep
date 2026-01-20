@@ -52,22 +52,22 @@ export const RevisionRoundPage: React.FC = () => {
 
                 //Join diagnosticTestQuestions and previousRevisionQuestions to get all questions already attempted
                 const attemptedQuestionIds = new Set([
-                    ...diagnosticTestQuestions.map((dq: any) => dq.question_id),
+                   // ...diagnosticTestQuestions.map((dq: any) => dq.question_id),
                     ...previousRevisionQuestions.map((rq: any) => rq.question_id)
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id:conceptId
-                        //id_neq_any: Array.from(attemptedQuestionIds)
+                    filter: {concept_id:conceptId,
+                        id_neq_any: Array.from(attemptedQuestionIds)
                         },
                 })
 
-                //Select questions based on difficulty levels. Atleast 2 Hard, 2 Medium, 2 Easy. If not enough questions in a category, fill from other categories.
+                //Select questions based on difficulty levels. Atleast 1 Hard, 2 Medium, 2 Easy. If not enough questions in a category, fill from other categories.
                 const easyQuestions = questions.filter((q: { difficulty: string; }) => q.difficulty === 'Easy');
                 const mediumQuestions = questions.filter((q: { difficulty: string; }) => q.difficulty === 'Medium');
                 const hardQuestions = questions.filter((q: { difficulty: string; }) => q.difficulty === 'Hard');
                 let selectedQuestions: any[] = [];
-                selectedQuestions.push(...hardQuestions.slice(0,2));
+                selectedQuestions.push(...hardQuestions.slice(0,1));
                 selectedQuestions.push(...mediumQuestions.slice(0,2));
                 selectedQuestions.push(...easyQuestions.slice(0,2));
                 const remainingSlots = MAX_REVISION_QUESTIONS - selectedQuestions.length;
