@@ -35,7 +35,7 @@
       }
     },
     "preview": {
-      "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
+      "gsheet": "1WAFs5JRS5jh7L7iJzfgtFtw62vtT72Z7zw2jDKbQqFY",
       "default": "gsheet",
       "service_url": "https://swan-backend-preview.upkeep-plosive0o.workers.dev",
       "file_storage": {
