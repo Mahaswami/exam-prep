@@ -20,7 +20,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-import { PublicLayout } from '../components/PublicLayout';
+import { PublicLayout } from './PublicLayout';
 
 const getEnvSettings = () => {
     const appConfig = (window as any).appConfigOptions;

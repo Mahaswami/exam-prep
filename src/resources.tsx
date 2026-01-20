@@ -29,11 +29,11 @@ import { DiagnosticTestsResource, DiagnosticTestDetailsResource, DiagnosticTests
 import { RevisionRoundsResource, RevisionRoundDetailsResource, RevisionRoundsMenu } from './views/revision_rounds.tsx';
 import { TestRoundsResource, TestRoundDetailsResource, TestRoundsMenu } from './views/test_rounds.tsx';
 import { ActivitiesResource, ActivitiesMenu } from './views/activities.tsx';
-import { SignupPage } from './views/Signup.tsx';
-import { PrivacyPolicy } from './views/PrivacyPolicy.tsx';
-import { TermsConditions } from './views/TermsConditions.tsx';
-import { ContactUs } from './views/ContactUs.tsx';
-import { CancellationRefund } from './views/CancellationRefund.tsx';
+import { SignupPage } from './components/Signup.tsx';
+import { PrivacyPolicy } from './policies/PrivacyPolicy.tsx';
+import { TermsConditions } from './policies/TermsConditions.tsx';
+import { ContactUs } from './policies/ContactUs.tsx';
+import { CancellationRefund } from './policies/CancellationRefund.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
