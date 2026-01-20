@@ -68,8 +68,8 @@ export const DiagnosticTestPage: React.FC = () => {
         await dataProvider.update('diagnostic_tests',{id: diagnosticTestId, data:{
             completed_timestamp: new Date().toISOString(),
                 status:'completed',
-                total_questions: diagnosticTestDetails.length,
-                correct_answers: diagnosticTestDetails.filter(d=>d.is_correct).length
+                total_questions_number: diagnosticTestDetails.length,
+                correct_answers_number: diagnosticTestDetails.filter(d=>d.is_correct).length
         }});
         console.log("Diagnostic Test Results saved successfully.");
         //Update Concept Mastery based on diagnostic test results
