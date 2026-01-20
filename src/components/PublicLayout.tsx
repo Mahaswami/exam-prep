@@ -1,21 +1,8 @@
 import { ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { AppBar, Box, Button, Container, Toolbar, Typography, createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { AppBar, Box, Button, Container, Toolbar, Typography, ThemeProvider, CssBaseline } from '@mui/material';
 import { Peak10Logo } from './Peak10Logo';
-
-// Force light theme for public pages
-const publicLightTheme = createTheme({
-    palette: {
-        mode: 'light',
-        primary: { main: '#2E3A59' },
-        secondary: { main: '#34A853' },
-        background: { default: '#F4F7F6', paper: '#FFFFFF' },
-        text: { primary: '#2E3A59', secondary: '#64748B' },
-    },
-    typography: {
-        fontFamily: "'Montserrat', sans-serif",
-    },
-});
+import { peak10Light } from '../theme/peak10Theme';
 
 interface PublicLayoutProps {
     children: ReactNode;
@@ -37,7 +24,7 @@ export const PublicLayout = ({
     }, [pathname]);
 
     return (
-        <ThemeProvider theme={publicLightTheme}>
+        <ThemeProvider theme={peak10Light}>
             <CssBaseline />
             <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column' }}>
                 <AppBar position="static" elevation={0}>
@@ -52,9 +39,12 @@ export const PublicLayout = ({
                             to="/login" 
                             variant="outlined" 
                             sx={{ 
-                                color: 'white', 
-                                borderColor: 'rgba(255,255,255,0.5)',
-                                '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
+                                color: '#FFFFFF !important',
+                                borderColor: 'rgba(255,255,255,0.5) !important',
+                                '&:hover': { 
+                                    borderColor: '#FFFFFF !important', 
+                                    bgcolor: 'rgba(255,255,255,0.1)' 
+                                }
                             }}
                         >
                             Login

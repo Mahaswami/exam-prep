@@ -117,7 +117,7 @@ export const SignupPage = () => {
                 key: initData.key_id,
                 amount: initData.amount,
                 currency: initData.currency,
-                name: 'Exam Prep',
+                name: 'Peak 10 Exam Prep',
                 description: '2026 Exam Season Access',
                 order_id: initData.order_id,
                 handler: async (response: any) => {
