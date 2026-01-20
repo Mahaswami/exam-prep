@@ -403,7 +403,7 @@ export const StudentDashboard = () => {
                         startIcon={<AssignmentIcon />}
                         disabled={!onboardingChapterId}
                         onClick={async () => {
-                                let diagnosticTest =  await createDiagnosticTestForStudent(selectedChapterId,notify);
+                                let diagnosticTest =  await createDiagnosticTestForStudent(onboardingChapterId,notify);
                                 redirect(`/diagnostic/start/${onboardingChapterId}/${diagnosticTest?.id}`)
                         }}
                         fullWidth
@@ -455,6 +455,7 @@ export const StudentDashboard = () => {
         }
         const routes: Record<string, string> = {
             diagnostic: `/diagnostic/start/${selectedChapterId}/${diagnosticTest?.id}`,
+            //diagnostic: `/diagnostic_tests/edit/${diagnosticTest?.id}>chapter_id=${selectedChapterId}`,
             practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
             test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
         };
