@@ -83,7 +83,21 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
     /*for (const questionRecord of questionRecords) {
         await dataProvider.create('questions', {data: questionRecord});
     }*/
-    await Promise.all(questionRecords.map(record => dataProvider.create('questions', {data: record})));
+    const bulkCreateRequests = [];
+    for (const questionRecord of questionRecords) {
+        bulkCreateRequests.push(
+            {
+                type:'create',
+                resource:'questions',
+                params: {
+                    data: {
+                        ...questionRecord
+                    }
+                }
+            }
+        );
+    }
+    await dataProvider.executeBatch(bulkCreateRequests);
    // await dataProvider.commitTransaction(dbTransactionId);
 }
 
