@@ -122,7 +122,7 @@ export const StudentDashboard = () => {
         pagination: { page: 1, perPage: 1000 },
         meta: { prefetch: ['subjects'] },
         sort: { field: 'sequence_number', order: 'ASC' },
-        filter: {}
+        filter: {is_active: true}
     });
 
     const { data: concepts = [], isLoading: conceptsLoading } = useGetList('concepts', {
@@ -134,7 +134,7 @@ export const StudentDashboard = () => {
     const { data: subjects = [] } = useGetList('subjects', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
-        filter: {}
+        filter: {is_active: true}
     });
 
     useEffect(() => {
