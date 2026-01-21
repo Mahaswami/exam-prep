@@ -12,9 +12,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Peak10Logo } from '../components/Peak10Logo';
-import {createDiagnosticTestForStudent} from "../logic/diagnostics.ts";
 import {createRevisionRoundForStudent} from "../logic/revisions.ts"
 import {createTestRoundForStudent} from "../logic/tests.ts";
+import { checkIfDiagnosticsExist } from '../logic/diagnostics.ts';
 
 
 const STUDENT_WIDGETS: WidgetConfig[] = [
@@ -393,8 +393,13 @@ export const StudentDashboard = () => {
                         startIcon={<AssignmentIcon />}
                         disabled={!onboardingChapterId}
                         onClick={async () => {
-                                let diagnosticTest =  await createDiagnosticTestForStudent(onboardingChapterId,notify);
-                                redirect(`/diagnostic/start/${onboardingChapterId}/${diagnosticTest?.id}`)
+                            const exists = await checkIfDiagnosticsExist(onboardingSubjectId)
+                            if (!exists) {
+                                redirect(`/diagnostic/start/${onboardingChapterId}/`)
+                            } else {
+                                console.log("Diagnostic test already exists for student: ");
+                                notify("You have already taken Diagnostic Test for this chapter.","info");
+                            }
                         }}
                         fullWidth
                         sx={{
@@ -417,7 +422,6 @@ export const StudentDashboard = () => {
     };
 
     const handleDialogConfirm = async () => {
-        let diagnosticTest = null;
         let revisionRound = null;
         let testRound = null;
         if (!selectedChapterId) return;
@@ -425,14 +429,19 @@ export const StudentDashboard = () => {
         if (needsConcept && !selectedConceptId) return;
 
         try{
-            if(actionDialog === 'diagnostic' && isStudent){
-                diagnosticTest =  await createDiagnosticTestForStudent(selectedChapterId,notify);
+            if (actionDialog === 'diagnostic' && isStudent) {
+                const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
+                if (existingTests) {
+                    console.log("Diagnostic test already exists for student: ");
+                    notify("You have already taken Diagnostic Test for this chapter.","info");
+                    return
+                }    
             }
-            if(actionDialog === 'practice' && isStudent){
+            if (actionDialog === 'practice' && isStudent){
                 revisionRound = await createRevisionRoundForStudent(selectedChapterId,selectedConceptId);
                 console.log("Created revision round: ", revisionRound.id);
             }
-            if(actionDialog === 'test' && isStudent) {
+            if (actionDialog === 'test' && isStudent) {
                 testRound = await createTestRoundForStudent(selectedChapterId, selectedConceptId);
                 console.log("Created test round: ", testRound.id);
             }
@@ -444,8 +453,7 @@ export const StudentDashboard = () => {
             return;
         }
         const routes: Record<string, string> = {
-            diagnostic: `/diagnostic/start/${selectedChapterId}/${diagnosticTest?.id}`,
-            //diagnostic: `/diagnostic_tests/edit/${diagnosticTest?.id}>chapter_id=${selectedChapterId}`,
+            diagnostic: `/diagnostic/start/${selectedChapterId}/`,
             practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
             test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
         };

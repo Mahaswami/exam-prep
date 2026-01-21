@@ -36,7 +36,8 @@ import {
     TextLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
+    RelativeDateField
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
@@ -76,8 +77,8 @@ export const DiagnosticTestsList = (props: ListProps) => {
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
-                <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
-                <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                {/* <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/> */}
+                <DataTable.Col label="Completed" source="completed_timestamp" field={(props: any) => <RelativeDateField {...props}  />}/>
                 <DataTable.Col source="status" field={(props: any) => <SelectField {...props} choices={statusChoices} />}/>
                 <RowActions/>
             </DataTable>
@@ -141,17 +142,18 @@ const DiagnosticTestEdit = (props: EditProps) => {
 };
 
 const DiagnosticTestShow = (props: ShowProps) => {
+        const { permissions } = usePermissions();
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout
                 display="grid"
                 gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
                 gap="1rem">
-                <UsersReferenceField source="user_id" />
+                {!isStudent(permissions) && <UsersReferenceField source="user_id" />}
                 <ChaptersReferenceField source="chapter_id" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <SelectField source="status" choices={statusChoices} />
+                {/* <DateField source="started_timestamp" showTime /> */}
+                <RelativeDateField label="Completed" source="completed_timestamp"  />
+                {/* <SelectField source="status" choices={statusChoices} /> */}
                 <NumberField source="total_questions_number" />
                 <NumberField source="correct_answers_number" />
             </SimpleShowLayout>
@@ -186,8 +188,8 @@ export const DiagnosticTestDetailsList = (props: ListProps) => {
             <DataTable {...tableDefaults(props)}>
                 <DataTable.Col source="question_id" field={QuestionsReferenceField}/>
                 <DataTable.Col source="selected_answer" />
-                <DataTable.Col source="is_correct" field={BooleanField}/>
-                <DataTable.Col source="time_taken_seconds_number" field={NumberField}/>
+                <DataTable.Col label="Correct?"  source="is_correct" field={BooleanField}/>
+                <DataTable.Col label="Time Taken Seconds" source="time_taken_seconds_number" field={NumberField}/>
                 <RowActions/>
             </DataTable>
         </List>

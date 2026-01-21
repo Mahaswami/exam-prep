@@ -78,7 +78,7 @@ export const RevisionRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
     
     return (
-        <List {...listDefaults({ ...props })}>
+        <List {...listDefaults({ ...props})}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
@@ -279,7 +279,7 @@ export const RevisionRoundDetailsResource = (
 )
 
 export const RevisionRoundsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Practice Rounds" leftIcon={<ICON />} />
 );
 
 export const RevisionRoundDetailsMenu = () => (

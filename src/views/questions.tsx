@@ -127,7 +127,7 @@ export const QuestionsResource =  (
         name={RESOURCE}
         icon={ICON}
         prefetch={PREFETCH}
-        recordRepresentation={(record: any) => recordRep('concepts', record.concept)}
+        recordRepresentation={(record: any) => record.type + " - " + recordRep('concepts', record.concept)}
         fieldSchema={{
             concept_id: { required: true, resource: 'concepts' },
             question_type: { type: 'choice', ui: 'select', required: true, choices: questionTypeChoices },

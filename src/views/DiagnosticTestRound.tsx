@@ -35,7 +35,6 @@ type Question = {
 
 type Props = {
     questions: Question[];
-    id: string; // diagnosticTestId
     chapterName: string;
     onComplete: (result: any) => void;
 };
@@ -83,7 +82,6 @@ const RenderStream: React.FC<{ stream: ContentBlock[] }> = ({ stream }) => (
 
 export const DiagnosticTestRound: React.FC<Props> = ({
                                                      questions,
-                                                     id: diagnosticTestId,
                                                      chapterName, onComplete
                                                  }) => {
     const theme = useTheme();
@@ -170,7 +168,6 @@ export const DiagnosticTestRound: React.FC<Props> = ({
             const answer = answers[q.id];
 
             return {
-                diagnosticTestId,
                 questionId: q.id,
                 conceptId: q.concept_id,
                 selected_answer: answer?.selected_answer ?? null,

@@ -56,21 +56,24 @@ export const DiagnosticTestPage: React.FC = () => {
         console.log("Diagnostic Test Completed: ", diagnosticTestResult);
         const dataProvider = window.swanAppFunctions.dataProvider;
         const diagnosticTestDetails = diagnosticTestResult.diagnosticTestResults;
+        const {data: master} = await dataProvider.create('diagnostic_tests',{ data:{
+            user_id: JSON.parse(getLocalStorage('user') || '{}').id,
+            chapter_id: chapterId,
+            completed_timestamp: new Date().toISOString(),
+            status:'completed',
+            total_questions_number: diagnosticTestDetails.length,
+            correct_answers_number: diagnosticTestDetails.filter(d=>d.is_correct).length
+        }});
         for(const detail of diagnosticTestDetails){
             await dataProvider.create('diagnostic_test_details',{data:{
-                diagnostic_test_id: diagnosticTestId,
+                diagnostic_test_id: master.id,
                 question_id: detail.questionId,
                 selected_answer: detail.selected_answer,
                 is_correct: detail.is_correct,
                 time_taken_seconds_number: detail.time_taken,
             }});
         }
-        await dataProvider.update('diagnostic_tests',{id: diagnosticTestId, data:{
-            completed_timestamp: new Date().toISOString(),
-                status:'completed',
-                total_questions_number: diagnosticTestDetails.length,
-                correct_answers_number: diagnosticTestDetails.filter(d=>d.is_correct).length
-        }});
+
         console.log("Diagnostic Test Results saved successfully.");
         //Update Concept Mastery based on diagnostic test results
         const testResults = diagnosticTestDetails.map(
@@ -103,7 +106,7 @@ export const DiagnosticTestPage: React.FC = () => {
     }
     return (
         <div>
-            <DiagnosticTestRound questions={questions} id={diagnosticTestId} chapterName={chapterName}
+            <DiagnosticTestRound questions={questions} chapterName={chapterName}
             onComplete={onCompleteDiagnosticTest}/>
         </div>
     );

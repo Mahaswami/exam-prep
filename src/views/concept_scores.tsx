@@ -239,9 +239,8 @@ export const ConceptScoresResource =  (
         list={<ConceptScoresList/>}
         create={<ConceptScoreCreate/>}
         edit={<ConceptScoreEdit/>}
-        show={<ConceptScoreShow/>}
         listRowActions={<ConceptScoreRowActions />}
-                hasDialog
+        hasDialog
         hasLiveUpdate
         hasImport
         filtersPlacement='top'

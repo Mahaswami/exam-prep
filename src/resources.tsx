@@ -75,7 +75,7 @@ export const configureResources = (permissions: any) => {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/analytics/admin" element={<AdminDashboard />} />
             <Route path="/analytics/student" element={<StudentDashboard />} />
-            <Route path="/diagnostic/start/:chapterId/:diagnosticTestId" element={<DiagnosticTestPage />} />
+            <Route path="/diagnostic/start/:chapterId" element={<DiagnosticTestPage />} />
             <Route path="/revision/start/:chapterId/:conceptId/:revisionRoundId" element={<RevisionRoundPage />} />
             <Route path="/testrounds/start/:chapterId/:conceptId/:testRoundId" element={<TestRoundPage />} />
         </CustomRoutes>,
