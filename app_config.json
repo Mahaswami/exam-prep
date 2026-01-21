@@ -42,7 +42,7 @@
         "bucket": "guru-krupa-bucket"
       },
       "domains": [
-        "www.preview.peak10.in","preview.peak10.in"
+        "www.peak10.in","peak10.in"
       ],
       "email": {
         "sender_email": "swanstack@mahaswami.com",
