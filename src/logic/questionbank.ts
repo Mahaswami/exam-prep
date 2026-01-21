@@ -80,9 +80,10 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             }) => exQ.id)
         });
     }
-    for (const questionRecord of questionRecords) {
+    /*for (const questionRecord of questionRecords) {
         await dataProvider.create('questions', {data: questionRecord});
-    }
+    }*/
+    await Promise.all(questionRecords.map(record => dataProvider.create('questions', {data: record})));
    // await dataProvider.commitTransaction(dbTransactionId);
 }
 
