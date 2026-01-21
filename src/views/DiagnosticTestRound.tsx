@@ -276,7 +276,7 @@ export const DiagnosticTestRound: React.FC<Props> = ({
                                                                 rehypeKatex,
                                                             ]}
                                                         >
-                                                            {value}
+                                                            {"$$" + value + "$$"}
                                                         </ReactMarkdown>
                                                     </Box>
                                                 </Box>

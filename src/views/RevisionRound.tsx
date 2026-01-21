@@ -227,7 +227,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                                                             remarkPlugins={[remarkMath]}
                                                             rehypePlugins={[rehypeKatex]}
                                                         >
-                                                            {value}
+                                                            {"$$" + value + "$$"}
                                                         </ReactMarkdown>
                                                     </Box>
                                                 </Box>
@@ -241,7 +241,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
 
                             {/* Actions */}
                             <Stack direction="row" spacing={0.5} justifyContent="center">
-                                <IconButton
+                                {/* <IconButton
                                     size="small"
                                     color="warning"
                                     onClick={() => setShowHint(v => !v)}
@@ -252,7 +252,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                                 >
                                     <LightbulbOutlinedIcon fontSize="small" />
                                     <Typography variant={"body2"} fontWeight={600}>Show Hint</Typography>
-                                </IconButton>
+                                </IconButton> */}
 
                                 <IconButton
                                     size="small"
@@ -270,7 +270,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
 
 
                             {/* Hint */}
-                            {showHint && (
+                            {/* {showHint && (
                                 <Box
                                     sx={{
                                         backgroundColor:
@@ -289,10 +289,10 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                                         remarkPlugins={[remarkMath]}
                                         rehypePlugins={[rehypeKatex]}
                                     >
-                                        {question.hint}
+                                        {"$$" + question.hint + "$$"}
                                     </ReactMarkdown>
                                 </Box>
-                            )}
+                            )} */}
 
                             {/* Solution */}
                             {showSolution && (

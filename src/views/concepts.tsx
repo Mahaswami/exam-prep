@@ -17,7 +17,7 @@ export const ConceptsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ConceptsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 const filters = [
     <TextLiveFilter source="search" fields={["name"]} />,
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" show sx={{ minWidth: 350 }}/>,
     <NumberLiveFilter source="concept_order_number" label="Concept Order" />,
     <BooleanLiveFilter source="is_active" label="Active" />
 ]
@@ -108,6 +108,7 @@ export const ConceptsResource =  (
         create={<ConceptCreate/>}
         edit={<ConceptEdit/>}
         show={<ConceptShow/>}
+        filtersPlacement="top"
         hasDialog
         hasLiveUpdate
         hasImport

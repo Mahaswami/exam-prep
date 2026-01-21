@@ -128,6 +128,10 @@ export const TestRound: React.FC<Props> = ({ questions,
             case '2M': return 2;
             case '3M': return 3;
             case '5M': return 5;
+            case 'VSA': return 2;
+            case 'SA': return 3;
+            case 'Case-Based': return 4;     
+            case 'LA': return 5;            
             default: return 0;
         }
     };
@@ -216,7 +220,7 @@ export const TestRound: React.FC<Props> = ({ questions,
                                     fontWeight={600}
                                     gutterBottom
                                 >
-                                    Question
+                                    {question.type} Question
                                 </Typography>
                                 <RenderStream
                                     stream={JSON.parse(question.question_stream)}
@@ -281,7 +285,7 @@ export const TestRound: React.FC<Props> = ({ questions,
                                                         fontWeight={600}
                                                         sx={{ lineHeight: 1.6, whiteSpace: "nowrap" }}
                                                     >
-                                                        {key}.
+                                                       {key}.
                                                     </Typography>
 
                                                     <Box sx={{ flex: 1 }}>
@@ -289,7 +293,7 @@ export const TestRound: React.FC<Props> = ({ questions,
                                                             remarkPlugins={[remarkMath]}
                                                             rehypePlugins={[rehypeKatex]}
                                                         >
-                                                            {value}
+                                                            {'$$' + value + '$$'}
                                                         </ReactMarkdown>
                                                     </Box>
                                                 </Box>
@@ -357,7 +361,7 @@ export const TestRound: React.FC<Props> = ({ questions,
 
                             {/* Actions */}
                             <Stack direction="row" spacing={0.5} justifyContent="center">
-                                {/*<IconButton
+                                <IconButton
                                     size="small"
                                     color="warning"
                                     onClick={() => setShowHint(v => !v)}
@@ -368,7 +372,7 @@ export const TestRound: React.FC<Props> = ({ questions,
                                 >
                                     <LightbulbOutlinedIcon fontSize="small" />
                                     <Typography variant={"body2"} fontWeight={600}>Show Hint</Typography>
-                                </IconButton>*/}
+                                </IconButton>
 
                                 <IconButton
                                     size="small"
@@ -386,7 +390,7 @@ export const TestRound: React.FC<Props> = ({ questions,
 
 
                             {/* Hint */}
-                            {/*{showHint && (
+                            {showHint && (
                                 <Box
                                     sx={{
                                         backgroundColor:
@@ -405,10 +409,10 @@ export const TestRound: React.FC<Props> = ({ questions,
                                         remarkPlugins={[remarkMath]}
                                         rehypePlugins={[rehypeKatex]}
                                     >
-                                        {question.hint}
+                                        {"$$" + question.hint + "$$"}
                                     </ReactMarkdown>
                                 </Box>
-                            )}*/}
+                            )}
 
                             {/* Solution */}
                             {showSolution && (
@@ -453,7 +457,7 @@ export const TestRound: React.FC<Props> = ({ questions,
                                             remarkPlugins={[remarkMath]}
                                             rehypePlugins={[rehypeKatex]}
                                         >
-                                        {question.final_answer}
+                                        {"$$"+question.final_answer+"$$"}
                                         </ReactMarkdown>
                                     </Box>
                                 </Box>
