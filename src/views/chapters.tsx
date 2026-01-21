@@ -1,13 +1,53 @@
-import { Resource, createDefaults, tableDefaults, 
-	editDefaults, formDefaults, listDefaults, 
-	showDefaults, RowActions, CardGrid,
-	createReferenceField,
-	createReferenceInput, ReferenceLiveFilter, NumberLiveFilter, BooleanLiveFilter, TextLiveFilter  } from '@mahaswami/swan-frontend';
-import { Book } from '@mui/icons-material';
-import { Box, CardContent, CardHeader } from '@mui/material';
-import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, AutocompleteInput, required, useUnique } from "react-admin";
+import {
+    Resource,
+    createDefaults,
+    tableDefaults,
+    editDefaults,
+    formDefaults,
+    listDefaults,
+    showDefaults,
+    RowActions,
+    CardGrid,
+    createReferenceField,
+    createReferenceInput,
+    ReferenceLiveFilter,
+    NumberLiveFilter,
+    BooleanLiveFilter,
+    TextLiveFilter,
+    SimpleFileInput,
+    SimpleFileField
+} from '@mahaswami/swan-frontend';
+import {Book, Refresh, Timer,} from '@mui/icons-material';
+import {Box, CardContent, CardHeader, IconButton, Tooltip,CircularProgress} from '@mui/material';
+import {
+    Create,
+    DataTable,
+    Edit,
+    List,
+    Menu,
+    Show,
+    SimpleForm,
+    SimpleShowLayout,
+    TextField,
+    TextInput,
+    type ListProps,
+    BooleanField,
+    BooleanInput,
+    NumberField,
+    NumberInput,
+    AutocompleteInput,
+    required,
+    useUnique,
+    useRecordContext, useNotify
+} from "react-admin";
 import { SubjectsReferenceField, SubjectsReferenceInput } from './subjects';
+import {identifyConceptsForChapter, prepareQuestions} from "../logic/questionbank.ts";
+import {
+    generateChapterDiagnosticQuestions,
+    uploadChapterDiagnosticQuestions
+} from "../logic/chapter_diagnostic_questions.ts";
+import {uploadChapterConcepts} from "../logic/questionbank.ts";
+import {useState} from "react";
 
 export const RESOURCE = "chapters"
 export const ICON = Book
@@ -21,6 +61,146 @@ const filters = [
     <NumberLiveFilter source="chapter_number" label="Chapter" />,
     <BooleanLiveFilter source="is_active" label="Active" />
 ]
+
+const ChapterRowActions = () => {
+    const record = useRecordContext();
+    const notify = useNotify();
+
+    const [loadingConcepts, setLoadingConcepts] = useState(false);
+    const [loadingPrepare, setLoadingPrepare] = useState(false);
+    const [loadingAdd, setLoadingAdd] = useState(false);
+    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+    if (!record?.id) return null;
+
+    return (
+        <>
+            <Tooltip title="Populate Concepts">
+                <IconButton
+                size="small"
+                disabled={loadingConcepts}
+                onClick={async(e) => {
+                    e.stopPropagation();
+                    setLoadingConcepts(true);
+                    try{
+                        const response = await identifyConceptsForChapter(record.questions_attachment_file_id);
+                        if (response.conceptual_map && response.conceptual_map.length > 0) {
+                            console.log("Uploading identified concepts to data provider...");
+                            const conceptualMap = response.conceptual_map;
+                            await uploadChapterConcepts(record.id,conceptualMap);
+                        } else {
+                            console.log("No concepts prepared from the question bank.");
+                        }
+                        notify("Populate concepts completed", { type: "info" });
+                    }
+                    catch(Error){
+                        notify("Error populating concepts: " + Error, { type: "error" });
+                    }
+                    finally {
+                        setLoadingConcepts(false);
+                    }
+                }}
+            >
+                    {loadingConcepts ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Timer fontSize="small" />
+                    )}
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Prepare Questions">
+                <IconButton
+                    size="small"
+                    disabled={loadingPrepare}
+                    onClick={async (e) => {
+                        e.stopPropagation();
+                        setLoadingPrepare(true)
+                        try {
+                            if(!record.questions_attachment_file_id){
+                                notify("No questions attachment file found", { type: "warning" });
+                                return;
+                            }
+                            notify("Preparing questions...", { type: "info" });
+                            await prepareQuestions(record.id, record.questions_attachment_file_id);
+                            notify("Questions preparation completed", { type: "info" });
+                        }
+                        catch (Error) {
+                            notify("Error preparing questions: " + Error, { type: "error" });
+                        }
+                        finally {
+                            setLoadingPrepare(false);
+                        }
+                    }}
+                >
+                    {loadingPrepare ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Refresh fontSize="small" />
+                    )}
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Add New Questions">
+                <IconButton
+                    size="small"
+                    disabled={loadingAdd}
+                    onClick={async (e) => {
+                        e.stopPropagation();
+                        setLoadingAdd(true)
+                        try {
+                            if(!record.questions_attachment_file_id){
+                                notify("No questions attachment file found", { type: "warning" });
+                                return;
+                            }
+                            notify("Preparing additional questions...", { type: "info" });
+                            await prepareQuestions(record.id, record.questions_attachment_file_id,true);
+                            notify("Additional questions preparation completed", { type: "info" });
+                        }
+                        catch (Error) {
+                            notify("Error preparing questions: " + Error, { type: "error" });
+                        }
+                        finally {
+                            setLoadingAdd(false)
+                        }
+                    }}
+                >
+                    {loadingAdd ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Refresh fontSize="small" />
+                    )}
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Generate Diagnostic Test">
+                <IconButton
+                    size="small"
+                    disabled={loadingDiagnostic}
+                    onClick={async(e) => {
+                        e.stopPropagation();
+                        setLoadingDiagnostic(true)
+                        try{
+                            const questionIds = await generateChapterDiagnosticQuestions(record.id);
+                            console.log('Generated Diagnostic Test Question IDs: ', questionIds);
+                            await uploadChapterDiagnosticQuestions(record.id, questionIds);
+                            notify("Generate Diagnostic Test Questions completed", { type: "info" });
+                        }
+                        catch(Error){
+                            notify("Error generating diagnostic test questions: " + Error, { type: "error" });
+                        }
+                        finally {
+                            setLoadingDiagnostic(false)
+                        }
+                    }}
+                >
+                    {loadingDiagnostic ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Timer fontSize="small" />
+                    )}
+                </IconButton>
+            </Tooltip>
+        </>
+    );
+};
+
 
 export const ChaptersList = (props: ListProps) => {
     return (
@@ -57,6 +237,8 @@ const ChapterForm = (props: any) => {
             </SubjectsReferenceInput>
             <NumberInput source="chapter_number" validate={required()} />
             <TextInput source="name" validate={[required(), unique()]} />
+            <SimpleFileInput source="questions_attachment_file_id" />
+            <SimpleFileField source="questions_attachment_file_id" title={"questions_attachment_file"}/>
             <BooleanInput source="is_active" />
         </SimpleForm>
     )
@@ -110,6 +292,7 @@ export const ChaptersResource =  (
         create={<ChapterCreate/>}
         edit={<ChapterEdit/>}
         show={<ChapterShow/>}
+        listRowActions={<ChapterRowActions />}
         hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}

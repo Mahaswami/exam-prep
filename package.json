@@ -40,7 +40,9 @@
     "stream-browserify": "^3.0.0",
     "tiptap-extension-resize-image": "1.2.1",
     "util": "^0.12.5",
-    "write-excel-file": "^2.3.0"
+    "write-excel-file": "^2.3.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
