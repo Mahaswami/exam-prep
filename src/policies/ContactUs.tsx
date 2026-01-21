@@ -32,13 +32,6 @@ export const ContactUs = () => {
                     <li>General inquiries</li>
                 </Typography>
 
-                <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Typography variant="h6" gutterBottom>Company Details</Typography>
-                    <Typography variant="body1" color="text.secondary">
-                        Mahaswami Software Private Limited<br />
-                        Chennai, Tamil Nadu, India
-                    </Typography>
-                </Box>
             </Paper>
         </PublicLayout>
     );

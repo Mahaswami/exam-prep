@@ -1,6 +1,6 @@
 import { AnalyticsDashboard, WidgetConfig, getLocalStorage } from '@mahaswami/swan-frontend';
-import { useEffect, useState } from 'react';
-import {useDataProvider, useGetList, useNotify, useRedirect} from 'react-admin';
+import { useEffect, useMemo, useState } from 'react';
+import {useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Typography, Paper, Autocomplete, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
@@ -99,6 +99,7 @@ type ActionType = 'diagnostic' | 'practice' | 'test' | null;
 export const StudentDashboard = () => {
     const role = getLocalStorage('role');
     const isStudent = role === 'student';
+    const { identity } = useGetIdentity();
     const dataProvider = useDataProvider();
     const navigate = useNavigate();
     const redirect = useRedirect();
@@ -114,38 +115,40 @@ export const StudentDashboard = () => {
     const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
     const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
     
-    // Admin needs explicit filter; students are auto-filtered by DataProvider wrapper
-    const effectiveUserId = isStudent ? undefined : selectedStudentId;
+    const effectiveUserId = isStudent ? identity?.id : selectedStudentId;
+
+    // Shared reference data - fetch once with hooks
+    const { data: chapters = [], isLoading: chaptersLoading } = useGetList('chapters', {
+        pagination: { page: 1, perPage: 1000 },
+        meta: { prefetch: ['subjects'] },
+        sort: { field: 'sequence_number', order: 'ASC' },
+        filter: {}
+    });
+
+    const { data: concepts = [], isLoading: conceptsLoading } = useGetList('concepts', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'id', order: 'ASC' },
+        filter: {}
+    });
+
+    const { data: subjects = [] } = useGetList('subjects', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'name', order: 'ASC' },
+        filter: {}
+    });
 
     useEffect(() => {
         const computeMasteryData = async () => {
+            if (chaptersLoading || conceptsLoading || !effectiveUserId) return;
+            
             try {
-                // Students: DataProvider auto-filters by user_id
-                // Admins: need explicit filter when student selected
-                const filter = effectiveUserId ? { user_id_eq: effectiveUserId } : {};
-                
-                const [scoresRes, conceptsRes, chaptersRes] = await Promise.all([
-                    dataProvider.getList('concept_scores', {
-                        pagination: { page: 1, perPage: 1000 },
-                        sort: { field: 'id', order: 'ASC' },
-                        filter
-                    }),
-                    dataProvider.getList('concepts', {
-                        pagination: { page: 1, perPage: 1000 },
-                        sort: { field: 'id', order: 'ASC' },
-                        filter: {}
-                    }),
-                    dataProvider.getList('chapters', {
-                        pagination: { page: 1, perPage: 1000 },
-                        meta: {prefetch: ["subjects"]},
-                        sort: { field: 'id', order: 'ASC' },
-                        filter: {}
-                    })
-                ]);
+                const scoresRes = await dataProvider.getList('concept_scores', {
+                    pagination: { page: 1, perPage: 1000 },
+                    sort: { field: 'id', order: 'ASC' },
+                    filter: { user_id: effectiveUserId }
+                });
                 
                 const data = scoresRes.data;
-                const concepts = conceptsRes.data;
-                const chapters = chaptersRes.data;
                 
                 // Filter by subject if selected
                 const filteredChapters = filterSubjectId 
@@ -255,7 +258,7 @@ export const StudentDashboard = () => {
         };
         
         computeMasteryData();
-    }, [dataProvider, effectiveUserId, filterSubjectId]);
+    }, [dataProvider, effectiveUserId, filterSubjectId, chapters, concepts, chaptersLoading, conceptsLoading]);
 
     
     // Fetch users for admin student picker
@@ -265,24 +268,11 @@ export const StudentDashboard = () => {
         filter: { role: 'student' }
     }, { enabled: !isStudent });
 
-    const { data: chapters = [] } = useGetList('chapters', {
-        pagination: { page: 1, perPage: 100 },
-        meta: {prefetch: ['subjects']},
-        sort: { field: 'sequence_number', order: 'ASC' },
-        filter: {}
-    });
-
     const { data: diagnosticTests = [], isLoading: loadingDiagnostics } = useGetList('diagnostic_tests', {
         pagination: { page: 1, perPage: 1 },
         sort: { field: 'id', order: 'DESC' },
-        filter: {}
-    }, { enabled: isStudent });
-
-    const { data: subjects = [] } = useGetList('subjects', {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: 'name', order: 'ASC' },
-        filter: {}
-    });
+        filter: effectiveUserId ? { user_id: effectiveUserId } : {}
+    }, { enabled: !!effectiveUserId });
 
     const chaptersForSubject = chapters.filter((c: any) => c.subject_id === onboardingSubjectId);
 
@@ -505,7 +495,7 @@ export const StudentDashboard = () => {
             )}
             {isStudent && (
                 <Box sx={{ px: 3, pt: 2, pb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>👋 Welcome Back! <Typography component="span" variant="h6" color="text.secondary">Track your progress</Typography></Typography>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>👋 Welcome Back!</Typography>
                     <Autocomplete
                         size="small"
                         options={[{ id: null, name: 'All Subjects' }, ...subjects]}
