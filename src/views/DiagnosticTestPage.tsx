@@ -38,7 +38,7 @@ export const DiagnosticTestPage: React.FC = () => {
                     filter: {chapter_id: chapterId}
                 })
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {id: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
+                    filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
                 })
                 console.log("Fetched diagnostic test: ", diagnosticTestQuestions);
                 setQuestions(questions);
