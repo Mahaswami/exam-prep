@@ -4,7 +4,7 @@ import {useEffect} from "react";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
 import {DiagnosticTestRound} from "./DiagnosticTestRound.tsx";
 import {calculateConceptScores} from "../logic/score_helper.ts";
-import { useNotify, useRedirect } from "react-admin";
+import { Loading, useNotify, useRedirect } from "react-admin";
 
 type DiagosticTestDetail = {
     diagnostic_test_id: string;
@@ -100,7 +100,8 @@ export const DiagnosticTestPage: React.FC = () => {
 
 
     if (isLoading) {
-        return <div>Loading Diagnostic Test...</div>;}
+        return <Loading />
+    }
     if (!questions.length) {
         return <div>No questions found.</div>;
     }

@@ -2,7 +2,7 @@ import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {TestRound} from "./TestRound.tsx";
-import { useNotify, useRedirect } from "react-admin";
+import { Loading, useNotify, useRedirect } from "react-admin";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
 
@@ -141,7 +141,8 @@ export const TestRoundPage: React.FC = () => {
 
 
     if (isLoading) {
-        return <div>Loading Diagnostic Test...</div>;}
+        return <Loading />;
+    }
     if (!questions.length) {
         return <div>No questions found.</div>;
     }

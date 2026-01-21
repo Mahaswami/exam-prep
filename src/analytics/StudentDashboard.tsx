@@ -325,25 +325,24 @@ export const StudentDashboard = () => {
             <Box sx={{ 
                 position: 'fixed', 
                 inset: 0, 
+                mt: "3em",
                 zIndex: 1300, 
-                bgcolor: '#F4F7F6',
+                bgcolor: (theme) => theme.palette.background.default,
                 display: 'flex', 
                 flexDirection: 'column',
                 justifyContent: 'center', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                overflowY: 'auto',
             }}>
-                <Box sx={{ mb: 3 }}>
-                    <Peak10Logo size="large" />
-                </Box>
-                <Paper sx={{ p: 5, textAlign: 'center', maxWidth: 500 }}>
-                    <RocketLaunchIcon sx={{ fontSize: 64, color: '#34A853', mb: 2 }} />
-                    <Typography variant="h4" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
+                <Paper sx={{ px: 5, py:2, textAlign: 'center', maxWidth: 500 }}>
+                    <RocketLaunchIcon sx={{ fontSize: 64, color: '#34A853'}} />
+                    <Typography variant="h4" fontWeight="700" gutterBottom >
                         Let's Get Started!
                     </Typography>
-                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
                         Take a diagnostic test to assess your current knowledge and personalize your learning path.
                     </Typography>
-                    <Stack spacing={1.5} sx={{ mb: 4, textAlign: 'left' }}>
+                    <Stack spacing={1.5} sx={{ mb: 2, textAlign: 'left' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <SearchIcon sx={{ color: '#34A853' }} />
                             <Box>
@@ -375,7 +374,7 @@ export const StudentDashboard = () => {
                         }}
                         renderInput={(params) => <TextField {...params} label="Select Subject" />}
                         fullWidth
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1 }}
                     />
                     {onboardingSubjectId && (
                         <Autocomplete
@@ -384,7 +383,7 @@ export const StudentDashboard = () => {
                             onChange={(_, value) => setOnboardingChapterId(value?.id || null)}
                             renderInput={(params) => <TextField {...params} label="Select Chapter" />}
                             fullWidth
-                            sx={{ mb: 3 }}
+                            sx={{ mb: 2 }}
                         />
                     )}
                     <Button
