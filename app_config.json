@@ -15,7 +15,7 @@
   "logo": "swan_app_logo.svg",
   "environments": {
     "dev": {
-      "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
+      "gsheet": "1Ng0IxvkmaAQ2mrWLynfLwdRd2OvpwDw-IZuBBwaB0_8",
       "d1": "d1-db1-shoud not work!!",
       "hd": "hd-placeholder-value",
       "pg": "pg-placeholder-value",
@@ -35,7 +35,7 @@
       }
     },
     "preview": {
-      "gsheet": "1Ul4dyNCuF9oJIKIFCSFzQs7wB9FKfaUVO_NVE-vZapc",
+      "gsheet": "1Ng0IxvkmaAQ2mrWLynfLwdRd2OvpwDw-IZuBBwaB0_8",
       "default": "gsheet",
       "service_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
       "file_storage": {
