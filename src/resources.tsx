@@ -34,6 +34,9 @@ import { PrivacyPolicy } from './policies/PrivacyPolicy.tsx';
 import { TermsConditions } from './policies/TermsConditions.tsx';
 import { ContactUs } from './policies/ContactUs.tsx';
 import { CancellationRefund } from './policies/CancellationRefund.tsx';
+import {RevisionRoundPage} from "./views/RevisionRoundPage.tsx";
+import {DiagnosticTestPage} from "./views/DiagnosticTestPage.tsx";
+import {TestRoundPage} from "./views/TestRoundPage.tsx";
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
@@ -72,6 +75,9 @@ export const configureResources = (permissions: any) => {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/analytics/admin" element={<AdminDashboard />} />
             <Route path="/analytics/student" element={<StudentDashboard />} />
+            <Route path="/diagnostic/start/:chapterId/:diagnosticTestId" element={<DiagnosticTestPage />} />
+            <Route path="/revision/start/:chapterId/:conceptId/:revisionRoundId" element={<RevisionRoundPage />} />
+            <Route path="/testrounds/start/:chapterId/:conceptId/:testRoundId" element={<TestRoundPage />} />
         </CustomRoutes>,
         HistoryResource,
         UsersResource,    
