@@ -6,8 +6,10 @@ import { Resource, createDefaults, tableDefaults,
 import { Quiz } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required } from "react-admin";
+    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
+import { QuestionDisplay } from '../components/QuestionDisplay';
+import { ChaptersReferenceField } from './chapters';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -19,23 +21,21 @@ export const questionTypeChoices = [{ id: 'mcq', name: 'MCQ' }, { id: '2_marks',
 export const difficultyLevelChoices = [{ id: 'easy', name: 'Easy' }, { id: 'medium', name: 'Medium' }, { id: 'hard', name: 'Hard' }];
 
 const filters = [
-    <TextLiveFilter source="search" fields={["option_a", "option_b", "option_c"]} />,
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <ChoicesLiveFilter source="question_type" label="Question Type" choiceLabels={questionTypeChoices} />,
-    <ChoicesLiveFilter source="difficulty_level" label="Difficulty Level" choiceLabels={difficultyLevelChoices} />,
-    <NumberLiveFilter source="marks_number" label="Marks" />,
-    <BooleanLiveFilter source="is_active" label="Active" />
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Chapter" through='concept.chapter_id' show/>,
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" show />,
+    <ChoicesLiveFilter source="difficulty" label="Difficulty" choiceLabels={difficultyLevelChoices} show />,
+    <ChoicesLiveFilter source="type" label="Type" choiceLabels={questionTypeChoices} show />,
+    <BooleanLiveFilter source="is_invented" label="Is derived" show/>,
 ]
 
 export const QuestionsList = (props: ListProps) => {
     return (
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(RESOURCE)}>
+                <DataTable.Col source="id" />
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
-                <DataTable.Col source="question_type" field={(props: any) => <SelectField {...props} choices={questionTypeChoices} />}/>
-                <DataTable.Col source="difficulty_level" field={(props: any) => <SelectField {...props} choices={difficultyLevelChoices} />}/>
-                <DataTable.Col source="option_a" />
-                <DataTable.Col source="option_b" />
+                <DataTable.Col source="type" />
+                <DataTable.Col source="difficulty" field={(props: any) => <SelectField {...props} choices={difficultyLevelChoices} />}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -95,28 +95,43 @@ const QuestionCreate = (props: any) => {
     )
 }
 
-const QuestionShow = (props: any) => {
+const QuestionShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
     
     return (
-        <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
+        <Box sx={{ p: 2 }}>
+            <SimpleShowLayout display={'grid'} gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} columnGap="0.5rem">
+                <ChaptersReferenceField label="Chapter" source="concept.chapter_id" />
                 <ConceptsReferenceField source="concept_id" />
-                <SelectField source="question_type" choices={questionTypeChoices} />
-                <SelectField source="difficulty_level" choices={difficultyLevelChoices} />
-                <RichTextField source="question_html" />
-                <TextField source="option_a" />
-                <TextField source="option_b" />
-                <TextField source="option_c" />
-                <TextField source="option_d" />
-                <TextField source="correct_answer" />
-                <RichTextField source="hint_html" />
-                <RichTextField source="solution_html" />
-                <NumberField source="marks_number" />
-                <BooleanField source="is_active" />
+                <BooleanField label="Is derived" source="is_invented" />
+                <BooleanField label="Is active" source="is_active" />
             </SimpleShowLayout>
+            <QuestionDisplay
+                question={{
+                    id: record.id,
+                    type: record.type,
+                    difficulty: record.difficulty,
+                    question_stream: record.question_stream,
+                    options: record.options,
+                    correct_option: record.correct_option,
+                    hint: record.hint,
+                    answer_stream: record.answer_stream,
+                    final_answer: record.final_answer,
+                }}
+                mode="view"
+                showSolution
+                showHint
+                showCorrectAnswer
+            />
+        </Box>
+    );
+};
+
+const QuestionShow = (props: any) => {
+    return (
+        <Show {...showDefaults(props)}>
+            <QuestionShowContent />
         </Show>
     )
 }
@@ -144,11 +159,11 @@ export const QuestionsResource =  (
             is_active: {}
         }}
         filters={filters}
+        filtersPlacement='top'
         list={<QuestionsList/>}
         create={<QuestionCreate/>}
         edit={<QuestionEdit/>}
         show={<QuestionShow/>}
-        hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />

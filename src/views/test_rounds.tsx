@@ -16,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions,
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext,
     TopToolbar,
     CreateButton
 } from "react-admin";
@@ -43,6 +43,7 @@ import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
 
@@ -234,12 +235,43 @@ const TestRoundDetailEdit = (props: any) => {
     )
 }
 
+const TestRoundDetailShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const question = record.question;
+    
+    return (
+        <Box sx={{ p: 2 }}>
+            {question && (
+                <QuestionDisplay
+                    question={{
+                        id: question.id,
+                        type: question.type,
+                        difficulty: question.difficulty,
+                        question_stream: question.question_stream,
+                        options: question.options,
+                        correct_option: question.correct_option,
+                        hint: question.hint,
+                        answer_stream: question.answer_stream,
+                        final_answer: question.final_answer,
+                        marks_number: record.eligible_marks_number,
+                    }}
+                    mode="review"
+                    showCorrectAnswer
+                    showSolution
+                    showHint
+                    marksObtained={record.marks_obtained_number}
+                />
+            )}
+        </Box>
+    );
+};
+
 const TestRoundDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
-                <QuestionsReferenceField source="question_id" />
-            </SimpleShowLayout>
+            <TestRoundDetailShowContent />
         </Show>
     )
 }
@@ -264,7 +296,6 @@ export const TestRoundsResource = (
         create={<TestRoundCreate/>}
         edit={<TestRoundEdit/>}
         show={<TestRoundShow/>}
-                hasDialog
         hasLiveUpdate
         filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
@@ -285,7 +316,6 @@ export const TestRoundDetailsResource = (
         create={<TestRoundDetailCreate/>}
         edit={<TestRoundDetailEdit/>}
         show={<TestRoundDetailShow/>}
-        hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />

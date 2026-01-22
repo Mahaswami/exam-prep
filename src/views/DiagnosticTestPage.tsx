@@ -2,22 +2,11 @@ import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
-import {DiagnosticTestRound} from "./DiagnosticTestRound.tsx";
+import {QuestionRound} from "../components/QuestionRound";
+import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import { Loading, useNotify, useRedirect } from "react-admin";
 
-type DiagosticTestDetail = {
-    diagnostic_test_id: string;
-    questionId: string;
-    conceptId: string;
-    difficulty: "Easy" | "Medium" | "Hard";
-    selected_answer: string;
-    is_correct: boolean;
-    time_taken: number;
-}
-type DiagnosticTestResult = {
-    diagnosticTestResults : DiagosticTestDetail[]
-}
 export const DiagnosticTestPage: React.FC = () => {
     const { chapterId,diagnosticTestId } = useParams();
     const [questions, setQuestions] = React.useState<any[]>([]);
@@ -52,22 +41,32 @@ export const DiagnosticTestPage: React.FC = () => {
         fetchDiagnosticTestQuestions();
     }, [chapterId]);
 
-    const onCompleteDiagnosticTest = async (diagnosticTestResult:DiagnosticTestResult) => {
-        console.log("Diagnostic Test Completed: ", diagnosticTestResult);
+    const onCompleteDiagnosticTest = async ({ answers, timing }: QuestionRoundResult) => {
+        console.log("Diagnostic Test Completed: ", { answers, timing });
         const dataProvider = window.swanAppFunctions.dataProvider;
-        const diagnosticTestDetails = diagnosticTestResult.diagnosticTestResults;
+        
+        const diagnosticDetails = questions.map(q => ({
+            question_id: q.id,
+            concept_id: q.concept_id,
+            difficulty: q.difficulty,
+            selected_answer: answers[q.id]?.selectedOption ?? null,
+            is_correct: answers[q.id]?.selectedOption === q.correct_option,
+            time_taken: timing.perQuestion[q.id] ?? 0,
+        }));
+
         const {data: master} = await dataProvider.create('diagnostic_tests',{ data:{
             user_id: JSON.parse(getLocalStorage('user') || '{}').id,
             chapter_id: chapterId,
-            completed_timestamp: new Date().toISOString(),
+            started_timestamp: timing.startedAt,
+            completed_timestamp: timing.completedAt,
             status:'completed',
-            total_questions_number: diagnosticTestDetails.length,
-            correct_answers_number: diagnosticTestDetails.filter(d=>d.is_correct).length
+            total_questions_number: diagnosticDetails.length,
+            correct_answers_number: diagnosticDetails.filter(d => d.is_correct).length
         }});
-        for(const detail of diagnosticTestDetails){
+        for(const detail of diagnosticDetails){
             await dataProvider.create('diagnostic_test_details',{data:{
                 diagnostic_test_id: master.id,
-                question_id: detail.questionId,
+                question_id: detail.question_id,
                 selected_answer: detail.selected_answer,
                 is_correct: detail.is_correct,
                 time_taken_seconds_number: detail.time_taken,
@@ -75,15 +74,14 @@ export const DiagnosticTestPage: React.FC = () => {
         }
 
         console.log("Diagnostic Test Results saved successfully.");
-        //Update Concept Mastery based on diagnostic test results
-        const testResults = diagnosticTestDetails.map(
+        const testResults = diagnosticDetails.map(
             (detail) => ({
-                conceptId: detail.conceptId,
+                conceptId: detail.concept_id,
                 difficulty: detail.difficulty,
                 is_correct: detail.is_correct
             })
         )
-        const conceptScores =  calculateConceptScores(testResults)
+        const conceptScores = calculateConceptScores(testResults)
         const user = JSON.parse(getLocalStorage('user') || '{}');
 
         for(const conceptScore of conceptScores){
@@ -106,9 +104,11 @@ export const DiagnosticTestPage: React.FC = () => {
         return <div>No questions found.</div>;
     }
     return (
-        <div>
-            <DiagnosticTestRound questions={questions} chapterName={chapterName}
-            onComplete={onCompleteDiagnosticTest}/>
-        </div>
+        <QuestionRound
+            questions={questions}
+            title={`Diagnostic Test – ${chapterName}`}
+            allowAnswer
+            onComplete={onCompleteDiagnosticTest}
+        />
     );
 }

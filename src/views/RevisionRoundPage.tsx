@@ -1,20 +1,12 @@
 import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
-import {RevisionRound} from "./RevisionRound.tsx";
+import {QuestionRound} from "../components/QuestionRound";
+import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import { getExistingRevisionRounds } from "../logic/revisions.ts";
 import { getLocalStorage } from "@mahaswami/swan-frontend";
 
-type RevisionRoundDetail = {
-    viewed_timestamp: string;
-    questionId: string;
-}
-
-type RevisionRoundResult = {
-    revision_round_id: string;
-    revision_round_details: RevisionRoundDetail[];
-}
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
 export const RevisionRoundPage: React.FC = () => {
@@ -94,32 +86,25 @@ export const RevisionRoundPage: React.FC = () => {
         fetchRevisionRoundQuestions();
     }, [chapterId,conceptId,revisionRoundId]);
 
-    const onCompleteRevisionRound = async (revisionRoundResult:RevisionRoundResult) => {
+    const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
-        const revisionRoundDetails = revisionRoundResult.revision_round_details;
-        let roundNumber = 1;
-        const existingRounds = await getExistingRevisionRounds(Number(conceptId));
-        if (existingRounds.length > 0) {
-            roundNumber = existingRounds.length + 1;
-        }
-        const userId = JSON.parse(getLocalStorage('user') || '{}').id
-        const { data: master } = await dataProvider.create('revision_rounds', {
-            data: {
-                user_id: userId,
-                concept_id: conceptId,
-                round_number: roundNumber,
-                started_timestamp: new Date().toISOString(),
-                status:'completed',
-                completed_timestamp:new Date().toISOString()
-            }
-        });
-        for(const detail of revisionRoundDetails){
+        
+        for(const q of questions){
             await dataProvider.create('revision_round_details',{data:{
-                revision_round_id: master.id,
-                question_id: detail.questionId,
-                viewed_timestamp: detail.viewed_timestamp,
+                revision_round_id: revisionRoundId,
+                question_id: q.id,
+                time_viewed_seconds: timing.perQuestion[q.id] ?? 0,
             }});
         }
+        
+        await dataProvider.update('revision_rounds',{
+            id: revisionRoundId,
+            data: {
+                status: 'completed',
+                started_timestamp: timing.startedAt,
+                completed_timestamp: timing.completedAt,
+            }
+        });
         notify('Revision Completed Successfully')
         redirect('/concept_scores');
     }
@@ -135,11 +120,12 @@ export const RevisionRoundPage: React.FC = () => {
         return <div>Not enough new questions available for revision round. Please try again later or contact support.</div>;
     }
     return (
-        <div>
-            <RevisionRound questions={questions}
-                           id={revisionRoundId}
-                           chapterName={chapterName} conceptName={conceptName}
-            onComplete={onCompleteRevisionRound}/>
-        </div>
+        <QuestionRound
+            questions={questions}
+            title={`Revision - ${chapterName} - ${conceptName}`}
+            allowSolution
+            showCorrectAnswer
+            onComplete={onCompleteRevisionRound}
+        />
     );
 }

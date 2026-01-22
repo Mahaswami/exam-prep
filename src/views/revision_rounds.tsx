@@ -16,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions,
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext,
     CreateButton,
     TopToolbar
 } from "react-admin";
@@ -45,6 +45,7 @@ import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -233,13 +234,44 @@ const RevisionRoundDetailEdit = (props: any) => {
     )
 }
 
+const RevisionRoundDetailShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const question = record.question;
+    
+    return (
+        <Box sx={{ p: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <DateField source="viewed_timestamp" showTime label="Viewed At" />
+            </Box>
+            {question && (
+                <QuestionDisplay
+                    question={{
+                        id: question.id,
+                        type: question.type,
+                        difficulty: question.difficulty,
+                        question_stream: question.question_stream,
+                        options: question.options,
+                        correct_option: question.correct_option,
+                        hint: question.hint,
+                        answer_stream: question.answer_stream,
+                        final_answer: question.final_answer,
+                    }}
+                    mode="review"
+                    showCorrectAnswer
+                    showSolution
+                    showHint
+                />
+            )}
+        </Box>
+    );
+};
+
 const RevisionRoundDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
-                <QuestionsReferenceField source="question_id" />
-                <DateField source="viewed_timestamp" showTime />
-            </SimpleShowLayout>
+            <RevisionRoundDetailShowContent />
         </Show>
     )
 }
@@ -263,7 +295,6 @@ export const RevisionRoundsResource = (
         create={<RevisionRoundCreate/>}
         edit={<RevisionRoundEdit/>}
         show={<RevisionRoundShow/>}
-                hasDialog
         hasLiveUpdate
         filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}

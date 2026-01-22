@@ -48,6 +48,7 @@ import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { calculateConceptScores } from '../logic/score_helper';
 import { TestPreparationDialog } from '../analytics/StudentDashboard';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_details"]
@@ -331,15 +332,46 @@ const DiagnosticTestDetailEdit = (props: any) => {
     )
 }
 
+const DiagnosticTestDetailShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const question = record.question;
+    
+    return (
+        <Box sx={{ p: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <BooleanField source="is_correct" label="Correct?" />
+                <NumberField source="time_taken_seconds_number" label="Time Taken (s)" />
+                <TextField source="selected_answer" label="Selected" />
+            </Box>
+            {question && (
+                <QuestionDisplay
+                    question={{
+                        id: question.id,
+                        type: question.type,
+                        difficulty: question.difficulty,
+                        question_stream: question.question_stream,
+                        options: question.options,
+                        correct_option: question.correct_option,
+                        hint: question.hint,
+                        answer_stream: question.answer_stream,
+                        final_answer: question.final_answer,
+                    }}
+                    mode="review"
+                    selectedAnswer={record.selected_answer}
+                    showCorrectAnswer
+                    showSolution
+                />
+            )}
+        </Box>
+    );
+};
+
 const DiagnosticTestDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
-                <QuestionsReferenceField source="question_id" />
-                <TextField source="selected_answer" />
-                <BooleanField source="is_correct" />
-                <NumberField source="time_taken_seconds_number" />
-            </SimpleShowLayout>
+            <DiagnosticTestDetailShowContent />
         </Show>
     )
 }
@@ -364,7 +396,7 @@ export const DiagnosticTestsResource = (
         create={<DiagnosticTestCreate/>}
         edit={<DiagnosticTestEdit/>}
         show={<DiagnosticTestShow/>}
-                hasDialog
+        // hasDialog
         hasLiveUpdate
         hasImport
         filtersPlacement='top'
