@@ -111,17 +111,17 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     const mode = allowAnswer ? "interactive" : "review";
 
     return (
-        <Box sx={{ maxWidth: "52rem", mx: "auto", py: 2 }}>
+        <Box sx={{ width: "52rem", mx: "auto", py: 2 }}>
             <Stack spacing={1.5}>
-                <Typography variant="h6" align="center" fontWeight={600}>
-                    {title}
-                </Typography>
 
                 <Card elevation={1} sx={{ borderRadius: 2 }}>
                     <CardContent sx={{ p: 1.5 }}>
                         <Stack spacing={1}>
-                            <Stack direction="row" justifyContent="flex-end">
-                                <Typography variant="caption">
+                            <Stack direction="row" justifyContent="space-between" alignItems={"center"} spacing={"1rem"}>
+                                 <Typography variant="subtitle1" align="center" fontWeight={600}>
+                                    {title}
+                                </Typography>
+                                <Typography variant="subtitle2" fontWeight={"bold"}>
                                     {index + 1} / {sortedQuestions.length}
                                 </Typography>
                             </Stack>
@@ -131,7 +131,6 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                             <QuestionDisplay
                                 question={question}
                                 mode={mode}
-                                showDifficulty={false}
                                 allowHint={allowHint}
                                 allowSolution={allowSolution}
                                 showCorrectAnswer={showCorrectAnswer}
@@ -139,6 +138,15 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                                 marksObtained={answersMap[question.id]?.marksObtained}
                                 onAnswer={allowAnswer ? handleAnswer : undefined}
                             />
+                            {allowAnswer && !canProceed() && (
+                                <Typography
+                                    variant="body1"
+                                    color="text.secondary"
+                                    align="center"
+                                >
+                                    Please answer the question to continue
+                                </Typography>
+                            )}
                         </Stack>
                     </CardContent>
                 </Card>
@@ -176,15 +184,6 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                     )}
                 </Stack>
 
-                {allowAnswer && !canProceed() && (
-                    <Typography
-                        variant="body1"
-                        color="text.secondary"
-                        align="center"
-                    >
-                        Please answer the question to continue
-                    </Typography>
-                )}
             </Stack>
         </Box>
     );

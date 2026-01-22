@@ -70,13 +70,25 @@ export const RenderStream: React.FC<RenderStreamProps> = ({ stream }) => {
 type RenderMathProps = {
     content: string;
     block?: boolean;
+    preventDollarWrap?: boolean;
 };
 
-export const RenderMath: React.FC<RenderMathProps> = ({ content, block = true }) => {
+export const RenderMath: React.FC<RenderMathProps> = ({ content, block = true, preventDollarWrap = false }) => {
     const wrapped = block ? `$$${content}$$` : `$${content}$`;
     return (
         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-            {wrapped}
+            {preventDollarWrap ? content : wrapped}
         </ReactMarkdown>
     );
 };
+
+
+export const wrapMathFracWithDollar = (content: any) => {
+    let wrappedContent = content;
+    const regex = /(\\[a-zA-Z]+(?:{[^}]+})*(?:\[[^\]]+\])*|\b\w+\b)\/(\\[a-zA-Z]+(?:{[^}]+})*(?:\[[^\]]+\])*|\b\w+\b)/g;
+    while (regex.test(wrappedContent)) {
+        wrappedContent = wrappedContent.replace(regex, (match) => `$${match}$`);
+    }
+    return wrappedContent;
+    
+}
