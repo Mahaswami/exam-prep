@@ -9,6 +9,7 @@ import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout
     TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
+import { ChaptersReferenceField } from './chapters';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -102,13 +103,12 @@ const QuestionShowContent = () => {
     
     return (
         <Box sx={{ p: 2 }}>
-            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <SimpleShowLayout display={'grid'} gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} columnGap="0.5rem">
+                <ChaptersReferenceField label="Chapter" source="concept.chapter_id" />
                 <ConceptsReferenceField source="concept_id" />
-                <SelectField source="type" choices={questionTypeChoices} />
-                <SelectField source="difficulty" choices={difficultyLevelChoices} />
-                <NumberField source="marks_number" label="Marks" />
-                <BooleanField source="is_active" />
-            </Box>
+                <BooleanField label="Is derived" source="is_invented" />
+                <BooleanField label="Is active" source="is_active" />
+            </SimpleShowLayout>
             <QuestionDisplay
                 question={{
                     id: record.id,
