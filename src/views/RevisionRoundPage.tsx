@@ -10,7 +10,7 @@ import { getLocalStorage } from "@mahaswami/swan-frontend";
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
 export const RevisionRoundPage: React.FC = () => {
-    const { chapterId,conceptId,revisionRoundId } = useParams();
+    const { chapterId,conceptId } = useParams();
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
@@ -21,7 +21,7 @@ export const RevisionRoundPage: React.FC = () => {
     useEffect(() => {
         const fetchRevisionRoundQuestions = async () => {
             try {
-                console.log("Fetching revisions for chapterId: ", chapterId,conceptId,revisionRoundId);
+                console.log("Fetching revisions for chapterId: ", chapterId,conceptId);
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 const user_id = user.id;
 
@@ -84,27 +84,35 @@ export const RevisionRoundPage: React.FC = () => {
         }
 
         fetchRevisionRoundQuestions();
-    }, [chapterId,conceptId,revisionRoundId]);
+    }, [chapterId,conceptId]);
 
     const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        let roundNumber = 1;
+        const existingRounds = await getExistingRevisionRounds(Number(conceptId));
+        if (existingRounds.length > 0) {
+            roundNumber = existingRounds.length + 1;
+        }
+        const userId = JSON.parse(getLocalStorage('user') || '{}').id
+        const { data: master } = await dataProvider.create('revision_rounds', {
+            data: {
+                user_id: userId,
+                concept_id: conceptId,
+                round_number: roundNumber,
+                started_timestamp: new Date().toISOString(),
+                status:'completed',
+                completed_timestamp:new Date().toISOString()
+            }
+        });
         
         for(const q of questions){
             await dataProvider.create('revision_round_details',{data:{
-                revision_round_id: revisionRoundId,
+                revision_round_id: master.id,
                 question_id: q.id,
                 time_viewed_seconds: timing.perQuestion[q.id] ?? 0,
             }});
         }
         
-        await dataProvider.update('revision_rounds',{
-            id: revisionRoundId,
-            data: {
-                status: 'completed',
-                started_timestamp: timing.startedAt,
-                completed_timestamp: timing.completedAt,
-            }
-        });
         notify('Revision Completed Successfully')
         redirect('/concept_scores');
     }
