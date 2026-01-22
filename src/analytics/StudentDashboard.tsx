@@ -1,6 +1,6 @@
 import { AnalyticsDashboard, WidgetConfig, closeDialog, getLocalStorage, openDialog } from '@mahaswami/swan-frontend';
 import { useEffect, useState } from 'react';
-import {useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
+import {ButtonProps, useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
 import { useSearchParams } from 'react-router-dom';
 import { Box, Typography, Paper, Autocomplete, TextField, Button, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
@@ -410,13 +410,6 @@ export const StudentDashboard = () => {
     };
 
 
-    const handleActionClick = (type: ActionType) => {
-        openDialog(
-            <TestPreparationDialog chapters={chapters} actionDialog={type} />,
-            { Title: dialogTitles[type] }
-        )
-    };
-
     return (
         <Box>
             {!isStudent && (
@@ -457,31 +450,34 @@ export const StudentDashboard = () => {
                         disableClearable
                     />
                     <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
-                        <Button
-                            size="small"
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Diagnostic Test"
                             variant="contained"
+                            actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
-                            onClick={() => handleActionClick('diagnostic')}
                         >
                             Diagnostic Test
-                        </Button>
-                        <Button
-                            size="small"
+                        </TestPreparationButton>
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Revision Round"
                             variant="outlined"
+                            actionType="revision"
                             startIcon={<RefreshIcon />}
-                            onClick={() => handleActionClick('revision')}
                         >
                             Revision Round
-                        </Button>
-                        <Button
-                            size="small"
+                        </TestPreparationButton>
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Test Round"
                             variant="contained"
                             color="warning"
+                            actionType="test"
                             startIcon={<TimerIcon />}
-                            onClick={() => handleActionClick('test')}
                         >
                             Test Round
-                        </Button>
+                        </TestPreparationButton>
                     </Stack>
                 </Box>
             )}
@@ -498,6 +494,40 @@ export const StudentDashboard = () => {
         </Box>
     );
 };
+
+interface TestPreparationButton extends ButtonProps {
+    actionType: ActionType;
+    chapters?: any[];
+}
+
+export const TestPreparationButton = (props: TestPreparationButton) => {
+    const { 
+        actionType, 
+        chapters, 
+        component: ButtonComponent = Button,
+        title,
+        children,
+        ...rest
+    } = props;
+
+    const handleOnCreate = () => {
+        openDialog( 
+            <TestPreparationDialog chapters={chapters} actionType={actionType}/>,
+            { Title: title }
+        )
+    }
+
+    return (
+        <ButtonComponent
+            variant="outlined"
+            size="small"
+            onClick={handleOnCreate}
+            {...rest}
+        >
+            {children}
+        </ButtonComponent>
+    )
+}
 
 interface TestPreparationDialogProps {
     actionType: ActionType;

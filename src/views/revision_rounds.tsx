@@ -38,13 +38,13 @@ import {
     createReferenceField,
     createReferenceInput,
     recordRep,
-    openDialog
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
-import { TestPreparationDialog } from '../analytics/StudentDashboard';
+import { TestPreparationButton } from '../analytics/StudentDashboard';
+import { RoundEmpty } from '../components/RoundEmpty';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -80,21 +80,18 @@ const ChapterViaConceptField = (props: any) => (
 
 export const RevisionRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
-    const handleOnCreate = () => {
-        openDialog( 
-            <TestPreparationDialog actionType={"revision"}/>,
-            { Title: "Create Revision Round" }
-        )
-    }
     
     const RevisionRoundActions = (
         <TopToolbar>
-            <CreateButton onClick={handleOnCreate} to={{ redirect: false }} variant='outlined'/>
+            <TestPreparationButton 
+                actionType={"revision"} 
+                component={CreateButton} to={{ redirect: false }} 
+            />
         </TopToolbar>
     )
 
     return (
-        <List {...listDefaults({ ...props})} actions={RevisionRoundActions}>
+        <List {...listDefaults({ ...props})} actions={RevisionRoundActions} empty={<RoundEmpty actionType={"practice"}/>}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
