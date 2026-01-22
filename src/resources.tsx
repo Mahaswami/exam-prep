@@ -76,8 +76,8 @@ export const configureResources = (permissions: any) => {
             <Route path="/analytics/admin" element={<AdminDashboard />} />
             <Route path="/analytics/student" element={<StudentDashboard />} />
             <Route path="/diagnostic/start/:chapterId" element={<DiagnosticTestPage />} />
-            <Route path="/revision/start/:chapterId/:conceptId/:revisionRoundId" element={<RevisionRoundPage />} />
-            <Route path="/testrounds/start/:chapterId/:conceptId/:testRoundId" element={<TestRoundPage />} />
+            <Route path="/revision/start/:chapterId/:conceptId" element={<RevisionRoundPage />} />
+            <Route path="/testrounds/start/:chapterId/:conceptId" element={<TestRoundPage />} />
         </CustomRoutes>,
         HistoryResource,
         UsersResource,    

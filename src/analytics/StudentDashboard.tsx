@@ -12,8 +12,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Peak10Logo } from '../components/Peak10Logo';
-import {createRevisionRoundForStudent} from "../logic/revisions.ts"
-import {createTestRoundForStudent} from "../logic/tests.ts";
 import { checkIfDiagnosticsExist } from '../logic/diagnostics.ts';
 
 
@@ -438,15 +436,6 @@ export const StudentDashboard = () => {
                     return
                 }    
             }
-            if (actionDialog === 'practice' && isStudent){
-                revisionRound = await createRevisionRoundForStudent(selectedChapterId,selectedConceptId);
-                console.log("Created revision round: ", revisionRound.id);
-            }
-            if (actionDialog === 'test' && isStudent) {
-                testRound = await createTestRoundForStudent(selectedChapterId, selectedConceptId);
-                console.log("Created test round: ", testRound.id);
-            }
-
         }
         catch(error){
             //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
@@ -457,8 +446,8 @@ export const StudentDashboard = () => {
         }
         const routes: Record<string, string> = {
             diagnostic: `/diagnostic/start/${selectedChapterId}/`,
-            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
-            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
+            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}`,
+            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}`
         };
         
         if (actionDialog && routes[actionDialog]) {

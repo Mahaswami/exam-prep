@@ -5,6 +5,7 @@ import {TestRound} from "./TestRound.tsx";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
+import { getExistingTestRounds } from "../logic/tests.ts";
 
 type TestRoundDetail = {
     eligible_marks: number;
@@ -103,16 +104,31 @@ export const TestRoundPage: React.FC = () => {
     const onCompleteTestRound = async (testRoundResult:TestRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
         const testRoundDetails = testRoundResult.test_round_details;
+
+        const userId = JSON.parse(getLocalStorage('user') || '{}').id
+        let roundNumber = 1;
+        const existingRounds = await getExistingTestRounds(Number(conceptId));
+        if (existingRounds.length > 0) {
+            roundNumber = existingRounds.length + 1;
+        }
+        const {data: master} = await dataProvider.create('test_rounds', {
+            data: {
+                user_id: userId,
+                concept_id: conceptId,
+                round_number: roundNumber,
+                started_timestamp: new Date().toISOString(),
+                status:'completed',
+                completed_timestamp:new Date().toISOString()
+            }
+        });
         for(const detail of testRoundDetails){
             await dataProvider.create('test_round_details',{data:{
-                test_round_id: testRoundResult.test_round_id,
+                test_round_id: master.id,
                 question_id: detail.question_id,
                 marks: detail.eligible_marks,
                 marks_obtained:  detail.marks_obtained,
             }});
         }
-        //Update revision round status to completed
-        await dataProvider.update('test_rounds',{id:testRoundResult.test_round_id,data:{status:'completed',completed_timestamp:new Date().toISOString()}});
         const testResults = testRoundDetails.map(
             (detail) => ({
                 questionId: detail.question_id,

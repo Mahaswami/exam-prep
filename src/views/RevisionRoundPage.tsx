@@ -3,6 +3,8 @@ import {useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {RevisionRound} from "./RevisionRound.tsx";
 import { Loading, useNotify, useRedirect } from "react-admin";
+import { getExistingRevisionRounds } from "../logic/revisions.ts";
+import { getLocalStorage } from "@mahaswami/swan-frontend";
 
 type RevisionRoundDetail = {
     viewed_timestamp: string;
@@ -95,15 +97,29 @@ export const RevisionRoundPage: React.FC = () => {
     const onCompleteRevisionRound = async (revisionRoundResult:RevisionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
         const revisionRoundDetails = revisionRoundResult.revision_round_details;
+        let roundNumber = 1;
+        const existingRounds = await getExistingRevisionRounds(Number(conceptId));
+        if (existingRounds.length > 0) {
+            roundNumber = existingRounds.length + 1;
+        }
+        const userId = JSON.parse(getLocalStorage('user') || '{}').id
+        const { data: master } = await dataProvider.create('revision_rounds', {
+            data: {
+                user_id: userId,
+                concept_id: conceptId,
+                round_number: roundNumber,
+                started_timestamp: new Date().toISOString(),
+                status:'completed',
+                completed_timestamp:new Date().toISOString()
+            }
+        });
         for(const detail of revisionRoundDetails){
             await dataProvider.create('revision_round_details',{data:{
-                revision_round_id: revisionRoundResult.revision_round_id,
+                revision_round_id: master.id,
                 question_id: detail.questionId,
                 viewed_timestamp: detail.viewed_timestamp,
             }});
         }
-        //Update revision round status to completed
-        await dataProvider.update('revision_rounds',{id:revisionRoundResult.revision_round_id,data:{status:'completed',completed_timestamp:new Date().toISOString()}});
         notify('Revision Completed Successfully')
         redirect('/concept_scores');
     }
