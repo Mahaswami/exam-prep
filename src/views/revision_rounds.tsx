@@ -92,7 +92,7 @@ export const RevisionRoundsList = (props: ListProps) => {
     )
 
     return (
-        <List {...listDefaults({ ...props})} actions={RevisionRoundActions} empty={<RoundEmpty actionType={"practice"}/>}>
+        <List {...listDefaults({ ...props})} actions={RevisionRoundActions} empty={<RoundEmpty actionType={"revision"}/>}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
