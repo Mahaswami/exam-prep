@@ -21,23 +21,21 @@ export const questionTypeChoices = [{ id: 'mcq', name: 'MCQ' }, { id: '2_marks',
 export const difficultyLevelChoices = [{ id: 'easy', name: 'Easy' }, { id: 'medium', name: 'Medium' }, { id: 'hard', name: 'Hard' }];
 
 const filters = [
-    <TextLiveFilter source="search" fields={["option_a", "option_b", "option_c"]} />,
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <ChoicesLiveFilter source="question_type" label="Question Type" choiceLabels={questionTypeChoices} />,
-    <ChoicesLiveFilter source="difficulty_level" label="Difficulty Level" choiceLabels={difficultyLevelChoices} />,
-    <NumberLiveFilter source="marks_number" label="Marks" />,
-    <BooleanLiveFilter source="is_active" label="Active" />
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Chapter" through='concept.chapter_id' show/>,
+    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" show />,
+    <ChoicesLiveFilter source="difficulty" label="Difficulty" choiceLabels={difficultyLevelChoices} show />,
+    <ChoicesLiveFilter source="type" label="Type" choiceLabels={questionTypeChoices} show />,
+    <BooleanLiveFilter source="is_invented" label="Is derived" show/>,
 ]
 
 export const QuestionsList = (props: ListProps) => {
     return (
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(RESOURCE)}>
+                <DataTable.Col source="id" />
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="type" />
-                <DataTable.Col source="difficulty_level" field={(props: any) => <SelectField {...props} choices={difficultyLevelChoices} />}/>
-                <DataTable.Col source="option_a" />
-                <DataTable.Col source="option_b" />
+                <DataTable.Col source="difficulty" field={(props: any) => <SelectField {...props} choices={difficultyLevelChoices} />}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -161,6 +159,7 @@ export const QuestionsResource =  (
             is_active: {}
         }}
         filters={filters}
+        filtersPlacement='top'
         list={<QuestionsList/>}
         create={<QuestionCreate/>}
         edit={<QuestionEdit/>}
