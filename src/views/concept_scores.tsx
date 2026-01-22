@@ -30,8 +30,6 @@ import {redirect, useNavigate} from 'react-router-dom';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { ChaptersReferenceField } from './chapters';
-import {createRevisionRoundForStudent} from "../logic/revisions.ts";
-import {createTestRoundForStudent} from "../logic/tests.ts";
 
 const LEVEL_ORDER = { 'needs_improvement': 0, 'good': 1, 'very_good': 2 } as const;
 const LEVEL_COLORS = {
@@ -97,13 +95,12 @@ const ConceptScoreRowActions = () => {
 
     return (
         <>
-            <Tooltip title="Practice">
+            <Tooltip title="Revision">
                 <IconButton 
                     size="small"
                     onClick={async(e) => {
                         e.stopPropagation();
-                        const revisionRound = await createRevisionRoundForStudent(record.concept?.chapter_id, record.concept_id);
-                        navigate(`/revision/start/${record.concept?.chapter_id}/${record.concept_id}/${revisionRound?.id}`);
+                        navigate(`/revision/start/${record.concept?.chapter_id}/${record.concept_id}`);
                     }}
                 >
                     <Refresh fontSize="small" />
@@ -114,8 +111,7 @@ const ConceptScoreRowActions = () => {
                     size="small"
                     onClick={async(e) => {
                         e.stopPropagation();
-                        const testRound = await createTestRoundForStudent(record.concept?.chapter_id, record.concept_id);
-                        navigate(`/testrounds/start/${record.concept?.chapter_id}/${record.concept_id}/${testRound?.id}`);
+                        navigate(`/testrounds/start/${record.concept?.chapter_id}/${record.concept_id}`);
                     }}
                 >
                     <Timer fontSize="small" />

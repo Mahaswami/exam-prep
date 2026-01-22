@@ -16,7 +16,9 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext,
+    CreateButton,
+    TopToolbar
 } from "react-admin";
 import {
     createDefaults,
@@ -35,12 +37,14 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
+import { TestPreparationButton } from '../analytics/StudentDashboard';
+import { RoundEmpty } from '../components/RoundEmpty';
 import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "revision_rounds"
@@ -69,7 +73,7 @@ const filters = (permissions: any) => [
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />
 ].filter(Boolean) as React.ReactElement[];
 
-const ChapterViaConceptField = (props: any) => (
+const ChapterViaConceptField = (props: any) => (    
     <ReferenceField source="concept_id" reference="concepts" link={false} {...props}>
         <ChaptersReferenceField source="chapter_id" />
     </ReferenceField>
@@ -78,8 +82,17 @@ const ChapterViaConceptField = (props: any) => (
 export const RevisionRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
     
+    const RevisionRoundActions = (
+        <TopToolbar>
+            <TestPreparationButton 
+                actionType={"revision"} 
+                component={CreateButton} to={{ redirect: false }} 
+            />
+        </TopToolbar>
+    )
+
     return (
-        <List {...listDefaults({ ...props})}>
+        <List {...listDefaults({ ...props})} actions={RevisionRoundActions} empty={<RoundEmpty actionType={"revision"}/>}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
@@ -310,7 +323,7 @@ export const RevisionRoundDetailsResource = (
 )
 
 export const RevisionRoundsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Practice Rounds" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
 );
 
 export const RevisionRoundDetailsMenu = () => (

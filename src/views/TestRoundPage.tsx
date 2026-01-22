@@ -6,11 +6,12 @@ import {getEligibleMarks, type QuestionRoundResult} from "../components/Question
 import { Loading, useNotify, useRedirect } from "react-admin";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
+import { getExistingTestRounds } from "../logic/tests.ts";
 
 const MAX_TEST_QUESTIONS = 8;
 const MIN_TEST_QUESTIONS = 6;
 export const TestRoundPage: React.FC = () => {
-    const { chapterId,conceptId,testRoundId } = useParams();
+    const { chapterId,conceptId } = useParams();
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
@@ -21,7 +22,7 @@ export const TestRoundPage: React.FC = () => {
     useEffect(() => {
         const fetchTestRoundQuestions = async () => {
             try {
-                console.log("Fetching tests for chapterId: ", chapterId,conceptId,testRoundId);
+                console.log("Fetching tests for chapterId: ", chapterId,conceptId);
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 const user_id = user.id;
 
@@ -91,10 +92,27 @@ export const TestRoundPage: React.FC = () => {
         }
 
         fetchTestRoundQuestions();
-    }, [chapterId,conceptId,testRoundId]);
+    }, [chapterId,conceptId]);
 
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+
+        const userId = JSON.parse(getLocalStorage('user') || '{}').id
+        let roundNumber = 1;
+        const existingRounds = await getExistingTestRounds(Number(conceptId));
+        if (existingRounds.length > 0) {
+            roundNumber = existingRounds.length + 1;
+        }
+        const {data: master} = await dataProvider.create('test_rounds', {
+            data: {
+                user_id: userId,
+                concept_id: conceptId,
+                round_number: roundNumber,
+                started_timestamp: new Date().toISOString(),
+                status:'completed',
+                completed_timestamp:new Date().toISOString()
+            }
+        });
         
         const testRoundDetails = questions.map(q => ({
             question_id: q.id,
@@ -106,22 +124,12 @@ export const TestRoundPage: React.FC = () => {
 
         for(const detail of testRoundDetails){
             await dataProvider.create('test_round_details',{data:{
-                test_round_id: testRoundId,
+                test_round_id: master.id,
                 question_id: detail.question_id,
                 marks: detail.eligible_marks,
                 marks_obtained: detail.marks_obtained,
             }});
         }
-        
-        await dataProvider.update('test_rounds',{
-            id: testRoundId,
-            data: {
-                status: 'completed',
-                started_timestamp: timing.startedAt,
-                completed_timestamp: timing.completedAt,
-            }
-        });
-        
         const testResults = testRoundDetails.map(
             (detail) => ({
                 questionId: detail.question_id,
