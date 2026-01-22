@@ -73,11 +73,11 @@ const QuestionForm = (props: any) => {
             </ConceptsReferenceInput>
             <SelectInput source="type" validate={required()} choices={questionTypeChoices} />
             <SelectInput source="difficulty" choices={difficultyChoices} />
-            <TextInput source="options" />
             <TextInput source="correct_option" />
-            <TextInput source="question_stream" />
-            <TextInput source="hint" />
-            <TextInput source="answer_stream" />
+            <TextInput source="question_stream" multiline rows={4} />
+            <TextInput source="answer_stream" multiline rows={4} />
+            <TextInput source="hint" multiline rows={4}/>
+            <TextInput source="options" multiline rows={4}/>
             <TextInput source="final_answer" />
             <NumberInput source="marks_number" />
             <BooleanInput source="is_active" />
@@ -156,8 +156,8 @@ export const QuestionsResource = (
             difficulty: { type: 'choice', ui: 'select', choices: difficultyChoices },
             options: {},
             correct_option: {},
-            question_stream: {},
             hint: {},
+            question_stream:{},
             answer_stream: {},
             final_answer: {},
             marks_number: {},
