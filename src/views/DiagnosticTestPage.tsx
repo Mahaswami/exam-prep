@@ -80,7 +80,7 @@ export const DiagnosticTestPage: React.FC = () => {
             (detail) => ({
                 conceptId: detail.conceptId,
                 difficulty: detail.difficulty,
-                isCorrect: detail.is_correct
+                is_correct: detail.is_correct
             })
         )
         const conceptScores =  calculateConceptScores(testResults)

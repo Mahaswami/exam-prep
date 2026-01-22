@@ -170,6 +170,7 @@ export const DiagnosticTestRound: React.FC<Props> = ({
             return {
                 questionId: q.id,
                 conceptId: q.concept_id,
+                difficulty: q.difficulty,
                 selected_answer: answer?.selected_answer ?? null,
                 is_correct:
                     answer?.selected_answer === q.correct_option,

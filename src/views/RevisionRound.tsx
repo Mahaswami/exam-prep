@@ -336,7 +336,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                                         <ReactMarkdown
                                             remarkPlugins={[remarkMath]}
                                             rehypePlugins={[rehypeKatex]}
-                                        >{question.final_answer}
+                                        >{"$$" + question.final_answer + "$$"}
                                         </ReactMarkdown>
                                     </Box>
                                 </Box>
