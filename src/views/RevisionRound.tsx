@@ -372,7 +372,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                             onClick={handleFinish}
                             startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         >
-                            {isSubmitting ? 'Saving...' : 'Finish Practice'}
+                            {isSubmitting ? 'Saving...' : 'Finish Revision'}
                         </Button>
                     ) : (
                         <Button

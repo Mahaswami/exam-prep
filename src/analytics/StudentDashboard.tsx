@@ -92,7 +92,7 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
     }
 ];
 
-type ActionType = 'diagnostic' | 'practice' | 'test' | null;
+type ActionType = 'diagnostic' | 'revision' | 'test' | null;
 
 export const StudentDashboard = () => {
     const role = getLocalStorage('role');
@@ -405,7 +405,7 @@ export const StudentDashboard = () => {
 
     const dialogTitles: Record<string, string> = {
         diagnostic: 'Start Diagnostic Test',
-        practice: 'Start Practice Round',
+        revision: 'Start revision Round',
         test: 'Start Test Round'
     };
 
@@ -469,9 +469,9 @@ export const StudentDashboard = () => {
                             size="small"
                             variant="outlined"
                             startIcon={<RefreshIcon />}
-                            onClick={() => handleActionClick('practice')}
+                            onClick={() => handleActionClick('revision')}
                         >
-                            Practice Round
+                            Revision Round
                         </Button>
                         <Button
                             size="small"
@@ -530,7 +530,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparati
 
     const handleDialogConfirm = async () => {
         if (!selectedChapterId) return;
-        const needsConcept = actionType === 'practice' || actionType === 'test';
+        const needsConcept = actionType === 'revision' || actionType === 'test';
         if (needsConcept && !selectedConceptId) return;
 
         try{
@@ -553,8 +553,8 @@ export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparati
             setIsPreparingTest(false);
         }
         const routes: Record<string, string> = {
-            diagnostic: `/diagnostic/start/${selectedChapterId}/`,
-            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}`,
+            diagnostic: `/diagnostic/start/${selectedChapterId}`,
+            revision: `/revision/start/${selectedChapterId}/${selectedConceptId}`,
             test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}`
         };
         
@@ -563,7 +563,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparati
         }
     };
 
-    const needsConceptSelection = actionType === 'practice' || actionType === 'test';
+    const needsConceptSelection = actionType === 'revision' || actionType === 'test';
     const canConfirm = actionType === 'diagnostic' 
         ? !!selectedChapterId 
         : !!selectedChapterId && !!selectedConceptId;

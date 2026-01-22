@@ -82,8 +82,8 @@ export const RevisionRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
     const handleOnCreate = () => {
         openDialog( 
-            <TestPreparationDialog actionType={"practice"}/>,
-            { Title: "Create Practice Round" }
+            <TestPreparationDialog actionType={"revision"}/>,
+            { Title: "Create Revision Round" }
         )
     }
     
@@ -295,7 +295,7 @@ export const RevisionRoundDetailsResource = (
 )
 
 export const RevisionRoundsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Practice Rounds" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
 );
 
 export const RevisionRoundDetailsMenu = () => (
