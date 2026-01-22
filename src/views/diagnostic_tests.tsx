@@ -1,5 +1,6 @@
-import { Article, Category } from '@mui/icons-material';
-import { Box, CardContent, CardHeader } from '@mui/material';
+import { Article, Category, Refresh } from '@mui/icons-material';
+import { Box, CardContent, CardHeader, Button as MuiButton } from '@mui/material';
+import * as React from 'react';
 import {
     Create,
     CreateProps,
@@ -15,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions, useRecordContext, useDataProvider, useNotify, useRefresh
 } from "react-admin";
 import {
     createDefaults,
@@ -42,6 +43,7 @@ import {
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
+import { calculateConceptScores } from '../logic/score_helper';
 
 export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_details"]
@@ -57,6 +59,91 @@ export const DiagnosticTestDetailsReferenceInput = createReferenceInput(DETAIL_R
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
 const isStudent = (permissions: any) => permissions === 'student';
+
+const RegenConceptScoresButton = () => {
+    const record = useRecordContext();
+    const dataProvider = useDataProvider();
+    const notify = useNotify();
+    const refresh = useRefresh();
+    const [loading, setLoading] = React.useState(false);
+
+    const handleRegen = async () => {
+        if (!record) return;
+        setLoading(true);
+        try {
+            const userId = record.user_id;
+            const chapterId = record.chapter_id;
+            
+            // Get concepts for this chapter
+            const { data: concepts } = await dataProvider.getList('concepts', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { chapter_id: chapterId }
+            });
+            const conceptIds = concepts.map((c: any) => c.id);
+            
+            // Delete existing concept_scores for this user + chapter concepts
+            const { data: existingScores } = await dataProvider.getList('concept_scores', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { user_id: userId, concept_id_eq_any: conceptIds }
+            });
+            for (const score of existingScores) {
+                await dataProvider.delete('concept_scores', { id: score.id });
+            }
+            
+            // Get diagnostic test details with question data
+            const { data: details } = await dataProvider.getList('diagnostic_test_details', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { diagnostic_test_id: record.id },
+                meta: { prefetch: ['questions'] }
+            });
+            
+            // Build test results with concept and difficulty from question
+            const testResults = details.map((d: any) => ({
+                conceptId: String(d.question?.concept_id || d.question_id),
+                difficulty: d.question?.difficulty || 'Medium',
+                is_correct: d.is_correct
+            }));
+            
+            // Calculate new scores
+            const conceptScores = calculateConceptScores(testResults);
+            
+            // Create new concept_scores
+            for (const score of conceptScores) {
+                await dataProvider.create('concept_scores', {
+                    data: {
+                        user_id: userId,
+                        concept_id: score.conceptId,
+                        initial_comfort_level: score.score,
+                        updated_timestamp: new Date().toISOString()
+                    }
+                });
+            }
+            
+            notify(`Regenerated ${conceptScores.length} concept scores`, { type: 'success' });
+            refresh();
+        } catch (error) {
+            console.error('Error regenerating concept scores:', error);
+            notify('Error regenerating concept scores', { type: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <MuiButton
+            variant="outlined"
+            size="small"
+            startIcon={<Refresh />}
+            onClick={handleRegen}
+            disabled={loading}
+        >
+            {loading ? 'Regenerating...' : 'Regen Concept Scores'}
+        </MuiButton>
+    );
+};
 
 const filters = (permissions: any) => [
     !isStudent(permissions) && <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
@@ -156,6 +243,11 @@ const DiagnosticTestShow = (props: ShowProps) => {
                 {/* <SelectField source="status" choices={statusChoices} /> */}
                 <NumberField source="total_questions_number" />
                 <NumberField source="correct_answers_number" />
+                {!isStudent(permissions) && (
+                    <Box sx={{ gridColumn: '1 / -1', mt: 2 }}>
+                        <RegenConceptScoresButton />
+                    </Box>
+                )}
             </SimpleShowLayout>
             <DetailResources/>
         </Show>

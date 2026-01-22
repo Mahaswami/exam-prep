@@ -10,6 +10,7 @@ import {
     Stack,
     Divider,
     Grid,
+    CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ReactMarkdown from "react-markdown";
@@ -153,7 +154,11 @@ export const TestRound: React.FC<Props> = ({ questions,
         setShowSolution(false);
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmit = () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         const payload = {
             test_round_id: testRoundId,
             test_round_details: Object.entries(viewedMap).map(
@@ -485,10 +490,11 @@ export const TestRound: React.FC<Props> = ({ questions,
                             size="small"
                             variant="contained"
                             color="success"
-                            disabled={!isAnswered()}
+                            disabled={!isAnswered() || isSubmitting}
                             onClick={handleSubmit}
+                            startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         >
-                            Submit
+                            {isSubmitting ? 'Submitting...' : 'Submit'}
                         </Button>
                     ) : (
                         <Button

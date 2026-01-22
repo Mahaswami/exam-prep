@@ -9,6 +9,7 @@ import {
     Stack,
     Divider,
     Grid,
+    CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ReactMarkdown from "react-markdown";
@@ -97,6 +98,7 @@ export const DiagnosticTestRound: React.FC<Props> = ({
     );
 
     const [index, setIndex] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     /* ---------- State ---------- */
 
@@ -162,6 +164,8 @@ export const DiagnosticTestRound: React.FC<Props> = ({
     /* ---------- Submit ---------- */
 
     const handleSubmit = () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         saveTimeForCurrentQuestion();
 
         const payload = sortedQuestions.map(q => {
@@ -170,6 +174,7 @@ export const DiagnosticTestRound: React.FC<Props> = ({
             return {
                 questionId: q.id,
                 conceptId: q.concept_id,
+                difficulty: q.difficulty,
                 selected_answer: answer?.selected_answer ?? null,
                 is_correct:
                     answer?.selected_answer === q.correct_option,
@@ -301,10 +306,11 @@ export const DiagnosticTestRound: React.FC<Props> = ({
                         <Button
                             size="small"
                             variant="contained"
-                            disabled={!isAnswered}
+                            disabled={!isAnswered || isSubmitting}
                             onClick={handleSubmit}
+                            startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         >
-                            Submit
+                            {isSubmitting ? 'Submitting...' : 'Submit'}
                         </Button>
                     ) : (
                         <Button
