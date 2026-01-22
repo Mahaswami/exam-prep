@@ -16,7 +16,9 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext,
+    TopToolbar,
+    CreateButton
 } from "react-admin";
 import {
     createDefaults,
@@ -35,13 +37,15 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
 import { QuestionDisplay } from '../components/QuestionDisplay';
+import { TestPreparationButton } from '../analytics/StudentDashboard';
+import { RoundEmpty } from '../components/RoundEmpty';
 
 export const RESOURCE = "test_rounds"
 export const DETAIL_RESOURCES = ["test_round_details"]
@@ -80,8 +84,18 @@ const ChapterViaConceptField = (props: any) => (
 export const TestRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
     
+    
+    const RevisionRoundActions = (
+        <TopToolbar>
+            <TestPreparationButton 
+                actionType={"test"} 
+                component={CreateButton} to={{ redirect: false }} 
+            />
+        </TopToolbar>
+    )
+    
     return (
-        <List {...listDefaults({ ...props })}>
+        <List {...listDefaults({ ...props })} actions={RevisionRoundActions} empty={<RoundEmpty actionType={"test"}/>}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>

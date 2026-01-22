@@ -17,7 +17,7 @@ const customEnglishMessages: TranslationMessages = {
             name: 'Revision Round Details',
         },
         revision_rounds: {
-            name: 'Practice Rounds',
+            name: 'Revision Rounds',
         },
         diagnostic_test_details: {
             name: 'Diagnostic Test Details',

@@ -1,4 +1,5 @@
 import { RESOURCE } from "../views/activities"
+import { remoteLog } from "@mahaswami/swan-frontend";
 
 export const ActivitiesLogic: any = {
     resource: RESOURCE,
@@ -27,3 +28,18 @@ export const ActivitiesLogic: any = {
     afterRead: [],
     afterSave: [],
 }
+
+export const createStudentLoginActivity = async (dataProvider: any, user: any) => {
+    try {
+          let payload = {
+            user_id: user.id,
+            activity_type: 'student_login',
+            activity_timestamp: new Date().toISOString()
+        }
+        await dataProvider.create('activities', { data: payload });
+    } catch (error) {
+        console.log("Error in createStudentLoginActivity: ", error);
+        remoteLog("Error in createStudentLoginActivity: ", error)
+    }
+}
+

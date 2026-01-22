@@ -1,7 +1,7 @@
 import { getLocalStorage, OmniSearchBox } from "@mahaswami/swan-frontend";
 import { Peak10Logo } from "./components/Peak10Logo";
 import { peak10Themes } from './theme/peak10Theme';
-
+import { createStudentLoginActivity } from "./logic/activities";
 import appConfigOptions from '../app_config.json';
 export const appTitlePrefix = () => {
     const appTitle = appConfigOptions.title;
@@ -14,7 +14,10 @@ export const canAccess = async (params: any) => {
 }
 
 export const postLogin = async (dataProvider: any, user: any) => {
-
+    if (user.role === 'student') {
+        // Create student login activity.
+        await createStudentLoginActivity(dataProvider, user);
+    }
 }    
 
 export const postLogout = () => {

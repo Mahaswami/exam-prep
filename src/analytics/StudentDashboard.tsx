@@ -1,8 +1,8 @@
-import { AnalyticsDashboard, WidgetConfig, getLocalStorage } from '@mahaswami/swan-frontend';
-import { useEffect, useMemo, useState } from 'react';
-import {useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Typography, Paper, Autocomplete, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
+import { AnalyticsDashboard, WidgetConfig, closeDialog, getLocalStorage, openDialog } from '@mahaswami/swan-frontend';
+import { useEffect, useState } from 'react';
+import {ButtonProps, useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
+import { useSearchParams } from 'react-router-dom';
+import { Box, Typography, Paper, Autocomplete, TextField, Button, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -12,8 +12,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Peak10Logo } from '../components/Peak10Logo';
-import {createRevisionRoundForStudent} from "../logic/revisions.ts"
-import {createTestRoundForStudent} from "../logic/tests.ts";
 import { checkIfDiagnosticsExist } from '../logic/diagnostics.ts';
 
 
@@ -94,23 +92,19 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
     }
 ];
 
-type ActionType = 'diagnostic' | 'practice' | 'test' | null;
+type ActionType = 'diagnostic' | 'revision' | 'test' | null;
 
 export const StudentDashboard = () => {
     const role = getLocalStorage('role');
     const isStudent = role === 'student';
     const { identity } = useGetIdentity();
     const dataProvider = useDataProvider();
-    const navigate = useNavigate();
     const redirect = useRedirect();
     const notify = useNotify()
     const [searchParams] = useSearchParams();
     
     const [computedWidgets, setComputedWidgets] = useState<WidgetConfig[]>(STUDENT_WIDGETS);
     const [selectedStudentId, setSelectedStudentId] = useState<number | undefined>(undefined);
-    const [actionDialog, setActionDialog] = useState<ActionType>(null);
-    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
-    const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
     const [onboardingSubjectId, setOnboardingSubjectId] = useState<number | null>(null);
     const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
     const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
@@ -276,12 +270,6 @@ export const StudentDashboard = () => {
 
     const chaptersForSubject = chapters.filter((c: any) => c.subject_id === onboardingSubjectId);
 
-    const { data: conceptsForChapter = [] } = useGetList('concepts', {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: 'name', order: 'ASC' },
-        filter: selectedChapterId ? { chapter_id: selectedChapterId } : {}
-    }, { enabled: !!selectedChapterId && actionDialog !== 'diagnostic' });
-
     // For admin without selected student, show message in computed widgets
     const displayWidgets = (!isStudent && !selectedStudentId) 
         ? computedWidgets.map(w => {
@@ -414,65 +402,13 @@ export const StudentDashboard = () => {
         );
     }
 
-    const handleActionClick = (type: ActionType) => {
-        setActionDialog(type);
-        setSelectedChapterId(null);
-        setSelectedConceptId(null);
-    };
-
-    const handleDialogConfirm = async () => {
-        let revisionRound = null;
-        let testRound = null;
-        if (!selectedChapterId) return;
-        const needsConcept = actionDialog === 'practice' || actionDialog === 'test';
-        if (needsConcept && !selectedConceptId) return;
-
-        try{
-            if (actionDialog === 'diagnostic' && isStudent) {
-                const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
-                if (existingTests) {
-                    console.log("Diagnostic test already exists for student: ");
-                    notify("You have already taken Diagnostic Test for this chapter.","info");
-                    return
-                }    
-            }
-            if (actionDialog === 'practice' && isStudent){
-                revisionRound = await createRevisionRoundForStudent(selectedChapterId,selectedConceptId);
-                console.log("Created revision round: ", revisionRound.id);
-            }
-            if (actionDialog === 'test' && isStudent) {
-                testRound = await createTestRoundForStudent(selectedChapterId, selectedConceptId);
-                console.log("Created test round: ", testRound.id);
-            }
-
-        }
-        catch(error){
-            //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
-            console.log("Error starting action: ", error);
-            return;
-        }
-        const routes: Record<string, string> = {
-            diagnostic: `/diagnostic/start/${selectedChapterId}/`,
-            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
-            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
-        };
-        
-        if (actionDialog && routes[actionDialog]) {
-            redirect(routes[actionDialog]);
-        }
-        setActionDialog(null);
-    };
-
-    const needsConceptSelection = actionDialog === 'practice' || actionDialog === 'test';
-    const canConfirm = actionDialog === 'diagnostic' 
-        ? !!selectedChapterId 
-        : !!selectedChapterId && !!selectedConceptId;
 
     const dialogTitles: Record<string, string> = {
         diagnostic: 'Start Diagnostic Test',
-        practice: 'Start Practice Round',
+        revision: 'Start revision Round',
         test: 'Start Test Round'
     };
+
 
     return (
         <Box>
@@ -514,69 +450,37 @@ export const StudentDashboard = () => {
                         disableClearable
                     />
                     <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
-                        <Button
-                            size="small"
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Diagnostic Test"
                             variant="contained"
+                            actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
-                            onClick={() => handleActionClick('diagnostic')}
                         >
                             Diagnostic Test
-                        </Button>
-                        <Button
-                            size="small"
+                        </TestPreparationButton>
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Revision Round"
                             variant="outlined"
+                            actionType="revision"
                             startIcon={<RefreshIcon />}
-                            onClick={() => handleActionClick('practice')}
                         >
-                            Practice Round
-                        </Button>
-                        <Button
-                            size="small"
+                            Revision Round
+                        </TestPreparationButton>
+                        <TestPreparationButton
+                            chapters={chapters}
+                            title="Start Test Round"
                             variant="contained"
                             color="warning"
+                            actionType="test"
                             startIcon={<TimerIcon />}
-                            onClick={() => handleActionClick('test')}
                         >
                             Test Round
-                        </Button>
+                        </TestPreparationButton>
                     </Stack>
                 </Box>
             )}
-
-            <Dialog open={!!actionDialog} onClose={() => setActionDialog(null)} maxWidth="sm" fullWidth>
-                <DialogTitle>{actionDialog && dialogTitles[actionDialog]}</DialogTitle>
-                <DialogContent>
-                    <Typography color="text.secondary" sx={{ mb: 2 }}>
-                        {needsConceptSelection ? 'Select a chapter and concept to begin' : 'Select a chapter to begin'}
-                    </Typography>
-                    <Autocomplete
-                        options={chapters}
-                        getOptionLabel={(option: any) => option.subject.code + ' : ' + option.name || `Chapter ${option.id}`}
-                        onChange={(_, value) => {
-                            setSelectedChapterId(value?.id || null);
-                            setSelectedConceptId(null);
-                        }}
-                        renderInput={(params) => <TextField {...params} label="Select Chapter" />}
-                        fullWidth
-                        sx={{ mb: 2 }}
-                    />
-                    {needsConceptSelection && selectedChapterId && (
-                        <Autocomplete
-                            options={conceptsForChapter}
-                            getOptionLabel={(option: any) => option.name || `Concept ${option.id}`}
-                            onChange={(_, value) => setSelectedConceptId(value?.id || null)}
-                            renderInput={(params) => <TextField {...params} label="Select Concept" />}
-                            fullWidth
-                        />
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setActionDialog(null)}>Cancel</Button>
-                    <Button onClick={handleDialogConfirm} variant="contained" disabled={!canConfirm}>
-                        Start
-                    </Button>
-                </DialogActions>
-            </Dialog>
 
             <AnalyticsDashboard
                 // @ts-ignore - types.d.ts is outdated, actual component supports these props
@@ -590,3 +494,145 @@ export const StudentDashboard = () => {
         </Box>
     );
 };
+
+interface TestPreparationButton extends ButtonProps {
+    actionType: ActionType;
+    chapters?: any[];
+}
+
+export const TestPreparationButton = (props: TestPreparationButton) => {
+    const { 
+        actionType, 
+        chapters, 
+        component: ButtonComponent = Button,
+        title,
+        children,
+        ...rest
+    } = props;
+
+    const handleOnCreate = () => {
+        openDialog( 
+            <TestPreparationDialog chapters={chapters} actionType={actionType}/>,
+            { Title: title }
+        )
+    }
+
+    return (
+        <ButtonComponent
+            variant="outlined"
+            size="small"
+            onClick={handleOnCreate}
+            {...rest}
+        >
+            {children}
+        </ButtonComponent>
+    )
+}
+
+interface TestPreparationDialogProps {
+    actionType: ActionType;
+    chapters?: any[];
+}
+
+export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparationDialogProps) => {
+    const notify = useNotify();
+    const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
+    const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
+    const [isPreparingTest, setIsPreparingTest] = useState<boolean>(false);
+    const { data: conceptsForChapter = [] } = useGetList('concepts', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'name', order: 'ASC' },
+        filter: selectedChapterId ? { chapter_id: selectedChapterId } : {}
+    }, { enabled: !!selectedChapterId && actionType !== 'diagnostic' });
+    const { data: fetchedChapters = [], isLoading: chaptersLoading } = useGetList('chapters', {
+        pagination: { page: 1, perPage: 1000 },
+        meta: { prefetch: ['subjects'] },
+        sort: { field: 'sequence_number', order: 'ASC' },
+        filter: {is_active: true}
+    }, {
+        enabled: chapters.length == 0
+    });
+    const finalChapters = chapters?.length ? chapters : fetchedChapters;
+    
+
+    const isStudent = getLocalStorage('role') === 'student';
+    const redirect = useRedirect();
+
+    const handleDialogConfirm = async () => {
+        if (!selectedChapterId) return;
+        const needsConcept = actionType === 'revision' || actionType === 'test';
+        if (needsConcept && !selectedConceptId) return;
+
+        try{
+            setIsPreparingTest(true);
+            if (actionType === 'diagnostic' && isStudent) {
+                const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
+                if (existingTests) {
+                    console.log("Diagnostic test already exists for student: ");
+                    notify("You have already taken Diagnostic Test for this chapter.","info");
+                    return
+                }    
+            }
+            closeDialog();
+        }
+        catch(error){
+            //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
+            console.log("Error starting action: ", error);
+            return;
+        } finally {
+            setIsPreparingTest(false);
+        }
+        const routes: Record<string, string> = {
+            diagnostic: `/diagnostic/start/${selectedChapterId}`,
+            revision: `/revision/start/${selectedChapterId}/${selectedConceptId}`,
+            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}`
+        };
+        
+        if (actionType && routes[actionType]) {
+            redirect(routes[actionType]);
+        }
+    };
+
+    const needsConceptSelection = actionType === 'revision' || actionType === 'test';
+    const canConfirm = actionType === 'diagnostic' 
+        ? !!selectedChapterId 
+        : !!selectedChapterId && !!selectedConceptId;
+
+    return (
+        <Box>
+            <Typography color="text.secondary" sx={{ mb: 2 }}>
+                {needsConceptSelection ? 'Select a chapter and concept to begin' : 'Select a chapter to begin'}
+            </Typography>
+            <Autocomplete
+                options={finalChapters}
+                loading={chaptersLoading}
+                getOptionLabel={(option: any) => option.subject.code + ' : ' + option.name || `Chapter ${option.id}`}
+                onChange={(_, value) => {
+                    setSelectedChapterId(value?.id || null);
+                    setSelectedConceptId(null);
+                }}
+                renderInput={(params) => <TextField {...params} label="Select Chapter" />}
+                fullWidth
+                sx={{ mb: 2 }}
+            />
+            {needsConceptSelection && selectedChapterId && (
+                <Autocomplete
+                    options={conceptsForChapter}
+                    getOptionLabel={(option: any) => option.name || `Concept ${option.id}`}
+                    onChange={(_, value) => setSelectedConceptId(value?.id || null)}
+                    renderInput={(params) => <TextField {...params} label="Select Concept" />}
+                    fullWidth
+                />
+            )}
+            <DialogActions sx={{ mt: "1rem" }}>
+                <Button onClick={() => closeDialog()}>Cancel</Button>
+                <Button onClick={handleDialogConfirm} variant="contained" disabled={!canConfirm || isPreparingTest}
+                    loading={isPreparingTest}
+                    loadingPosition="start"
+                >
+                    Start
+                </Button>
+            </DialogActions>
+        </Box>
+    )
+}
