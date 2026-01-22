@@ -16,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext
 } from "react-admin";
 import {
     createDefaults,
@@ -35,13 +35,13 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep,
-    getLocalStorage
+    recordRep
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -56,22 +56,18 @@ export const RevisionRoundDetailsReferenceField = createReferenceField(DETAIL_RE
 export const RevisionRoundDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
-const filters = [
-    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <NumberLiveFilter source="round_number" label="Round" />,
-    <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
-    <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
-    <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />
-]
+const isStudent = (permissions: any) => permissions === 'student';
 
-const studentFilters = [
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
+const filters = (permissions: any) => [
+    !isStudent(permissions) && <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
+    <ReferenceLiveFilter show source="concept_id" through="chapter_id.subject_id" label="Subject" />,
+    <ReferenceLiveFilter show source="concept_id" through="chapter_id" label="Chapter" sx={{ minWidth: 350 }} />,
+    <ReferenceLiveFilter source="concept_id" show reference="concepts" label="Concept" />,
     <NumberLiveFilter source="round_number" label="Round" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
     <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />
-]
+].filter(Boolean) as React.ReactElement[];
 
 const ChapterViaConceptField = (props: any) => (
     <ReferenceField source="concept_id" reference="concepts" link={false} {...props}>
@@ -80,11 +76,12 @@ const ChapterViaConceptField = (props: any) => (
 );
 
 export const RevisionRoundsList = (props: ListProps) => {
-    const isStudent = getLocalStorage('role') === 'student';
+    const { permissions } = usePermissions();
+    
     return (
-        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
+        <List {...listDefaults({ ...props})}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="round_number" field={NumberField}/>
@@ -224,13 +221,44 @@ const RevisionRoundDetailEdit = (props: any) => {
     )
 }
 
+const RevisionRoundDetailShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const question = record.question;
+    
+    return (
+        <Box sx={{ p: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <DateField source="viewed_timestamp" showTime label="Viewed At" />
+            </Box>
+            {question && (
+                <QuestionDisplay
+                    question={{
+                        id: question.id,
+                        type: question.type,
+                        difficulty: question.difficulty,
+                        question_stream: question.question_stream,
+                        options: question.options,
+                        correct_option: question.correct_option,
+                        hint: question.hint,
+                        answer_stream: question.answer_stream,
+                        final_answer: question.final_answer,
+                    }}
+                    mode="review"
+                    showCorrectAnswer
+                    showSolution
+                    showHint
+                />
+            )}
+        </Box>
+    );
+};
+
 const RevisionRoundDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
-                <QuestionsReferenceField source="question_id" />
-                <DateField source="viewed_timestamp" showTime />
-            </SimpleShowLayout>
+            <RevisionRoundDetailShowContent />
         </Show>
     )
 }
@@ -254,7 +282,6 @@ export const RevisionRoundsResource = (
         create={<RevisionRoundCreate/>}
         edit={<RevisionRoundEdit/>}
         show={<RevisionRoundShow/>}
-                hasDialog
         hasLiveUpdate
         filtersPlacement='top'
         // {{SWAN:RESOURCE_OPTIONS}}
@@ -283,7 +310,7 @@ export const RevisionRoundDetailsResource = (
 )
 
 export const RevisionRoundsMenu = () => (
-    <Menu.Item to={`/${RESOURCE}`} primaryText="Revision Rounds" leftIcon={<ICON />} />
+    <Menu.Item to={`/${RESOURCE}`} primaryText="Practice Rounds" leftIcon={<ICON />} />
 );
 
 export const RevisionRoundDetailsMenu = () => (

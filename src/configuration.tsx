@@ -1,6 +1,6 @@
 import { getLocalStorage, OmniSearchBox } from "@mahaswami/swan-frontend";
-import { deepmerge } from "@mui/utils";
 import { Peak10Logo } from "./components/Peak10Logo";
+import { peak10Themes } from './theme/peak10Theme';
 
 import appConfigOptions from '../app_config.json';
 export const appTitlePrefix = () => {
@@ -71,31 +71,7 @@ export const configureToolbarActions = (permissions: any) => {
 }
 
 export const themes = (defaultThemes: any) => {
-    const houseTheme = defaultThemes.find((t: any) => t.name === 'house');
-    if (!houseTheme) return defaultThemes;
-
-    const peak10Overrides = {
-        light: {
-            palette: {
-                primary: { main: '#2E3A59' },
-                secondary: { main: '#34A853' },
-            },
-        },
-        dark: {
-            palette: {
-                primary: { main: '#FFFFFF' },
-                secondary: { main: '#34A853' },
-            },
-        },
-    };
-
-    const peak10Light = deepmerge(houseTheme.light, peak10Overrides.light);
-    const peak10Dark = deepmerge(houseTheme.dark, peak10Overrides.dark);
-    
-    return [
-        ...defaultThemes.filter((t: any) => t.name !== 'house'),
-        { name: 'house', light: peak10Light, dark: peak10Dark },
-    ];
+    return [...defaultThemes, peak10Themes];
 }
 
 const STUDENT_SCOPED_RESOURCES = [

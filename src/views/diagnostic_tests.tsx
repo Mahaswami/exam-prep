@@ -1,5 +1,6 @@
-import { Article, Category } from '@mui/icons-material';
-import { Box, CardContent, CardHeader } from '@mui/material';
+import { Article, Category, Refresh } from '@mui/icons-material';
+import { Box, CardContent, CardHeader, Button as MuiButton } from '@mui/material';
+import * as React from 'react';
 import {
     Create,
     CreateProps,
@@ -15,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions, useRecordContext, useDataProvider, useNotify, useRefresh
 } from "react-admin";
 import {
     createDefaults,
@@ -37,11 +38,13 @@ import {
     createReferenceField,
     createReferenceInput,
     recordRep,
-    getLocalStorage
+    RelativeDateField
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
+import { calculateConceptScores } from '../logic/score_helper';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_details"]
@@ -56,34 +59,114 @@ export const DiagnosticTestDetailsReferenceField = createReferenceField(DETAIL_R
 export const DiagnosticTestDetailsReferenceInput = createReferenceInput(DETAIL_RESOURCES[0], DETAIL_PREFETCH[0]);
 export const statusChoices = [{ id: 'in_progress', name: 'In Progress' }, { id: 'completed', name: 'Completed' }, { id: 'abandoned', name: 'Abandoned' }];
 
-const filters = [
-    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
-    <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
-    <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
-    <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
-    <NumberLiveFilter source="total_questions_number" label="Total Questions" />,
-    <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
-]
+const isStudent = (permissions: any) => permissions === 'student';
 
-const studentFilters = [
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+const RegenConceptScoresButton = () => {
+    const record = useRecordContext();
+    const dataProvider = useDataProvider();
+    const notify = useNotify();
+    const refresh = useRefresh();
+    const [loading, setLoading] = React.useState(false);
+
+    const handleRegen = async () => {
+        if (!record) return;
+        setLoading(true);
+        try {
+            const userId = record.user_id;
+            const chapterId = record.chapter_id;
+            
+            // Get concepts for this chapter
+            const { data: concepts } = await dataProvider.getList('concepts', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { chapter_id: chapterId }
+            });
+            const conceptIds = concepts.map((c: any) => c.id);
+            
+            // Delete existing concept_scores for this user + chapter concepts
+            const { data: existingScores } = await dataProvider.getList('concept_scores', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { user_id: userId, concept_id_eq_any: conceptIds }
+            });
+            for (const score of existingScores) {
+                await dataProvider.delete('concept_scores', { id: score.id });
+            }
+            
+            // Get diagnostic test details with question data
+            const { data: details } = await dataProvider.getList('diagnostic_test_details', {
+                pagination: { page: 1, perPage: 1000 },
+                sort: { field: 'id', order: 'ASC' },
+                filter: { diagnostic_test_id: record.id },
+                meta: { prefetch: ['questions'] }
+            });
+            
+            // Build test results with concept and difficulty from question
+            const testResults = details.map((d: any) => ({
+                conceptId: String(d.question?.concept_id || d.question_id),
+                difficulty: d.question?.difficulty || 'Medium',
+                is_correct: d.is_correct
+            }));
+            
+            // Calculate new scores
+            const conceptScores = calculateConceptScores(testResults);
+            
+            // Create new concept_scores
+            for (const score of conceptScores) {
+                await dataProvider.create('concept_scores', {
+                    data: {
+                        user_id: userId,
+                        concept_id: score.conceptId,
+                        initial_comfort_level: score.score,
+                        updated_timestamp: new Date().toISOString()
+                    }
+                });
+            }
+            
+            notify(`Regenerated ${conceptScores.length} concept scores`, { type: 'success' });
+            refresh();
+        } catch (error) {
+            console.error('Error regenerating concept scores:', error);
+            notify('Error regenerating concept scores', { type: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <MuiButton
+            variant="outlined"
+            size="small"
+            startIcon={<Refresh />}
+            onClick={handleRegen}
+            disabled={loading}
+        >
+            {loading ? 'Regenerating...' : 'Regen Concept Scores'}
+        </MuiButton>
+    );
+};
+
+const filters = (permissions: any) => [
+    !isStudent(permissions) && <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
+    <ReferenceLiveFilter show source="chapter_id" through="subject_id" label="Subject" />,
+    <ReferenceLiveFilter source="chapter_id" show reference="chapters" label="Chapter" />,
     <DateLiveFilter source="started_timestamp" label="Started Timestamp" />,
     <DateLiveFilter source="completed_timestamp" label="Completed Timestamp" />,
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />,
     <NumberLiveFilter source="total_questions_number" label="Total Questions" />,
     <NumberLiveFilter source="correct_answers_number" label="Correct Answers" />
-]
+].filter(Boolean) as React.ReactElement[];
 
 export const DiagnosticTestsList = (props: ListProps) => {
-    const isStudent = getLocalStorage('role') === 'student';
+    const { permissions } = usePermissions();
+    
     return (
-        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
+        <List {...listDefaults({ ...props })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
-                <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
-                <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                {/* <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/> */}
+                <DataTable.Col label="Completed" source="completed_timestamp" field={(props: any) => <RelativeDateField {...props}  />}/>
                 <DataTable.Col source="status" field={(props: any) => <SelectField {...props} choices={statusChoices} />}/>
                 <RowActions/>
             </DataTable>
@@ -147,19 +230,25 @@ const DiagnosticTestEdit = (props: EditProps) => {
 };
 
 const DiagnosticTestShow = (props: ShowProps) => {
+        const { permissions } = usePermissions();
     return (
         <Show {...showDefaults(props)}>
             <SimpleShowLayout
                 display="grid"
                 gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
                 gap="1rem">
-                <UsersReferenceField source="user_id" />
+                {!isStudent(permissions) && <UsersReferenceField source="user_id" />}
                 <ChaptersReferenceField source="chapter_id" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <SelectField source="status" choices={statusChoices} />
+                {/* <DateField source="started_timestamp" showTime /> */}
+                <RelativeDateField label="Completed" source="completed_timestamp"  />
+                {/* <SelectField source="status" choices={statusChoices} /> */}
                 <NumberField source="total_questions_number" />
                 <NumberField source="correct_answers_number" />
+                {!isStudent(permissions) && (
+                    <Box sx={{ gridColumn: '1 / -1', mt: 2 }}>
+                        <RegenConceptScoresButton />
+                    </Box>
+                )}
             </SimpleShowLayout>
             <DetailResources/>
         </Show>
@@ -192,8 +281,8 @@ export const DiagnosticTestDetailsList = (props: ListProps) => {
             <DataTable {...tableDefaults(props)}>
                 <DataTable.Col source="question_id" field={QuestionsReferenceField}/>
                 <DataTable.Col source="selected_answer" />
-                <DataTable.Col source="is_correct" field={BooleanField}/>
-                <DataTable.Col source="time_taken_seconds_number" field={NumberField}/>
+                <DataTable.Col label="Correct?"  source="is_correct" field={BooleanField}/>
+                <DataTable.Col label="Time Taken Seconds" source="time_taken_seconds_number" field={NumberField}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -228,15 +317,46 @@ const DiagnosticTestDetailEdit = (props: any) => {
     )
 }
 
+const DiagnosticTestDetailShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
+    
+    const question = record.question;
+    
+    return (
+        <Box sx={{ p: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                <BooleanField source="is_correct" label="Correct?" />
+                <NumberField source="time_taken_seconds_number" label="Time Taken (s)" />
+                <TextField source="selected_answer" label="Selected" />
+            </Box>
+            {question && (
+                <QuestionDisplay
+                    question={{
+                        id: question.id,
+                        type: question.type,
+                        difficulty: question.difficulty,
+                        question_stream: question.question_stream,
+                        options: question.options,
+                        correct_option: question.correct_option,
+                        hint: question.hint,
+                        answer_stream: question.answer_stream,
+                        final_answer: question.final_answer,
+                    }}
+                    mode="review"
+                    selectedAnswer={record.selected_answer}
+                    showCorrectAnswer
+                    showSolution
+                />
+            )}
+        </Box>
+    );
+};
+
 const DiagnosticTestDetailShow = (props: any) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
-                <QuestionsReferenceField source="question_id" />
-                <TextField source="selected_answer" />
-                <BooleanField source="is_correct" />
-                <NumberField source="time_taken_seconds_number" />
-            </SimpleShowLayout>
+            <DiagnosticTestDetailShowContent />
         </Show>
     )
 }
@@ -261,7 +381,7 @@ export const DiagnosticTestsResource = (
         create={<DiagnosticTestCreate/>}
         edit={<DiagnosticTestEdit/>}
         show={<DiagnosticTestShow/>}
-                hasDialog
+        // hasDialog
         hasLiveUpdate
         hasImport
         filtersPlacement='top'

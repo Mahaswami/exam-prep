@@ -2,15 +2,36 @@ import { Resource, createDefaults, tableDefaults,
 	editDefaults, formDefaults, listDefaults, 
 	showDefaults, RowActions, CardGrid,
 	createReferenceField,
-	createReferenceInput, ReferenceLiveFilter, ChoicesLiveFilter, DateLiveFilter, recordRep, getLocalStorage, RelativeDateField  } from '@mahaswami/swan-frontend';
+	createReferenceInput, ReferenceLiveFilter, ChoicesLiveFilter, DateLiveFilter, recordRep, RelativeDateField  } from '@mahaswami/swan-frontend';
 import { Assessment, TrendingUp, TrendingDown, Refresh, Timer } from '@mui/icons-material';
-import { Box, CardContent, CardHeader, Chip, IconButton, Tooltip } from '@mui/material';
-import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, DateField, DateInput, DateTimeInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext, ReferenceField } from "react-admin";
-import { useNavigate } from 'react-router-dom';
+import { Box, Chip, IconButton, Tooltip } from '@mui/material';
+import {
+    Create,
+    DataTable,
+    Edit,
+    List,
+    Menu,
+    Show,
+    SimpleForm,
+    SimpleShowLayout,
+    type ListProps,
+    DateField,
+    DateTimeInput,
+    SelectField,
+    SelectInput,
+    AutocompleteInput,
+    required,
+    useRecordContext,
+    ReferenceField,
+    usePermissions,
+    useRedirect
+} from "react-admin";
+import {redirect, useNavigate} from 'react-router-dom';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { ChaptersReferenceField } from './chapters';
+import {createRevisionRoundForStudent} from "../logic/revisions.ts";
+import {createTestRoundForStudent} from "../logic/tests.ts";
 
 const LEVEL_ORDER = { 'needs_improvement': 0, 'good': 1, 'very_good': 2 } as const;
 const LEVEL_COLORS = {
@@ -73,15 +94,16 @@ const ConceptScoreRowActions = () => {
     const record = useRecordContext();
     const navigate = useNavigate();
     if (!record?.concept_id) return null;
-    
+
     return (
         <>
             <Tooltip title="Practice">
                 <IconButton 
                     size="small"
-                    onClick={(e) => {
+                    onClick={async(e) => {
                         e.stopPropagation();
-                        navigate(`/revision_rounds/create?concept_id=${record.concept_id}`);
+                        const revisionRound = await createRevisionRoundForStudent(record.concept?.chapter_id, record.concept_id);
+                        navigate(`/revision/start/${record.concept?.chapter_id}/${record.concept_id}/${revisionRound?.id}`);
                     }}
                 >
                     <Refresh fontSize="small" />
@@ -90,9 +112,10 @@ const ConceptScoreRowActions = () => {
             <Tooltip title="Test">
                 <IconButton 
                     size="small"
-                    onClick={(e) => {
+                    onClick={async(e) => {
                         e.stopPropagation();
-                        navigate(`/test_rounds/create?concept_id=${record.concept_id}`);
+                        const testRound = await createTestRoundForStudent(record.concept?.chapter_id, record.concept_id);
+                        navigate(`/testrounds/start/${record.concept?.chapter_id}/${record.concept_id}/${testRound?.id}`);
                     }}
                 >
                     <Timer fontSize="small" />
@@ -104,33 +127,30 @@ const ConceptScoreRowActions = () => {
 
 export const RESOURCE = "concept_scores"
 export const ICON = Assessment
-export const PREFETCH: string[] = ["users", "concepts", "chapters", "subjects"]
+export const PREFETCH: string[] = ["users", "concepts"]
 
 export const ConceptScoresReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ConceptScoresReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 export const comfortLevelChoices = [{ id: 'needs_improvement', name: 'Needs Improvement' }, { id: 'good', name: 'Good' }, { id: 'very_good', name: 'Very Good' }];
 
-const filters = [
-    <ReferenceLiveFilter source="user_id" show reference="users" label="User" />,
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
+const isStudent = (permissions: any) => permissions === 'student';
+
+const filters = (permissions: any) => [
+    !isStudent(permissions) && <ReferenceLiveFilter show source="user_id" reference="users" label="User" />,
+    <ReferenceLiveFilter show source="concept_id" through="chapter_id.subject_id" label="Subject" />,
+    <ReferenceLiveFilter show source="concept_id" through="chapter_id" label="Chapter" sx={{ minWidth: 350 }} />,
+    <ReferenceLiveFilter show source="concept_id" reference="concepts" label="Concept" />,
     <ChoicesLiveFilter source="initial_comfort_level" label="Initial Level" choiceLabels={comfortLevelChoices} />,
     <ChoicesLiveFilter source="comfort_level" label="Current Level" choiceLabels={comfortLevelChoices} />,
     <DateLiveFilter source="updated_timestamp" label="Updated Timestamp" />
-]
-
-const studentFilters = [
-    <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />,
-    <ChoicesLiveFilter source="initial_comfort_level" label="Initial Level" choiceLabels={comfortLevelChoices} />,
-    <ChoicesLiveFilter source="comfort_level" label="Current Level" choiceLabels={comfortLevelChoices} />,
-    <DateLiveFilter source="updated_timestamp" label="Updated Timestamp" />
-]
-
+].filter(Boolean) as React.ReactElement[];
 export const ConceptScoresList = (props: ListProps) => {
-    const isStudent = getLocalStorage('role') === 'student';
+    const { permissions } = usePermissions();
+    
     return (
-        <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
+        <List {...listDefaults({ ...props })}>
             <DataTable {...tableDefaults(RESOURCE)}>
-                {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
+                {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="initial_comfort_level" label="Initial" field={() => <ComfortLevelField source="initial_comfort_level" />}/>
@@ -219,9 +239,8 @@ export const ConceptScoresResource =  (
         list={<ConceptScoresList/>}
         create={<ConceptScoreCreate/>}
         edit={<ConceptScoreEdit/>}
-        show={<ConceptScoreShow/>}
         listRowActions={<ConceptScoreRowActions />}
-                hasDialog
+        hasDialog
         hasLiveUpdate
         hasImport
         filtersPlacement='top'

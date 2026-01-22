@@ -20,7 +20,7 @@ export default defineConfig({
                 if (ctx.server) return html;
                 return html.replace(
                     '</head>',
-                    `<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0c8db43c79a643afa3263a7ddcd7da31"}'></script></head>`
+                    `<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "19f9f5f902ea4be8aaf755be7c71cece"}'></script></head>`
                 );
             }
         }

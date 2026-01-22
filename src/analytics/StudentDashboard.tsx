@@ -1,6 +1,6 @@
 import { AnalyticsDashboard, WidgetConfig, getLocalStorage } from '@mahaswami/swan-frontend';
-import { useEffect, useState } from 'react';
-import { useDataProvider, useGetList} from 'react-admin';
+import { useEffect, useMemo, useState } from 'react';
+import {useDataProvider, useGetIdentity, useGetList, useNotify, useRedirect } from 'react-admin';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Typography, Paper, Autocomplete, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack } from '@mui/material';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
@@ -12,6 +12,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { Peak10Logo } from '../components/Peak10Logo';
+import {createRevisionRoundForStudent} from "../logic/revisions.ts"
+import {createTestRoundForStudent} from "../logic/tests.ts";
+import { checkIfDiagnosticsExist } from '../logic/diagnostics.ts';
+
 
 const STUDENT_WIDGETS: WidgetConfig[] = [
     // Row 1: Key metrics (4 KPIs)
@@ -95,8 +99,11 @@ type ActionType = 'diagnostic' | 'practice' | 'test' | null;
 export const StudentDashboard = () => {
     const role = getLocalStorage('role');
     const isStudent = role === 'student';
+    const { identity } = useGetIdentity();
     const dataProvider = useDataProvider();
     const navigate = useNavigate();
+    const redirect = useRedirect();
+    const notify = useNotify()
     const [searchParams] = useSearchParams();
     
     const [computedWidgets, setComputedWidgets] = useState<WidgetConfig[]>(STUDENT_WIDGETS);
@@ -108,38 +115,40 @@ export const StudentDashboard = () => {
     const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
     const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
     
-    // Admin needs explicit filter; students are auto-filtered by DataProvider wrapper
-    const effectiveUserId = isStudent ? undefined : selectedStudentId;
+    const effectiveUserId = isStudent ? identity?.id : selectedStudentId;
+
+    // Shared reference data - fetch once with hooks
+    const { data: chapters = [], isLoading: chaptersLoading } = useGetList('chapters', {
+        pagination: { page: 1, perPage: 1000 },
+        meta: { prefetch: ['subjects'] },
+        sort: { field: 'sequence_number', order: 'ASC' },
+        filter: {is_active: true}
+    });
+
+    const { data: concepts = [], isLoading: conceptsLoading } = useGetList('concepts', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'id', order: 'ASC' },
+        filter: {}
+    });
+
+    const { data: subjects = [] } = useGetList('subjects', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'name', order: 'ASC' },
+        filter: {is_active: true}
+    });
 
     useEffect(() => {
         const computeMasteryData = async () => {
+            if (chaptersLoading || conceptsLoading || !effectiveUserId) return;
+            
             try {
-                // Students: DataProvider auto-filters by user_id
-                // Admins: need explicit filter when student selected
-                const filter = effectiveUserId ? { user_id_eq: effectiveUserId } : {user_id_eq: -1};
-                
-                const [scoresRes, conceptsRes, chaptersRes] = await Promise.all([
-                    dataProvider.getList('concept_scores', {
-                        pagination: { page: 1, perPage: 1000 },
-                        sort: { field: 'id', order: 'ASC' },
-                        filter
-                    }),
-                    dataProvider.getList('concepts', {
-                        pagination: { page: 1, perPage: 1000 },
-                        sort: { field: 'id', order: 'ASC' },
-                        filter: {}
-                    }),
-                    dataProvider.getList('chapters', {
-                        pagination: { page: 1, perPage: 1000 },
-                        meta: {prefetch: ["subjects"]},
-                        sort: { field: 'id', order: 'ASC' },
-                        filter: {}
-                    })
-                ]);
+                const scoresRes = await dataProvider.getList('concept_scores', {
+                    pagination: { page: 1, perPage: 1000 },
+                    sort: { field: 'id', order: 'ASC' },
+                    filter: { user_id: effectiveUserId }
+                });
                 
                 const data = scoresRes.data;
-                const concepts = conceptsRes.data;
-                const chapters = chaptersRes.data;
                 
                 // Filter by subject if selected
                 const filteredChapters = filterSubjectId 
@@ -249,7 +258,7 @@ export const StudentDashboard = () => {
         };
         
         computeMasteryData();
-    }, [dataProvider, effectiveUserId, filterSubjectId]);
+    }, [dataProvider, effectiveUserId, filterSubjectId, chapters, concepts, chaptersLoading, conceptsLoading]);
 
     
     // Fetch users for admin student picker
@@ -259,24 +268,11 @@ export const StudentDashboard = () => {
         filter: { role: 'student' }
     }, { enabled: !isStudent });
 
-    const { data: chapters = [] } = useGetList('chapters', {
-        pagination: { page: 1, perPage: 100 },
-        meta: {prefetch: ['subjects']},
-        sort: { field: 'sequence_number', order: 'ASC' },
-        filter: {}
-    });
-
     const { data: diagnosticTests = [], isLoading: loadingDiagnostics } = useGetList('diagnostic_tests', {
         pagination: { page: 1, perPage: 1 },
         sort: { field: 'id', order: 'DESC' },
-        filter: {}
-    }, { enabled: isStudent });
-
-    const { data: subjects = [] } = useGetList('subjects', {
-        pagination: { page: 1, perPage: 100 },
-        sort: { field: 'name', order: 'ASC' },
-        filter: {}
-    });
+        filter: effectiveUserId ? { user_id: effectiveUserId } : {}
+    }, { enabled: !!effectiveUserId });
 
     const chaptersForSubject = chapters.filter((c: any) => c.subject_id === onboardingSubjectId);
 
@@ -329,25 +325,24 @@ export const StudentDashboard = () => {
             <Box sx={{ 
                 position: 'fixed', 
                 inset: 0, 
+                mt: "3em",
                 zIndex: 1300, 
-                bgcolor: '#F4F7F6',
+                bgcolor: (theme) => theme.palette.background.default,
                 display: 'flex', 
                 flexDirection: 'column',
                 justifyContent: 'center', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                overflowY: 'auto',
             }}>
-                <Box sx={{ mb: 3 }}>
-                    <Peak10Logo size="large" />
-                </Box>
-                <Paper sx={{ p: 5, textAlign: 'center', maxWidth: 500 }}>
-                    <RocketLaunchIcon sx={{ fontSize: 64, color: '#34A853', mb: 2 }} />
-                    <Typography variant="h4" fontWeight="700" gutterBottom sx={{ color: '#2E3A59' }}>
+                <Paper sx={{ px: 5, py:2, textAlign: 'center', maxWidth: 500 }}>
+                    <RocketLaunchIcon sx={{ fontSize: 64, color: '#34A853'}} />
+                    <Typography variant="h4" fontWeight="700" gutterBottom >
                         Let's Get Started!
                     </Typography>
-                    <Typography color="text.secondary" sx={{ mb: 3 }}>
+                    <Typography color="text.secondary" sx={{ mb: 2 }}>
                         Take a diagnostic test to assess your current knowledge and personalize your learning path.
                     </Typography>
-                    <Stack spacing={1.5} sx={{ mb: 4, textAlign: 'left' }}>
+                    <Stack spacing={1.5} sx={{ mb: 2, textAlign: 'left' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <SearchIcon sx={{ color: '#34A853' }} />
                             <Box>
@@ -379,7 +374,7 @@ export const StudentDashboard = () => {
                         }}
                         renderInput={(params) => <TextField {...params} label="Select Subject" />}
                         fullWidth
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1 }}
                     />
                     {onboardingSubjectId && (
                         <Autocomplete
@@ -388,7 +383,7 @@ export const StudentDashboard = () => {
                             onChange={(_, value) => setOnboardingChapterId(value?.id || null)}
                             renderInput={(params) => <TextField {...params} label="Select Chapter" />}
                             fullWidth
-                            sx={{ mb: 3 }}
+                            sx={{ mb: 2 }}
                         />
                     )}
                     <Button
@@ -396,10 +391,18 @@ export const StudentDashboard = () => {
                         size="large"
                         startIcon={<AssignmentIcon />}
                         disabled={!onboardingChapterId}
-                        onClick={() => navigate(`/diagnostic_tests/create?chapter_id=${onboardingChapterId}`)}
+                        onClick={async () => {
+                            const exists = await checkIfDiagnosticsExist(onboardingSubjectId)
+                            if (!exists) {
+                                redirect(`/diagnostic/start/${onboardingChapterId}/`)
+                            } else {
+                                console.log("Diagnostic test already exists for student: ");
+                                notify("You have already taken Diagnostic Test for this chapter.","info");
+                            }
+                        }}
                         fullWidth
-                        sx={{ 
-                            bgcolor: '#34A853', 
+                        sx={{
+                            bgcolor: '#34A853',
                             '&:hover': { bgcolor: '#2d9249' },
                             '&.Mui-disabled': { bgcolor: 'action.disabledBackground' }
                         }}
@@ -417,19 +420,45 @@ export const StudentDashboard = () => {
         setSelectedConceptId(null);
     };
 
-    const handleDialogConfirm = () => {
+    const handleDialogConfirm = async () => {
+        let revisionRound = null;
+        let testRound = null;
         if (!selectedChapterId) return;
         const needsConcept = actionDialog === 'practice' || actionDialog === 'test';
         if (needsConcept && !selectedConceptId) return;
-        
+
+        try{
+            if (actionDialog === 'diagnostic' && isStudent) {
+                const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
+                if (existingTests) {
+                    console.log("Diagnostic test already exists for student: ");
+                    notify("You have already taken Diagnostic Test for this chapter.","info");
+                    return
+                }    
+            }
+            if (actionDialog === 'practice' && isStudent){
+                revisionRound = await createRevisionRoundForStudent(selectedChapterId,selectedConceptId);
+                console.log("Created revision round: ", revisionRound.id);
+            }
+            if (actionDialog === 'test' && isStudent) {
+                testRound = await createTestRoundForStudent(selectedChapterId, selectedConceptId);
+                console.log("Created test round: ", testRound.id);
+            }
+
+        }
+        catch(error){
+            //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
+            console.log("Error starting action: ", error);
+            return;
+        }
         const routes: Record<string, string> = {
-            diagnostic: `/diagnostic_tests/create?chapter_id=${selectedChapterId}`,
-            practice: `/revision_rounds/create?concept_id=${selectedConceptId}`,
-            test: `/test_rounds/create?concept_id=${selectedConceptId}`
+            diagnostic: `/diagnostic/start/${selectedChapterId}/`,
+            practice: `/revision/start/${selectedChapterId}/${selectedConceptId}/${revisionRound?.id}`,
+            test: `/testrounds/start/${selectedChapterId}/${selectedConceptId}/${testRound?.id}`
         };
         
         if (actionDialog && routes[actionDialog]) {
-            navigate(routes[actionDialog]);
+            redirect(routes[actionDialog]);
         }
         setActionDialog(null);
     };
@@ -473,7 +502,7 @@ export const StudentDashboard = () => {
             )}
             {isStudent && (
                 <Box sx={{ px: 3, pt: 2, pb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>👋 Welcome Back! <Typography component="span" variant="h6" color="text.secondary">Track your progress</Typography></Typography>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap' }}>👋 Welcome Back!</Typography>
                     <Autocomplete
                         size="small"
                         options={[{ id: null, name: 'All Subjects' }, ...subjects]}

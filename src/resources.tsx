@@ -29,7 +29,14 @@ import { DiagnosticTestsResource, DiagnosticTestDetailsResource, DiagnosticTests
 import { RevisionRoundsResource, RevisionRoundDetailsResource, RevisionRoundsMenu } from './views/revision_rounds.tsx';
 import { TestRoundsResource, TestRoundDetailsResource, TestRoundsMenu } from './views/test_rounds.tsx';
 import { ActivitiesResource, ActivitiesMenu } from './views/activities.tsx';
-import { SignupPage } from './views/Signup.tsx';
+import { SignupPage } from './components/Signup.tsx';
+import { PrivacyPolicy } from './policies/PrivacyPolicy.tsx';
+import { TermsConditions } from './policies/TermsConditions.tsx';
+import { ContactUs } from './policies/ContactUs.tsx';
+import { CancellationRefund } from './policies/CancellationRefund.tsx';
+import {RevisionRoundPage} from "./views/RevisionRoundPage.tsx";
+import {DiagnosticTestPage} from "./views/DiagnosticTestPage.tsx";
+import {TestRoundPage} from "./views/TestRoundPage.tsx";
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
@@ -59,11 +66,18 @@ export const configureResources = (permissions: any) => {
     let result = [
         <CustomRoutes noLayout key="public">
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsConditions />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/cancellation-refund" element={<CancellationRefund />} />
         </CustomRoutes>,
         <CustomRoutes key={103}>
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/analytics/admin" element={<AdminDashboard />} />
             <Route path="/analytics/student" element={<StudentDashboard />} />
+            <Route path="/diagnostic/start/:chapterId" element={<DiagnosticTestPage />} />
+            <Route path="/revision/start/:chapterId/:conceptId/:revisionRoundId" element={<RevisionRoundPage />} />
+            <Route path="/testrounds/start/:chapterId/:conceptId/:testRoundId" element={<TestRoundPage />} />
         </CustomRoutes>,
         HistoryResource,
         UsersResource,    
