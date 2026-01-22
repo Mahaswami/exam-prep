@@ -37,7 +37,7 @@
     "preview": {
       "gsheet": "1WAFs5JRS5jh7L7iJzfgtFtw62vtT72Z7zw2jDKbQqFY",
       "default": "gsheet",
-      "service_url": "https://swan-backend-preview.upkeep-plosive0o.workers.dev",
+      "service_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
       "file_storage": {
         "bucket": "guru-krupa-bucket"
       },
@@ -53,7 +53,7 @@
     "prod": {
       "gsheet": "1Ng0IxvkmaAQ2mrWLynfLwdRd2OvpwDw-IZuBBwaB0_8",
       "default": "gsheet",
-      "service_url": "https://swan-backend-preview.upkeep-plosive0o.workers.dev",
+      "service_url": "https://d1-provider-v2.upkeep-plosive0o.workers.dev",
       "file_storage": {
         "bucket": "guru-krupa-bucket"
       },
