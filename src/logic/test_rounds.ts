@@ -1,8 +1,26 @@
 import { RESOURCE, DETAIL_RESOURCES } from "../views/test_rounds"
+import { remoteLog } from "@mahaswami/swan-frontend";
+
+const createActivityAfterTestRoundCreate = async (result: any, dataProvider: any) => {
+    try {
+        const testRound = result?.data;
+        let payload = {
+            activity_type: 'test_round',
+            user_id: testRound?.user_id,
+            concept_id: Number(testRound?.concept_id),
+            activity_timestamp: new Date().toISOString(),
+        }
+        await dataProvider.create('activities', { data: payload });
+    } catch (Error) {
+        console.log("Error in createActivityAfterTestRoundCreate: ", Error);
+        remoteLog("Error in createActivityAfterTestRoundCreate: ", Error)
+    }
+    return result;
+}
 
 export const TestRoundsLogic: any = {
     resource: RESOURCE,
-    afterCreate: [],
+    afterCreate: [createActivityAfterTestRoundCreate],
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
