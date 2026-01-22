@@ -6,8 +6,9 @@ import { Resource, createDefaults, tableDefaults,
 import { Quiz } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required } from "react-admin";
+    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
+import { QuestionDisplay } from '../components/QuestionDisplay';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -32,7 +33,7 @@ export const QuestionsList = (props: ListProps) => {
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
-                <DataTable.Col source="question_type" field={(props: any) => <SelectField {...props} choices={questionTypeChoices} />}/>
+                <DataTable.Col source="type" />
                 <DataTable.Col source="difficulty_level" field={(props: any) => <SelectField {...props} choices={difficultyLevelChoices} />}/>
                 <DataTable.Col source="option_a" />
                 <DataTable.Col source="option_b" />
@@ -95,28 +96,44 @@ const QuestionCreate = (props: any) => {
     )
 }
 
-const QuestionShow = (props: any) => {
+const QuestionShowContent = () => {
+    const record = useRecordContext();
+    if (!record) return null;
     
     return (
-        <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
+        <Box sx={{ p: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
                 <ConceptsReferenceField source="concept_id" />
-                <SelectField source="question_type" choices={questionTypeChoices} />
-                <SelectField source="difficulty_level" choices={difficultyLevelChoices} />
-                <RichTextField source="question_html" />
-                <TextField source="option_a" />
-                <TextField source="option_b" />
-                <TextField source="option_c" />
-                <TextField source="option_d" />
-                <TextField source="correct_answer" />
-                <RichTextField source="hint_html" />
-                <RichTextField source="solution_html" />
-                <NumberField source="marks_number" />
+                <SelectField source="type" choices={questionTypeChoices} />
+                <SelectField source="difficulty" choices={difficultyLevelChoices} />
+                <NumberField source="marks_number" label="Marks" />
                 <BooleanField source="is_active" />
-            </SimpleShowLayout>
+            </Box>
+            <QuestionDisplay
+                question={{
+                    id: record.id,
+                    type: record.type,
+                    difficulty: record.difficulty,
+                    question_stream: record.question_stream,
+                    options: record.options,
+                    correct_option: record.correct_option,
+                    hint: record.hint,
+                    answer_stream: record.answer_stream,
+                    final_answer: record.final_answer,
+                }}
+                mode="view"
+                showSolution
+                showHint
+                showCorrectAnswer
+            />
+        </Box>
+    );
+};
+
+const QuestionShow = (props: any) => {
+    return (
+        <Show {...showDefaults(props)}>
+            <QuestionShowContent />
         </Show>
     )
 }
@@ -148,7 +165,6 @@ export const QuestionsResource =  (
         create={<QuestionCreate/>}
         edit={<QuestionEdit/>}
         show={<QuestionShow/>}
-        hasDialog
         hasLiveUpdate
         // {{SWAN:RESOURCE_OPTIONS}}
     />

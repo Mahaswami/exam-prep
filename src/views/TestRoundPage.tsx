@@ -1,23 +1,12 @@
 import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
-import {TestRound} from "./TestRound.tsx";
+import {QuestionRound} from "../components/QuestionRound";
+import {getEligibleMarks, type QuestionRoundResult} from "../components/QuestionDisplay";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import {getLocalStorage} from "@mahaswami/swan-frontend";
 
-type TestRoundDetail = {
-    eligible_marks: number;
-    marks_obtained: number;
-    question_id: string;
-    concept_id?: string;
-    difficulty?: "Easy" | "Medium" | "Hard";
-}
-
-type TestRoundResult = {
-    test_round_id: string;
-    test_round_details: TestRoundDetail[];
-}
 const MAX_TEST_QUESTIONS = 8;
 const MIN_TEST_QUESTIONS = 6;
 export const TestRoundPage: React.FC = () => {
@@ -25,6 +14,7 @@ export const TestRoundPage: React.FC = () => {
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
+    const [conceptName, setConceptName] = React.useState<string>('');
     const [isInvalidTestRound, setIsInvalidTestRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
@@ -39,6 +29,9 @@ export const TestRoundPage: React.FC = () => {
                 const dataProvider = window.swanAppFunctions.dataProvider;
                 const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
                 setChapterName(chapter.name);
+
+                const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
+                setConceptName(concept.name);
 
                 const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
                     filter: {chapter_id: chapterId}
@@ -100,19 +93,35 @@ export const TestRoundPage: React.FC = () => {
         fetchTestRoundQuestions();
     }, [chapterId,conceptId,testRoundId]);
 
-    const onCompleteTestRound = async (testRoundResult:TestRoundResult) => {
+    const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
-        const testRoundDetails = testRoundResult.test_round_details;
+        
+        const testRoundDetails = questions.map(q => ({
+            question_id: q.id,
+            eligible_marks: getEligibleMarks(q.type),
+            marks_obtained: answers[q.id]?.marksObtained ?? 0,
+            difficulty: q.difficulty,
+            time_taken: timing.perQuestion[q.id] ?? 0,
+        }));
+
         for(const detail of testRoundDetails){
             await dataProvider.create('test_round_details',{data:{
-                test_round_id: testRoundResult.test_round_id,
+                test_round_id: testRoundId,
                 question_id: detail.question_id,
                 marks: detail.eligible_marks,
-                marks_obtained:  detail.marks_obtained,
+                marks_obtained: detail.marks_obtained,
             }});
         }
-        //Update revision round status to completed
-        await dataProvider.update('test_rounds',{id:testRoundResult.test_round_id,data:{status:'completed',completed_timestamp:new Date().toISOString()}});
+        
+        await dataProvider.update('test_rounds',{
+            id: testRoundId,
+            data: {
+                status: 'completed',
+                started_timestamp: timing.startedAt,
+                completed_timestamp: timing.completedAt,
+            }
+        });
+        
         const testResults = testRoundDetails.map(
             (detail) => ({
                 questionId: detail.question_id,
@@ -123,18 +132,18 @@ export const TestRoundPage: React.FC = () => {
             })
         );
         console.log('Test Results for Score Calculation: ', testResults);
-        const scores =  calculateConceptScores(testResults)
+        const scores = calculateConceptScores(testResults)
         console.log('Calculated Concept Scores: ', scores);
         const user = JSON.parse(getLocalStorage('user') || '{}');
-       const {data: conceptScores} = await dataProvider.getList('concept_scores',{
+        const {data: conceptScores} = await dataProvider.getList('concept_scores',{
             filter: {user_id: user.id, concept_id: scores[0].conceptId}
         });
-       const latestConceptScore = conceptScores[0];
-       console.log('Latest Concept Score to be updated: ', latestConceptScore);
-       await dataProvider.update('concept_scores',{id:latestConceptScore.id,data:{
-           comfort_level: scores[0].score,
-           updated_timestamp: new Date().toISOString()
-       }});
+        const latestConceptScore = conceptScores[0];
+        console.log('Latest Concept Score to be updated: ', latestConceptScore);
+        await dataProvider.update('concept_scores',{id:latestConceptScore.id,data:{
+            comfort_level: scores[0].score,
+            updated_timestamp: new Date().toISOString()
+        }});
         notify('Test Completed Successfully')
         redirect('/concept_scores');
     }
@@ -150,9 +159,13 @@ export const TestRoundPage: React.FC = () => {
         return <div>Not enough new questions available for test round. Please try again later or contact support.</div>;
     }
     return (
-        <div>
-            <TestRound questions={questions} id={testRoundId} chapterName={chapterName}
-            onComplete={onCompleteTestRound}/>
-        </div>
+        <QuestionRound
+            questions={questions}
+            title={`Test Round - ${chapterName} - ${conceptName}`}
+            allowAnswer
+            allowHint
+            allowSolution
+            onComplete={onCompleteTestRound}
+        />
     );
 }
