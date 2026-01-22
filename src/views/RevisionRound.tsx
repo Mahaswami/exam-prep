@@ -10,6 +10,7 @@ import {
     Stack,
     Divider,
     Grid,
+    CircularProgress,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ReactMarkdown from "react-markdown";
@@ -108,6 +109,7 @@ export const RevisionRound: React.FC<Props> = ({ questions,
     );
 
     const [index, setIndex] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [showHint, setShowHint] = useState(false);
     const [showSolution, setShowSolution] = useState(false);
     const [viewedMap, setViewedMap] = useState<Record<string, number>>({});
@@ -127,6 +129,8 @@ export const RevisionRound: React.FC<Props> = ({ questions,
     };
 
     const handleFinish = () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         const payload = {
             revision_round_id: revisionRoundId,
             revision_round_details: Object.entries(viewedMap).map(
@@ -364,9 +368,11 @@ export const RevisionRound: React.FC<Props> = ({ questions,
                             size="small"
                             variant="contained"
                             color="success"
+                            disabled={isSubmitting}
                             onClick={handleFinish}
+                            startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         >
-                            Finish Practice
+                            {isSubmitting ? 'Saving...' : 'Finish Practice'}
                         </Button>
                     ) : (
                         <Button

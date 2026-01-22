@@ -3,7 +3,7 @@ type Difficulty = "Easy" | "Medium" | "Hard";
 type TestResult = {
     conceptId: string;
     difficulty: "Easy" | "Medium" | "Hard";
-    is_correct?: boolean;
+    is_correct?: boolean | string;
     eligible_marks?: number;
     marks_obtained?: number;
 }
@@ -47,8 +47,9 @@ export const calculateConceptScores = (
         }
 
         // CASE 2: Diagnostic rounds (boolean correctness)
-        else if (typeof r.is_correct === 'boolean') {
-            grouped[r.conceptId].weightedCorrect += r.is_correct ? weight : 0;
+        else if (r.is_correct !== undefined && r.is_correct !== null) {
+            const correct = r.is_correct === true || r.is_correct === 'TRUE' || r.is_correct === 'true';
+            grouped[r.conceptId].weightedCorrect += correct ? weight : 0;
         }
     }
 
