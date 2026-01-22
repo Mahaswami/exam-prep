@@ -12,7 +12,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { RenderStream, RenderMath } from "./RenderStream";
+import { RenderStream, RenderMath, wrapMathFracWithDollar } from "./RenderStream";
 import { QuestionDisplayProps, ContentBlock, getEligibleMarks } from "./types";
 
 const parseOptions = (
@@ -167,7 +167,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
 
                         if (isInteractive && isSelected) {
                             borderColor = theme.palette.primary.main;
-                            bgColor = theme.palette.primary.light;
+                            bgColor = theme.palette.info.light;
                         } else if (highlightCorrect) {
                             borderColor = theme.palette.success.main;
                             bgColor = theme.palette.success.light;
@@ -271,7 +271,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                     <Typography variant="caption" fontWeight={600}>
                         Hint
                     </Typography>
-                    <RenderMath content={getHintContent(question)!} />
+                    <RenderMath content={wrapMathFracWithDollar(getHintContent(question))!} preventDollarWrap/>
                 </Box>
             )}
 
@@ -301,7 +301,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                             }}
                         >
                             <strong>Answer:</strong>{" "}
-                            <RenderMath content={getFinalAnswer(question)!} />
+                            <RenderMath content={wrapMathFracWithDollar(getFinalAnswer(question))!} preventDollarWrap/>
                         </Box>
                     )}
                 </Box>
