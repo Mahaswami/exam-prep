@@ -114,6 +114,7 @@ export const StudentDashboard = () => {
     const [onboardingSubjectId, setOnboardingSubjectId] = useState<number | null>(null);
     const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
     const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
+    const [isPreparingTest, setIsPreparingTest] = useState<boolean>(false);
     
     const effectiveUserId = isStudent ? identity?.id : selectedStudentId;
 
@@ -428,6 +429,7 @@ export const StudentDashboard = () => {
         if (needsConcept && !selectedConceptId) return;
 
         try{
+            setIsPreparingTest(true);
             if (actionDialog === 'diagnostic' && isStudent) {
                 const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
                 if (existingTests) {
@@ -450,6 +452,8 @@ export const StudentDashboard = () => {
             //notify(error instanceof Error ? error.message : "Error starting diagnostic test", { type: "error" });
             console.log("Error starting action: ", error);
             return;
+        } finally {
+            setIsPreparingTest(false);
         }
         const routes: Record<string, string> = {
             diagnostic: `/diagnostic/start/${selectedChapterId}/`,
@@ -572,7 +576,10 @@ export const StudentDashboard = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setActionDialog(null)}>Cancel</Button>
-                    <Button onClick={handleDialogConfirm} variant="contained" disabled={!canConfirm}>
+                    <Button onClick={handleDialogConfirm} variant="contained" disabled={!canConfirm || isPreparingTest}
+                        loading={isPreparingTest}
+                        loadingPosition="start"
+                    >
                         Start
                     </Button>
                 </DialogActions>

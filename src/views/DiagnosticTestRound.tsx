@@ -250,10 +250,7 @@ export const DiagnosticTestRound: React.FC<Props> = ({
                                                         }`,
                                                         backgroundColor:
                                                             isSelected
-                                                                ? theme
-                                                                    .palette
-                                                                    .primary
-                                                                    .light
+                                                                ? theme.palette.divider
                                                                 : "transparent",
                                                     }}
                                                 >
