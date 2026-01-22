@@ -16,7 +16,9 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions, useRecordContext, useDataProvider, useNotify, useRefresh
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, BooleanField, BooleanInput, usePermissions, useRecordContext, useDataProvider, useNotify, useRefresh,
+    TopToolbar,
+    CreateButton
 } from "react-admin";
 import {
     createDefaults,
@@ -38,12 +40,14 @@ import {
     createReferenceField,
     createReferenceInput,
     recordRep,
-    RelativeDateField
+    RelativeDateField,
+    openDialog
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { calculateConceptScores } from '../logic/score_helper';
+import { TestPreparationDialog } from '../analytics/StudentDashboard';
 
 export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_details"]
@@ -158,9 +162,20 @@ const filters = (permissions: any) => [
 
 export const DiagnosticTestsList = (props: ListProps) => {
     const { permissions } = usePermissions();
+    const handleOnCreate = () => {
+        openDialog( 
+            <TestPreparationDialog actionType={"diagnostic"}/>,
+            { Title: "Create Diagnostic Test Round" }
+        )
+    }
     
+    const RevisionRoundActions = (
+        <TopToolbar>
+            <CreateButton onClick={handleOnCreate} to={{ redirect: false }} variant='outlined'/>
+        </TopToolbar>
+    )
     return (
-        <List {...listDefaults({ ...props })}>
+        <List {...listDefaults({ ...props })} actions={RevisionRoundActions}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>

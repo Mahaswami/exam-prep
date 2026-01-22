@@ -16,7 +16,9 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions,
+    CreateButton,
+    TopToolbar
 } from "react-admin";
 import {
     createDefaults,
@@ -35,12 +37,14 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
+    openDialog
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
+import { TestPreparationDialog } from '../analytics/StudentDashboard';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -68,7 +72,7 @@ const filters = (permissions: any) => [
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={statusChoices} />
 ].filter(Boolean) as React.ReactElement[];
 
-const ChapterViaConceptField = (props: any) => (
+const ChapterViaConceptField = (props: any) => (    
     <ReferenceField source="concept_id" reference="concepts" link={false} {...props}>
         <ChaptersReferenceField source="chapter_id" />
     </ReferenceField>
@@ -76,9 +80,21 @@ const ChapterViaConceptField = (props: any) => (
 
 export const RevisionRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
+    const handleOnCreate = () => {
+        openDialog( 
+            <TestPreparationDialog actionType={"practice"}/>,
+            { Title: "Create Practice Round" }
+        )
+    }
     
+    const RevisionRoundActions = (
+        <TopToolbar>
+            <CreateButton onClick={handleOnCreate} to={{ redirect: false }} variant='outlined'/>
+        </TopToolbar>
+    )
+
     return (
-        <List {...listDefaults({ ...props})}>
+        <List {...listDefaults({ ...props})} actions={RevisionRoundActions}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>

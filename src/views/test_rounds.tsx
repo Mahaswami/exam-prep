@@ -16,7 +16,9 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions,
+    TopToolbar,
+    CreateButton
 } from "react-admin";
 import {
     createDefaults,
@@ -35,12 +37,14 @@ import {
     ChoicesLiveFilter,
     createReferenceField,
     createReferenceInput,
-    recordRep
+    recordRep,
+    openDialog
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { ChaptersReferenceField } from './chapters';
+import { TestPreparationDialog } from '../analytics/StudentDashboard';
 
 export const RESOURCE = "test_rounds"
 export const DETAIL_RESOURCES = ["test_round_details"]
@@ -78,9 +82,21 @@ const ChapterViaConceptField = (props: any) => (
 
 export const TestRoundsList = (props: ListProps) => {
     const { permissions } = usePermissions();
+    const handleOnCreate = () => {
+        openDialog( 
+            <TestPreparationDialog actionType={"test"}/>,
+            { Title: "Create Test Round" }
+        )
+    }
+    
+    const RevisionRoundActions = (
+        <TopToolbar>
+            <CreateButton onClick={handleOnCreate} to={{ redirect: false }} variant='outlined'/>
+        </TopToolbar>
+    )
     
     return (
-        <List {...listDefaults({ ...props })}>
+        <List {...listDefaults({ ...props })} actions={RevisionRoundActions}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent(permissions) && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
