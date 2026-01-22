@@ -48,7 +48,7 @@ const difficultyOrder: Record<string, number> = {
     Hard: 3,
 };
 
-export const RenderStream: React.FC<{ stream: ContentBlock[] }> = ({ stream }) => (
+const RenderStream: React.FC<{ stream: ContentBlock[] }> = ({ stream }) => (
     <Stack spacing={0.75}>
         {stream.map((block, idx) => {
             if (block.type === "svg" && block.data) {
