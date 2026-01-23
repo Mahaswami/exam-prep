@@ -33,7 +33,8 @@ export const DiagnosticTestPage: React.FC = () => {
                     filter: {chapter_id: chapterIdNumber}
                 })
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
+                    filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)},
+                    meta: {prefetch: ['concepts']}
                 })
                 console.log("Fetched diagnostic test: ", diagnosticTestQuestions);
                 setQuestions(questions);
@@ -147,6 +148,7 @@ export const DiagnosticTestPage: React.FC = () => {
             title={`Diagnostic Test – ${chapterName}`}
             allowAnswer
             onComplete={onCompleteDiagnosticTest}
+            addConceptName={true}
         />
     );
 }

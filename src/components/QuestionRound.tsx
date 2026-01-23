@@ -86,6 +86,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     initialTiming,
     questionCorrectness,
     userName,
+    addConceptName = false,
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
     const isReviewMode = !onComplete;
@@ -200,7 +201,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                     ) : (
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
-                                {title}
+                                {title} {addConceptName && ` - ${question?.concept?.name}`}
                             </Typography>
                             <Typography variant="body2" fontWeight={600} color="text.secondary">
                                 {index + 1} / {sortedQuestions.length}
