@@ -23,6 +23,57 @@ import {
 
 type QuestionWithDifficulty = QuestionData & { difficulty: Difficulty };
 
+const NavigationDots = ({ 
+    questions, 
+    currentIndex, 
+    correctness,
+    onNavigate 
+}: { 
+    questions: QuestionWithDifficulty[];
+    currentIndex: number;
+    correctness?: Record<string, boolean>;
+    onNavigate: (index: number) => void;
+}) => (
+    <Stack direction="row" spacing={0.75} flexWrap="wrap" justifyContent="center" sx={{ py: 0.5 }}>
+        {questions.map((q, i) => {
+            const isCorrect = correctness?.[q.id];
+            const isCurrent = i === currentIndex;
+            
+            return (
+                <Box
+                    key={q.id}
+                    onClick={() => onNavigate(i)}
+                    sx={(theme) => {
+                        let bgColor = theme.palette.grey[300];
+                        if (isCorrect === true) bgColor = theme.palette.success.main;
+                        else if (isCorrect === false) bgColor = theme.palette.error.main;
+                        
+                        return {
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            backgroundColor: bgColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transform: isCurrent ? 'scale(1.15)' : 'scale(1)',
+                            boxShadow: isCurrent ? `0 0 0 3px ${theme.palette.primary.main}` : 'none',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: isCorrect !== undefined ? 'white' : theme.palette.text.primary,
+                            transition: 'transform 0.15s, box-shadow 0.15s',
+                            '&:hover': { opacity: 0.85 },
+                        };
+                    }}
+                >
+                    {i + 1}
+                </Box>
+            );
+        })}
+    </Stack>
+);
+
 export const QuestionRound = <T extends QuestionWithDifficulty>({
     questions,
     title,
@@ -31,13 +82,18 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     allowHint = false,
     allowSolution = false,
     showCorrectAnswer = false,
+    initialAnswers,
+    initialTiming,
+    questionCorrectness,
+    userName,
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
+    const isReviewMode = !onComplete;
 
     const [index, setIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [answersMap, setAnswersMap] = useState<Record<string, AnswerResult>>({});
-    const [timeMap, setTimeMap] = useState<Record<string, number>>({});
+    const [answersMap, setAnswersMap] = useState<Record<string, AnswerResult>>(initialAnswers ?? {});
+    const [timeMap, setTimeMap] = useState<Record<string, number>>(initialTiming ?? {});
 
     const startedAtRef = useRef<string>(new Date().toISOString());
     const questionStartRef = useRef<number>(Date.now());
@@ -49,12 +105,20 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         questionStartRef.current = Date.now();
     }, [index]);
 
-    const saveCurrentQuestionTime = () => {
+    const saveCurrentQuestionTime = (): Record<string, number> => {
+        if (isReviewMode) return timeMap;
         const elapsed = Math.floor((Date.now() - questionStartRef.current) / 1000);
-        setTimeMap(prev => ({
-            ...prev,
-            [question.id]: (prev[question.id] ?? 0) + elapsed,
-        }));
+        const updated = {
+            ...timeMap,
+            [question.id]: (timeMap[question.id] ?? 0) + elapsed,
+        };
+        setTimeMap(updated);
+        return updated;
+    };
+
+    const handleNavigate = (newIndex: number) => {
+        if (!isReviewMode) saveCurrentQuestionTime();
+        setIndex(newIndex);
     };
 
     const handleNext = () => {
@@ -68,9 +132,9 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     };
 
     const handleSubmit = () => {
-        if (isSubmitting) return;
+        if (isSubmitting || !onComplete) return;
         setIsSubmitting(true);
-        saveCurrentQuestionTime();
+        const finalTimeMap = saveCurrentQuestionTime();
 
         const completedAt = new Date().toISOString();
         const startTime = new Date(startedAtRef.current).getTime();
@@ -82,7 +146,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                 startedAt: startedAtRef.current,
                 completedAt,
                 totalSeconds: Math.floor((endTime - startTime) / 1000),
-                perQuestion: { ...timeMap },
+                perQuestion: finalTimeMap,
             },
         };
 
@@ -109,82 +173,116 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     };
 
     const mode = allowAnswer ? "interactive" : "review";
+    const currentCorrectness = questionCorrectness?.[question.id];
+    const currentTimeTaken = timeMap[question.id] ?? initialTiming?.[question.id];
 
     return (
-        <Box sx={{ width: "52rem", mx: "auto", py: 2 }}>
-            <Stack spacing={1.5}>
-
-                <Card elevation={1} sx={{ borderRadius: 2 }}>
-                    <CardContent sx={{ p: 1.5 }}>
-                        <Stack spacing={1}>
-                            <Stack direction="row" justifyContent="space-between" alignItems={"center"} spacing={"1rem"}>
-                                 <Typography variant="subtitle1" align="center" fontWeight={600}>
-                                    {title}
-                                </Typography>
-                                <Typography variant="subtitle2" fontWeight={"bold"}>
-                                    {index + 1} / {sortedQuestions.length}
-                                </Typography>
-                            </Stack>
-
-                            <Divider />
-
-                            <QuestionDisplay
-                                question={question}
-                                mode={mode}
-                                allowHint={allowHint}
-                                allowSolution={allowSolution}
-                                showCorrectAnswer={showCorrectAnswer}
-                                selectedAnswer={answersMap[question.id]?.selectedOption}
-                                marksObtained={answersMap[question.id]?.marksObtained}
-                                onAnswer={allowAnswer ? handleAnswer : undefined}
-                            />
-                            {allowAnswer && !canProceed() && (
-                                <Typography
-                                    variant="body1"
-                                    color="text.secondary"
-                                    align="center"
-                                >
-                                    Please answer the question to continue
+        <Box sx={{ width: '100%', maxWidth: '56rem', mx: 'auto', py: 1 }}>
+            <Card elevation={1} sx={{ borderRadius: 2 }}>
+                {/* Header with navigation dots */}
+                <Box sx={{ px: 2, pt: 1.5, pb: 1 }}>
+                    {isReviewMode && questionCorrectness ? (
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            {userName && (
+                                <Typography variant="body2" fontWeight={500} color="text.secondary">
+                                    {userName}
                                 </Typography>
                             )}
+                            <Box sx={{ flex: 1, display: 'flex', justifyContent: userName ? 'flex-end' : 'center' }}>
+                                <NavigationDots
+                                    questions={sortedQuestions}
+                                    currentIndex={index}
+                                    correctness={questionCorrectness}
+                                    onNavigate={handleNavigate}
+                                />
+                            </Box>
                         </Stack>
-                    </CardContent>
-                </Card>
-
-                <Stack direction="row" justifyContent="space-between">
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        disabled={index === 0}
-                        onClick={handleBack}
-                    >
-                        Back
-                    </Button>
-
-                    {isLastQuestion ? (
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            disabled={!canProceed() || isSubmitting}
-                            onClick={handleSubmit}
-                            startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
-                        >
-                            {isSubmitting ? 'Submitting...' : 'Submit'}
-                        </Button>
                     ) : (
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
+                                {title}
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600} color="text.secondary">
+                                {index + 1} / {sortedQuestions.length}
+                            </Typography>
+                        </Stack>
+                    )}
+                </Box>
+                
+                <Divider />
+                
+                {/* Question content */}
+                <CardContent sx={{ px: 2, py: 1.5 }}>
+                    <QuestionDisplay
+                        question={question}
+                        mode={mode}
+                        allowHint={allowHint}
+                        allowSolution={allowSolution}
+                        showCorrectAnswer={showCorrectAnswer}
+                        selectedAnswer={answersMap[question.id]?.selectedOption}
+                        marksObtained={answersMap[question.id]?.marksObtained}
+                        onAnswer={allowAnswer ? handleAnswer : undefined}
+                        timeTaken={currentTimeTaken}
+                        isCorrect={currentCorrectness}
+                    />
+                    {allowAnswer && !canProceed() && (
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            align="center"
+                            sx={{ mt: 1 }}
+                        >
+                            Please answer the question to continue
+                        </Typography>
+                    )}
+                </CardContent>
+                
+                {/* Footer with navigation */}
+                <Divider />
+                <Box sx={{ px: 2, py: 1, bgcolor: 'grey.50' }}>
+                    <Stack direction="row" justifyContent="space-between">
                         <Button
                             size="small"
-                            variant="outlined"
-                            disabled={!canProceed()}
-                            onClick={handleNext}
+                            variant="text"
+                            disabled={index === 0}
+                            onClick={handleBack}
                         >
-                            Next
+                            ← Back
                         </Button>
-                    )}
-                </Stack>
 
-            </Stack>
+                        {isReviewMode ? (
+                            <Button
+                                size="small"
+                                variant="text"
+                                disabled={isLastQuestion}
+                                onClick={handleNext}
+                            >
+                                Next →
+                            </Button>
+                        ) : isLastQuestion ? (
+                            <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                disabled={!canProceed() || isSubmitting}
+                                onClick={handleSubmit}
+                                startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Submit'}
+                            </Button>
+                        ) : (
+                            <Button
+                                size="small"
+                                variant="text"
+                                disabled={!canProceed()}
+                                onClick={handleNext}
+                            >
+                                Next →
+                            </Button>
+                        )}
+                    </Stack>
+                </Box>
+            </Card>
         </Box>
     );
 };

@@ -48,6 +48,7 @@ import { QuestionDisplay } from '../components/QuestionDisplay';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
 import { ComfortLevelField, ComfortLevelWithTrend } from '../components/ComfortLevelChip';
+import { RoundReviewContent } from '../components/RoundReviewContent';
 
 export const RESOURCE = "test_rounds"
 export const DETAIL_RESOURCES = ["test_round_details"]
@@ -170,27 +171,7 @@ const TestRoundEdit = (props: EditProps) => {
 const TestRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
-                <UsersReferenceField source="user_id" />
-                <ConceptsReferenceField source="concept_id" />
-                <NumberField source="round_number" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <NumberField source="total_time_seconds_number" label="Total Time (seconds)" />
-                <NumberField source="total_marks_number" label="Total Marks" />
-                <NumberField source="marks_obtained_number" label="Marks Obtained" />
-                <SelectField source="status" choices={statusChoices} />
-                <Labeled label="Previous Score">
-                    <ComfortLevelField source="previous_comfort_score" />
-                </Labeled>
-                <Labeled label="Current Score">
-                    <ComfortLevelWithTrend previousSource="previous_comfort_score" currentSource="comfort_score" />
-                </Labeled>
-            </SimpleShowLayout>
-            <DetailResources/>
+            <RoundReviewContent roundType="test" />
         </Show>
     );
 };
