@@ -151,7 +151,7 @@ export const RevisionRoundPage: React.FC = () => {
         }
         
         notify('Revision Completed Successfully')
-        redirect('/concept_scores');
+        redirect(`/revision_rounds/${master.id}/show`);
     }
 
 
