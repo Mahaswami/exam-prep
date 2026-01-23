@@ -536,7 +536,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[]}: TestPreparatio
         pagination: { page: 1, perPage: 1000 },
         sort: { field: 'id', order: 'ASC' },
         filter: { user_id: JSON.parse(getLocalStorage("user"))?.id },
-    }, { enabled: actionType !== 'diagnostic'});
+    });
     const { data: conceptsForChapter = [] } = useGetList('concepts', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
@@ -555,7 +555,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[]}: TestPreparatio
     const chapterIds = userDiagnosticTests?.map((c: any) => c.chapter_id).filter(Boolean);
     const validChapters = actionType !== 'diagnostic' 
         ? finalChapters.filter(chapter => chapterIds?.includes(chapter.id))
-        : finalChapters;
+        : finalChapters.filter(chapter => !chapterIds?.includes(chapter.id));
     
 
     const isStudent = getLocalStorage('role') === 'student';
