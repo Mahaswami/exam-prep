@@ -23,7 +23,7 @@ const checkIsStudentHasDiagnosticTest = async (dataProvider: any, user: any) => 
             }
         });
         if (diagnosticTests.length > 0) {
-            setLocalStorage("has_diagnostic_test", true);
+            hasDiagnosticTest = true;
         }
         setLocalStorage("has_diagnostic_test", hasDiagnosticTest);
     } catch (error) {
