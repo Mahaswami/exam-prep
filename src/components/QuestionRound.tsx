@@ -105,13 +105,15 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         questionStartRef.current = Date.now();
     }, [index]);
 
-    const saveCurrentQuestionTime = () => {
-        if (isReviewMode) return;
+    const saveCurrentQuestionTime = (): Record<string, number> => {
+        if (isReviewMode) return timeMap;
         const elapsed = Math.floor((Date.now() - questionStartRef.current) / 1000);
-        setTimeMap(prev => ({
-            ...prev,
-            [question.id]: (prev[question.id] ?? 0) + elapsed,
-        }));
+        const updated = {
+            ...timeMap,
+            [question.id]: (timeMap[question.id] ?? 0) + elapsed,
+        };
+        setTimeMap(updated);
+        return updated;
     };
 
     const handleNavigate = (newIndex: number) => {
@@ -132,7 +134,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     const handleSubmit = () => {
         if (isSubmitting || !onComplete) return;
         setIsSubmitting(true);
-        saveCurrentQuestionTime();
+        const finalTimeMap = saveCurrentQuestionTime();
 
         const completedAt = new Date().toISOString();
         const startTime = new Date(startedAtRef.current).getTime();
@@ -144,7 +146,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                 startedAt: startedAtRef.current,
                 completedAt,
                 totalSeconds: Math.floor((endTime - startTime) / 1000),
-                perQuestion: { ...timeMap },
+                perQuestion: finalTimeMap,
             },
         };
 

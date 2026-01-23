@@ -229,7 +229,7 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
                         };
                     }
 
-                    if (config.timeField && detail[config.timeField]) {
+                    if (config.timeField && detail[config.timeField] !== undefined) {
                         timing[question.id] = detail[config.timeField];
                     }
 

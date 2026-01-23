@@ -17,6 +17,7 @@ import { RenderStream, RenderMath, wrapMathFracWithDollar } from "./RenderStream
 import { QuestionDisplayProps, ContentBlock, getEligibleMarks } from "./types";
 
 const formatTime = (seconds: number): string => {
+    if (seconds <= 0) return '< 1s';
     if (seconds < 60) return `${seconds}s`;
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -128,7 +129,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                         variant="outlined"
                     />
                 )}
-                {timeTaken !== undefined && timeTaken > 0 && (
+                {timeTaken !== undefined && (
                     <Chip
                         icon={<TimerOutlinedIcon sx={{ fontSize: 16 }} />}
                         label={formatTime(timeTaken)}
