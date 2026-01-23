@@ -404,9 +404,9 @@ export const StudentDashboard = () => {
 
 
     const dialogTitles: Record<string, string> = {
-        diagnostic: 'Start Diagnostic Test',
-        revision: 'Start revision Round',
-        test: 'Start Test Round'
+        diagnostic: 'Take New Diagnostic Test',
+        revision: 'Revise Concept',
+        test: 'Start New Test'
     };
 
 
@@ -452,31 +452,31 @@ export const StudentDashboard = () => {
                     <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
                         <TestPreparationButton
                             chapters={chapters}
-                            title="Start Diagnostic Test"
+                            title={dialogTitles.diagnostic}
                             variant="contained"
                             actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
                         >
-                            Diagnostic Test
+                           {dialogTitles.diagnostic}
                         </TestPreparationButton>
                         <TestPreparationButton
                             chapters={chapters}
-                            title="Start Revision Round"
+                            title={dialogTitles.revision}
                             variant="outlined"
                             actionType="revision"
                             startIcon={<RefreshIcon />}
                         >
-                            Revision Round
+                            {dialogTitles.revision}
                         </TestPreparationButton>
                         <TestPreparationButton
                             chapters={chapters}
-                            title="Start Test Round"
+                            title={dialogTitles.test}
                             variant="contained"
                             color="warning"
                             actionType="test"
                             startIcon={<TimerIcon />}
                         >
-                            Test Round
+                            {dialogTitles.test}
                         </TestPreparationButton>
                     </Stack>
                 </Box>
