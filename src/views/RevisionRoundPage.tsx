@@ -99,9 +99,10 @@ export const RevisionRoundPage: React.FC = () => {
                 user_id: userId,
                 concept_id: conceptId,
                 round_number: roundNumber,
-                started_timestamp: new Date().toISOString(),
+                started_timestamp: timing.startedAt,
+                completed_timestamp: timing.completedAt,
+                total_time_seconds_number: timing.totalSeconds,
                 status:'completed',
-                completed_timestamp:new Date().toISOString()
             }
         });
         
@@ -109,7 +110,7 @@ export const RevisionRoundPage: React.FC = () => {
             await dataProvider.create('revision_round_details',{data:{
                 revision_round_id: master.id,
                 question_id: q.id,
-                time_viewed_seconds: timing.perQuestion[q.id] ?? 0,
+                time_viewed_seconds_number: timing.perQuestion[q.id] ?? 0,
             }});
         }
         

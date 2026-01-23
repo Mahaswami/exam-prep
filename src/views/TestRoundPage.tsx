@@ -103,50 +103,69 @@ export const TestRoundPage: React.FC = () => {
         if (existingRounds.length > 0) {
             roundNumber = existingRounds.length + 1;
         }
-        const {data: master} = await dataProvider.create('test_rounds', {
-            data: {
-                user_id: userId,
-                concept_id: conceptId,
-                round_number: roundNumber,
-                started_timestamp: new Date().toISOString(),
-                status:'completed',
-                completed_timestamp:new Date().toISOString()
-            }
-        });
-        
         const testRoundDetails = questions.map(q => ({
             question_id: q.id,
             eligible_marks: getEligibleMarks(q.type),
+            selected_answer: answers[q.id]?.selectedOption ?? null,
+            is_correct: answers[q.id]?.selectedOption === q.correct_option,
             marks_obtained: answers[q.id]?.marksObtained ?? 0,
             difficulty: q.difficulty,
             time_taken: timing.perQuestion[q.id] ?? 0,
         }));
 
+        const totalMarks = testRoundDetails.reduce((sum, d) => sum + d.eligible_marks, 0);
+        const marksObtained = testRoundDetails.reduce((sum, d) => sum + d.marks_obtained, 0);
+
+        // Calculate score before master create to include comfort_score
+        const testResults = testRoundDetails.map((detail) => ({
+            questionId: detail.question_id,
+            conceptId: conceptId!,
+            difficulty: detail.difficulty,
+            eligible_marks: detail.eligible_marks,
+            marks_obtained: detail.marks_obtained,
+        }));
+        const scores = calculateConceptScores(testResults);
+        const comfortScore = scores[0]?.score ?? 'needs_improvement';
+
+        // Fetch previous comfort score from concept_scores
+        const {data: conceptScoreRecords} = await dataProvider.getList('concept_scores',{
+            filter: {user_id: userId, concept_id: conceptId}
+        });
+        const previousComfortScore = conceptScoreRecords[0]?.comfort_level 
+                                   ?? conceptScoreRecords[0]?.initial_comfort_level 
+                                   ?? null;
+
+        const {data: master} = await dataProvider.create('test_rounds', {
+            data: {
+                user_id: userId,
+                concept_id: conceptId,
+                round_number: roundNumber,
+                started_timestamp: timing.startedAt,
+                completed_timestamp: timing.completedAt,
+                total_time_seconds_number: timing.totalSeconds,
+                total_marks_number: totalMarks,
+                marks_obtained_number: marksObtained,
+                status:'completed',
+                previous_comfort_score: previousComfortScore,
+                comfort_score: comfortScore,
+            }
+        });
+
         for(const detail of testRoundDetails){
             await dataProvider.create('test_round_details',{data:{
                 test_round_id: master.id,
                 question_id: detail.question_id,
+                selected_answer: detail.selected_answer,
+                is_correct: detail.is_correct,
                 marks: detail.eligible_marks,
                 marks_obtained: detail.marks_obtained,
+                time_taken_seconds_number: detail.time_taken,
             }});
         }
-        const testResults = testRoundDetails.map(
-            (detail) => ({
-                questionId: detail.question_id,
-                conceptId: conceptId,
-                difficulty: detail.difficulty,
-                eligible_marks: detail.eligible_marks,
-                marks_obtained: detail.marks_obtained,
-            })
-        );
-        console.log('Test Results for Score Calculation: ', testResults);
-        const scores = calculateConceptScores(testResults)
+
+        // Update concept_scores
         console.log('Calculated Concept Scores: ', scores);
-        const user = JSON.parse(getLocalStorage('user') || '{}');
-        const {data: conceptScores} = await dataProvider.getList('concept_scores',{
-            filter: {user_id: user.id, concept_id: scores[0].conceptId}
-        });
-        const latestConceptScore = conceptScores[0];
+        const latestConceptScore = conceptScoreRecords[0];
         console.log('Latest Concept Score to be updated: ', latestConceptScore);
         await dataProvider.update('concept_scores',{id:latestConceptScore.id,data:{
             comfort_level: scores[0].score,
