@@ -453,7 +453,6 @@ export const StudentDashboard = () => {
                         <TestPreparationButton
                             chapters={chapters}
                             title={dialogTitles.diagnostic}
-                            validateSelectOption={false}
                             variant="contained"
                             actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
@@ -526,10 +525,9 @@ export const TestPreparationButton = (props: TestPreparationDialogProps & Button
 interface TestPreparationDialogProps {
     actionType: ActionType;
     chapters?: any[];
-    validateSelectOption?: boolean;
 }
 
-export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectOption = true }: TestPreparationDialogProps) => {
+export const TestPreparationDialog = ({ actionType, chapters=[]}: TestPreparationDialogProps) => {
     const notify = useNotify();
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
@@ -538,7 +536,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectO
         pagination: { page: 1, perPage: 1000 },
         sort: { field: 'id', order: 'ASC' },
         filter: { user_id: JSON.parse(getLocalStorage("user"))?.id },
-    }, { enabled: validateSelectOption });
+    }, { enabled: actionType !== 'diagnostic'});
     const { data: conceptsForChapter = [] } = useGetList('concepts', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
@@ -555,7 +553,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectO
     const finalChapters = chapters?.length ? chapters : fetchedChapters;
     
     const chapterIds = userDiagnosticTests?.map((c: any) => c.chapter_id).filter(Boolean);
-    const validChapters = validateSelectOption 
+    const validChapters = actionType !== 'diagnostic' 
         ? finalChapters.filter(chapter => chapterIds?.includes(chapter.id))
         : finalChapters;
     

@@ -12,7 +12,9 @@ import { updateActivity } from "../logic/activities.ts";
 const MAX_TEST_QUESTIONS = 8;
 const MIN_TEST_QUESTIONS = 6;
 export const TestRoundPage: React.FC = () => {
-    const { chapterId,conceptId } = useParams();
+    const { chapterId, conceptId } = useParams();
+    const parsedChapterId = Number(chapterId);
+    const parsedConceptId = Number(conceptId);
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
@@ -33,8 +35,8 @@ export const TestRoundPage: React.FC = () => {
                 const payload = {
                     activity_type: 'test_round_pending',
                     user_id: user.id,
-                    chapter_id: Number(chapterId),
-                    concept_id: Number(conceptId),
+                    chapter_id: parsedChapterId,
+                    concept_id: parsedConceptId,
                     activity_timestamp: new Date().toISOString(),
                 };
                 const { data: pendingActivity } = await dataProvider.create('activities', { data: payload });
@@ -53,31 +55,31 @@ export const TestRoundPage: React.FC = () => {
     useEffect(() => {
         const fetchTestRoundQuestions = async () => {
             try {
-                console.log("Fetching tests for chapterId: ", chapterId,conceptId);
+                console.log("Fetching tests for chapterId: ", parsedChapterId, parsedConceptId);
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 const user_id = user.id;
 
                 //Fetch diagnostic test questions based on chapterId
                 const dataProvider = window.swanAppFunctions.dataProvider;
-                const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
+                const {data: chapter} = await dataProvider.getOne('chapters', {id: parsedChapterId});
                 setChapterName(chapter.name);
 
-                const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
+                const {data: concept} = await dataProvider.getOne('concepts', {id: parsedConceptId});
                 setConceptName(concept.name);
 
                 const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
+                    filter: {chapter_id: parsedChapterId}
                 })
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
-                    filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
+                    filter: {concept_id: parsedConceptId, status:'completed', user_id: user_id}});
 
                 const {data: previousRevisionQuestions} = await dataProvider.getList('revision_round_details',{
                     filter: {revision_round_id: previousRevisionRounds.map((rr:any) => rr.id)}
                 });
 
                 const {data: previousTestRounds} = await dataProvider.getList('test_rounds',{
-                    filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
+                    filter: {concept_id: parsedConceptId, status:'completed', user_id: user_id}});
                 const {data: previousTestQuestions} = await dataProvider.getList('test_round_details',{
                     filter: {test_round_id: previousTestRounds.map((tr:any) => tr.id)}
                 });
@@ -90,7 +92,7 @@ export const TestRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id:conceptId
+                    filter: {concept_id: parsedConceptId
                        // id_neq_any: Array.from(attemptedQuestionIds)
                     },
                 })
@@ -123,13 +125,13 @@ export const TestRoundPage: React.FC = () => {
         }
 
         fetchTestRoundQuestions();
-    }, [chapterId,conceptId]);
+    }, [parsedChapterId, parsedConceptId]);
 
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
 
         let roundNumber = 1;
-        const existingRounds = await getExistingTestRounds(Number(conceptId));
+        const existingRounds = await getExistingTestRounds(parsedConceptId);
         if (existingRounds.length > 0) {
             roundNumber = existingRounds.length + 1;
         }
@@ -159,7 +161,7 @@ export const TestRoundPage: React.FC = () => {
 
         // Fetch previous comfort score from concept_scores
         const {data: conceptScoreRecords} = await dataProvider.getList('concept_scores',{
-            filter: {user_id: user.id, concept_id: conceptId}
+            filter: {user_id: user.id, concept_id: parsedConceptId}
         });
         const previousComfortScore = conceptScoreRecords[0]?.comfort_level 
                                    ?? conceptScoreRecords[0]?.initial_comfort_level 
@@ -168,7 +170,7 @@ export const TestRoundPage: React.FC = () => {
         const {data: master} = await dataProvider.create('test_rounds', {
             data: {
                 user_id: user.id,
-                concept_id: conceptId,
+                concept_id: parsedConceptId,
                 round_number: roundNumber,
                 started_timestamp: timing.startedAt,
                 completed_timestamp: timing.completedAt,

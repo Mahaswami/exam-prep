@@ -9,7 +9,7 @@ import { Loading, useNotify, useRedirect } from "react-admin";
 import { updateActivity } from "../logic/activities.ts";
 
 export const DiagnosticTestPage: React.FC = () => {
-    const { chapterId,diagnosticTestId } = useParams();
+    const { chapterId } = useParams();
     const chapterIdNumber = Number(chapterId);
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
