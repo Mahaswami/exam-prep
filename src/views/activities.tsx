@@ -17,7 +17,15 @@ export const PREFETCH: string[] = ["users", "chapters", "concepts"]
 
 export const ActivitiesReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ActivitiesReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
-export const activityTypeChoices = [{ id: 'diagnostic_test', name: 'Diagnostic Test' }, { id: 'revision_round', name: 'Revision Round' }, { id: 'test_round', name: 'Test Round' }, {id: 'student_login', name: 'Logged In'}];
+export const activityTypeChoices = [
+    { id: 'diagnostic_test', name: 'Diagnostic Test' },
+    { id: 'revision_round', name: 'Revision Round' },
+    { id: 'test_round', name: 'Test Round' },
+    { id: 'student_login', name: 'Logged In' },
+    { id: 'diagnostic_test_pending', name: 'Diagnostic Test Pending' },
+    { id: 'test_round_pending', name: 'Test Round Pending' },
+    { id: 'revision_round_pending', name: 'Revision Round Pending' },
+];
 
 const filters = [
     <ReferenceLiveFilter source="user_id" reference="users" label="User" />,

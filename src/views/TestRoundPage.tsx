@@ -5,8 +5,9 @@ import {QuestionRound} from "../components/QuestionRound";
 import {getEligibleMarks, type QuestionRoundResult} from "../components/QuestionDisplay";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import {calculateConceptScores} from "../logic/score_helper.ts";
-import {getLocalStorage} from "@mahaswami/swan-frontend";
+import {getLocalStorage, remoteLog} from "@mahaswami/swan-frontend";
 import { getExistingTestRounds } from "../logic/tests.ts";
+import { updateActivity } from "../logic/activities.ts";
 
 const MAX_TEST_QUESTIONS = 8;
 const MIN_TEST_QUESTIONS = 6;
@@ -19,6 +20,36 @@ export const TestRoundPage: React.FC = () => {
     const [isInvalidTestRound, setIsInvalidTestRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const user = JSON.parse(getLocalStorage('user') || '{}');
+    // Status is used to avoid duplicate create calls in dev StrictMode
+    const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
+
+    useEffect(() => {
+        if (!chapterId || pendingActivityRef.current.status !== 'idle') return;
+        pendingActivityRef.current.status = 'creating';
+        const createPendingActivity = async () => {
+            try {
+                const dataProvider = (window as any).swanAppFunctions.dataProvider;
+                const payload = {
+                    activity_type: 'test_round_pending',
+                    user_id: user.id,
+                    chapter_id: Number(chapterId),
+                    concept_id: Number(conceptId),
+                    activity_timestamp: new Date().toISOString(),
+                };
+                const { data: pendingActivity } = await dataProvider.create('activities', { data: payload });
+                pendingActivityRef.current = {
+                    status: 'created',
+                    pendingActivity,
+                };
+            } catch (error) {
+                console.log("Error creating pending activity: ", error);
+                remoteLog("Error creating pending activity: ", error);
+            }
+        }
+        createPendingActivity();
+    }, []);
+
     useEffect(() => {
         const fetchTestRoundQuestions = async () => {
             try {
@@ -97,7 +128,6 @@ export const TestRoundPage: React.FC = () => {
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
 
-        const userId = JSON.parse(getLocalStorage('user') || '{}').id
         let roundNumber = 1;
         const existingRounds = await getExistingTestRounds(Number(conceptId));
         if (existingRounds.length > 0) {
@@ -129,7 +159,7 @@ export const TestRoundPage: React.FC = () => {
 
         // Fetch previous comfort score from concept_scores
         const {data: conceptScoreRecords} = await dataProvider.getList('concept_scores',{
-            filter: {user_id: userId, concept_id: conceptId}
+            filter: {user_id: user.id, concept_id: conceptId}
         });
         const previousComfortScore = conceptScoreRecords[0]?.comfort_level 
                                    ?? conceptScoreRecords[0]?.initial_comfort_level 
@@ -137,7 +167,7 @@ export const TestRoundPage: React.FC = () => {
 
         const {data: master} = await dataProvider.create('test_rounds', {
             data: {
-                user_id: userId,
+                user_id: user.id,
                 concept_id: conceptId,
                 round_number: roundNumber,
                 started_timestamp: timing.startedAt,
@@ -163,6 +193,13 @@ export const TestRoundPage: React.FC = () => {
             }});
         }
 
+        // Updating the pending activity
+        if (pendingActivityRef.current.pendingActivity) {
+            await updateActivity(pendingActivityRef.current.pendingActivity.id, {
+                activity_type: "test_round",
+                activity_timestamp: new Date().toISOString(),
+            });
+        }
         // Update concept_scores
         console.log('Calculated Concept Scores: ', scores);
         const latestConceptScore = conceptScoreRecords[0];

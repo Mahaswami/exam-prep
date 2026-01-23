@@ -1,11 +1,12 @@
 import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
-import {getLocalStorage} from "@mahaswami/swan-frontend";
+import {getLocalStorage, remoteLog} from "@mahaswami/swan-frontend";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import {calculateConceptScores} from "../logic/score_helper.ts";
 import { Loading, useNotify, useRedirect } from "react-admin";
+import { updateActivity } from "../logic/activities.ts";
 
 export const DiagnosticTestPage: React.FC = () => {
     const { chapterId,diagnosticTestId } = useParams();
@@ -14,6 +15,10 @@ export const DiagnosticTestPage: React.FC = () => {
     const [chapterName, setChapterName] = React.useState<string>('');
     const notify = useNotify();
     const redirect=useRedirect();
+    const user = JSON.parse(getLocalStorage('user') || '{}');
+    // Status is used to avoid duplicate create calls in dev StrictMode
+    const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
+
     useEffect(() => {
         const fetchDiagnosticTestQuestions = async () => {
             try {
@@ -41,6 +46,31 @@ export const DiagnosticTestPage: React.FC = () => {
         fetchDiagnosticTestQuestions();
     }, [chapterId]);
 
+    useEffect(() => {
+        if (!chapterId || pendingActivityRef.current.status !== 'idle') return;
+        pendingActivityRef.current.status = 'creating';
+        const createPendingActivity = async () => {
+            try {
+                const dataProvider = (window as any).swanAppFunctions.dataProvider;
+                const payload = {
+                    activity_type: 'diagnostic_test_pending',
+                    user_id: user.id,
+                    chapter_id: Number(chapterId),
+                    activity_timestamp: new Date().toISOString(),
+                };
+                const { data: pendingActivity } = await dataProvider.create('activities', { data: payload });
+                pendingActivityRef.current = {
+                    status: 'created',
+                    pendingActivity,
+                };
+            } catch (error) {
+                console.log("Error creating pending activity: ", error);
+                remoteLog("Error creating pending activity: ", error);
+            }
+        }
+        createPendingActivity();
+    }, []);
+
     const onCompleteDiagnosticTest = async ({ answers, timing }: QuestionRoundResult) => {
         console.log("Diagnostic Test Completed: ", { answers, timing });
         const dataProvider = window.swanAppFunctions.dataProvider;
@@ -55,7 +85,7 @@ export const DiagnosticTestPage: React.FC = () => {
         }));
 
         const {data: master} = await dataProvider.create('diagnostic_tests',{ data:{
-            user_id: JSON.parse(getLocalStorage('user') || '{}').id,
+            user_id: user.id,
             chapter_id: chapterId,
             started_timestamp: timing.startedAt,
             completed_timestamp: timing.completedAt,
@@ -73,7 +103,13 @@ export const DiagnosticTestPage: React.FC = () => {
                 time_taken_seconds_number: detail.time_taken,
             }});
         }
-
+        // Updating the pending activity
+        if (pendingActivityRef.current.pendingActivity) {
+            await updateActivity(pendingActivityRef.current.pendingActivity.id, {
+                activity_type: "diagnostic_test",
+                activity_timestamp: new Date().toISOString(),
+            });
+        }
         console.log("Diagnostic Test Results saved successfully.");
         const testResults = diagnosticDetails.map(
             (detail) => ({
@@ -83,7 +119,6 @@ export const DiagnosticTestPage: React.FC = () => {
             })
         )
         const conceptScores = calculateConceptScores(testResults)
-        const user = JSON.parse(getLocalStorage('user') || '{}');
 
         for(const conceptScore of conceptScores){
             await dataProvider.create('concept_scores',{data:{

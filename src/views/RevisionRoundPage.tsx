@@ -5,7 +5,8 @@ import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import { getExistingRevisionRounds } from "../logic/revisions.ts";
-import { getLocalStorage } from "@mahaswami/swan-frontend";
+import { getLocalStorage, remoteLog } from "@mahaswami/swan-frontend";
+import { updateActivity } from "../logic/activities.ts";
 
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
@@ -18,6 +19,36 @@ export const RevisionRoundPage: React.FC = () => {
     const [isInvalidRevisionRound, setIsInvalidRevisionRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const user = JSON.parse(getLocalStorage('user') || '{}');
+    // Status is used to avoid duplicate create calls in dev StrictMode
+    const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
+
+    useEffect(() => {
+        if (!chapterId || !conceptId || pendingActivityRef.current.status !== 'idle') return;
+        pendingActivityRef.current.status = 'creating';
+        const createPendingActivity = async () => {
+            try {
+                const dataProvider = (window as any).swanAppFunctions.dataProvider;
+                const payload = {
+                    activity_type: 'revision_round_pending',
+                    user_id: user.id,
+                    chapter_id: Number(chapterId),
+                    concept_id: Number(conceptId),
+                    activity_timestamp: new Date().toISOString(),
+                };
+                const { data: pendingActivity } = await dataProvider.create('activities', { data: payload });
+                pendingActivityRef.current = {
+                    status: 'created',
+                    pendingActivity,
+                };
+            } catch (error) {
+                console.log("Error creating pending activity: ", error);
+                remoteLog("Error creating pending activity: ", error);
+            }
+        }
+        createPendingActivity();
+    }, []);
+
     useEffect(() => {
         const fetchRevisionRoundQuestions = async () => {
             try {
@@ -93,10 +124,9 @@ export const RevisionRoundPage: React.FC = () => {
         if (existingRounds.length > 0) {
             roundNumber = existingRounds.length + 1;
         }
-        const userId = JSON.parse(getLocalStorage('user') || '{}').id
         const { data: master } = await dataProvider.create('revision_rounds', {
             data: {
-                user_id: userId,
+                user_id: user.id,
                 concept_id: conceptId,
                 round_number: roundNumber,
                 started_timestamp: timing.startedAt,
@@ -105,7 +135,13 @@ export const RevisionRoundPage: React.FC = () => {
                 status:'completed',
             }
         });
-        
+        // Updating the pending activity
+        if (pendingActivityRef.current.pendingActivity) {
+            await updateActivity(pendingActivityRef.current.pendingActivity.id, {
+                activity_type: "revision_round",
+                activity_timestamp: new Date().toISOString(),
+            });
+        }
         for(const q of questions){
             await dataProvider.create('revision_round_details',{data:{
                 revision_round_id: master.id,
