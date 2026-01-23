@@ -1,3 +1,4 @@
+import { getLocalStorage, swanAPI } from "@mahaswami/swan-frontend";
 import { RESOURCE } from "../views/questions"
 
 export const QuestionsLogic: any = {
@@ -31,7 +32,33 @@ export const QuestionsLogic: any = {
     beforeGetOne: [],
     beforeUpdate: [],
     beforeUpdateMany: [],
-    beforeSave: [],
+    beforeSave: [removeCommentAndSendNotification],
     afterRead: [],
     afterSave: [],
+}
+
+async function removeCommentAndSendNotification(data: any) {
+    if (data.status && data.status == "Active") {
+        data.comment = "";
+        data.comment_attachments = null;
+    } else if (data.status && data.status == "Need-Review") {
+        const appConfigOptions = window.appConfigOptions
+        let supportEmail = appConfigOptions?.environments[window.app_env].email.support_email;
+        if (!supportEmail) {
+            supportEmail = "support@peak10.in";
+        }
+        const username = JSON.parse(getLocalStorage("user")).fullName;
+        const subject = `Peak10: Question #${data.id} changed to ${data.status}`;
+        const message = `
+            Question #${data.id} changed to ${data.status} by ${username}.
+            Comment: ${data.comment}
+        `
+        const composedEmail = {
+            to: "lokeshwaran@mahaswami.com",
+            subject: subject,
+            message: message,
+        }
+        await swanAPI("send_email", composedEmail);
+    }
+    return data;
 }
