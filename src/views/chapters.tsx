@@ -70,6 +70,7 @@ const ChapterRowActions = () => {
     const [loadingPrepare, setLoadingPrepare] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
     const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+    const [loadingConvert, setLoadingConvert] = useState(false);
     if (!record?.id) return null;
 
     return (
@@ -166,6 +167,37 @@ const ChapterRowActions = () => {
                         <CircularProgress size={18} />
                     ) : (
                         <Refresh fontSize="small" />
+                    )}
+                </IconButton>
+            </Tooltip>
+            <Tooltip title="Convert Short Questions to MCQ">
+                <IconButton
+                    size="small"
+                    disabled={loadingConvert}
+                    onClick={async (e) => {
+                        e.stopPropagation();
+                        setLoadingConvert(true)
+                        try {
+                            if(!record.questions_attachment_file_id){
+                                notify("No questions attachment file found", { type: "warning" });
+                                return;
+                            }
+                            notify("Preparing MCQs questions ...", { type: "info" });
+                            await prepareQuestions(record.id, record.questions_attachment_file_id,false, true);
+                            notify("MCQs questions preparation completed", { type: "info" });
+                        }
+                        catch (Error) {
+                            notify("Error preparing questions: " + Error, { type: "error" });
+                        }
+                        finally {
+                            setLoadingConvert(false)
+                        }
+                    }}
+                >
+                    {loadingConvert ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Timer fontSize="small" />
                     )}
                 </IconButton>
             </Tooltip>
