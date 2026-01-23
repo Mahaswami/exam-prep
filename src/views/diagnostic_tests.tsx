@@ -259,6 +259,7 @@ const DiagnosticTestShow = (props: ShowProps) => {
                 {/* <SelectField source="status" choices={statusChoices} /> */}
                 <NumberField source="total_questions_number" />
                 <NumberField source="correct_answers_number" />
+                <NumberField source="total_time_taken_seconds_number" label="Total Time (seconds)" />
                 {!isStudent(permissions) && (
                     <Box sx={{ gridColumn: '1 / -1', mt: 2 }}>
                         <RegenConceptScoresButton />
@@ -387,6 +388,7 @@ export const DiagnosticTestsResource = (
             chapter_id: { required: true, resource: 'chapters' },
             started_timestamp: { required: true },
             completed_timestamp: {},
+            total_time_taken_seconds_number: {},
             status: { type: 'choice', ui: 'select', required: true, choices: statusChoices },
             total_questions_number: {},
             correct_answers_number: {}
