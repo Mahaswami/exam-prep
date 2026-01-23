@@ -453,6 +453,7 @@ export const StudentDashboard = () => {
                         <TestPreparationButton
                             chapters={chapters}
                             title={dialogTitles.diagnostic}
+                            validateSelectOption={false}
                             variant="contained"
                             actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
@@ -495,15 +496,8 @@ export const StudentDashboard = () => {
     );
 };
 
-interface TestPreparationButton extends ButtonProps {
-    actionType: ActionType;
-    chapters?: any[];
-}
-
-export const TestPreparationButton = (props: TestPreparationButton) => {
+export const TestPreparationButton = (props: TestPreparationDialogProps & ButtonProps) => {
     const { 
-        actionType, 
-        chapters, 
         component: ButtonComponent = Button,
         title,
         children,
@@ -512,7 +506,7 @@ export const TestPreparationButton = (props: TestPreparationButton) => {
 
     const handleOnCreate = () => {
         openDialog( 
-            <TestPreparationDialog chapters={chapters} actionType={actionType}/>,
+            <TestPreparationDialog {...rest}/>,
             { Title: title }
         )
     }
@@ -532,13 +526,19 @@ export const TestPreparationButton = (props: TestPreparationButton) => {
 interface TestPreparationDialogProps {
     actionType: ActionType;
     chapters?: any[];
+    validateSelectOption?: boolean;
 }
 
-export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparationDialogProps) => {
+export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectOption = true }: TestPreparationDialogProps) => {
     const notify = useNotify();
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
     const [isPreparingTest, setIsPreparingTest] = useState<boolean>(false);
+    const { data: userDiagnosticTests } = useGetList('diagnostic_tests', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'id', order: 'ASC' },
+        filter: { user_id: JSON.parse(getLocalStorage("user"))?.id },
+    }, { enabled: validateSelectOption });
     const { data: conceptsForChapter = [] } = useGetList('concepts', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
@@ -553,6 +553,11 @@ export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparati
         enabled: chapters.length == 0
     });
     const finalChapters = chapters?.length ? chapters : fetchedChapters;
+    
+    const chapterIds = userDiagnosticTests?.map((c: any) => c.chapter_id).filter(Boolean);
+    const validChapters = validateSelectOption 
+        ? finalChapters.filter(chapter => chapterIds?.includes(chapter.id))
+        : finalChapters;
     
 
     const isStudent = getLocalStorage('role') === 'student';
@@ -604,7 +609,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[] }: TestPreparati
                 {needsConceptSelection ? 'Select a chapter and concept to begin' : 'Select a chapter to begin'}
             </Typography>
             <Autocomplete
-                options={finalChapters}
+                options={validChapters}
                 loading={chaptersLoading}
                 getOptionLabel={(option: any) => option.subject.code + ' : ' + option.name || `Chapter ${option.id}`}
                 onChange={(_, value) => {
