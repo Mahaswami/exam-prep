@@ -223,7 +223,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         selectedAnswer={answersMap[question.id]?.selectedOption}
                         marksObtained={answersMap[question.id]?.marksObtained}
                         onAnswer={allowAnswer ? handleAnswer : undefined}
-                        timeTaken={currentTimeTaken}
+                        timeTaken={isReviewMode ? currentTimeTaken : undefined}
                         isCorrect={currentCorrectness}
                     />
                     {allowAnswer && !canProceed() && (
