@@ -38,6 +38,7 @@ import {
     createReferenceField,
     createReferenceInput,
     recordRep,
+    RelativeDateField,
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
@@ -46,6 +47,7 @@ import { ChaptersReferenceField } from './chapters';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
 import { QuestionDisplay } from '../components/QuestionDisplay';
+import { RoundReviewContent } from '../components/RoundReviewContent';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -86,7 +88,8 @@ export const RevisionRoundsList = (props: ListProps) => {
         <TopToolbar>
             <TestPreparationButton 
                 actionType={"revision"} 
-                component={CreateButton} to={{ redirect: false }} 
+                component={CreateButton} to={{ redirect: false }}
+                title={"Revise Concept"} 
             />
         </TopToolbar>
     )
@@ -98,8 +101,7 @@ export const RevisionRoundsList = (props: ListProps) => {
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="round_number" field={NumberField}/>
-                <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
-                <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                <DataTable.Col label="Completed" source="completed_timestamp" field={RelativeDateField}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -163,25 +165,14 @@ const RevisionRoundEdit = (props: EditProps) => {
 const RevisionRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
-                <UsersReferenceField source="user_id" />
-                <ConceptsReferenceField source="concept_id" />
-                <NumberField source="round_number" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <SelectField source="status" choices={statusChoices} />
-            </SimpleShowLayout>
-            <DetailResources/>
+            <RoundReviewContent roundType="revision" />
         </Show>
     );
 };
 
 const detail0Filters = [
     <ReferenceLiveFilter source="question_id" reference="questions" label="Question" />,
-    <DateLiveFilter source="viewed_timestamp" label="Viewed Timestamp" />
+    <NumberLiveFilter source="time_viewed_seconds_number" label="Time Viewed (seconds)" />
 ]
 
 const RevisionRoundDetailForm = (props: any) => {
@@ -190,7 +181,7 @@ const RevisionRoundDetailForm = (props: any) => {
             <QuestionsReferenceInput source="question_id">
                 <AutocompleteInput validate={required()} />
             </QuestionsReferenceInput>
-            <DateTimeInput source="viewed_timestamp" />
+            <NumberInput source="time_viewed_seconds_number" />
         </SimpleForm>
     )
 }
@@ -200,7 +191,7 @@ export const RevisionRoundDetailsList = (props: ListProps) => {
         <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(props)}>
                 <DataTable.Col source="question_id" field={QuestionsReferenceField}/>
-                <DataTable.Col source="viewed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                <DataTable.Col source="time_viewed_seconds_number" label="Time Viewed (s)" field={NumberField}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -212,7 +203,7 @@ export const RevisionRoundDetailsCardGrid = (props: ListProps) => {
     return (
         <List {...listDefaults(props)} component={'div'}>
             <CardGrid title={<QuestionsReferenceField source="question_id" variant='h6' />}>
-                <DateField source="viewed_timestamp" showTime />
+                <NumberField source="time_viewed_seconds_number" label="Time Viewed (s)" />
             </CardGrid>
         </List>
     )
@@ -243,7 +234,7 @@ const RevisionRoundDetailShowContent = () => {
     return (
         <Box sx={{ p: 2 }}>
             <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-                <DateField source="viewed_timestamp" showTime label="Viewed At" />
+                <NumberField source="time_viewed_seconds_number" label="Time Viewed (s)" />
             </Box>
             {question && (
                 <QuestionDisplay
@@ -288,6 +279,7 @@ export const RevisionRoundsResource = (
             round_number: { required: true },
             started_timestamp: { required: true },
             completed_timestamp: {},
+            total_time_seconds_number: {},
             status: { type: 'choice', ui: 'select', required: true, choices: statusChoices }
         }}
         filters={filters}
@@ -309,7 +301,7 @@ export const RevisionRoundDetailsResource = (
         recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.revision_round)} ${recordRep('questions', record.question)}`}
         fieldSchema={{
             question_id: { required: true, resource: 'questions' },
-            viewed_timestamp: {}
+            time_viewed_seconds_number: {}
         }}
         filters={detail0Filters}
         list={<RevisionRoundDetailsList/>}

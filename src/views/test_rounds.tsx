@@ -16,7 +16,7 @@ import {
     SimpleShowLayout,
     TextField,
     TextInput,
-    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext,
+    type ListProps, DateField, DateInput, DateTimeInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, usePermissions, useRecordContext, Labeled,
     TopToolbar,
     CreateButton
 } from "react-admin";
@@ -38,6 +38,7 @@ import {
     createReferenceField,
     createReferenceInput,
     recordRep,
+    RelativeDateField,
 } from '@mahaswami/swan-frontend';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
@@ -46,6 +47,8 @@ import { ChaptersReferenceField } from './chapters';
 import { QuestionDisplay } from '../components/QuestionDisplay';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
+import { ComfortLevelField, ComfortLevelWithTrend } from '../components/ComfortLevelChip';
+import { RoundReviewContent } from '../components/RoundReviewContent';
 
 export const RESOURCE = "test_rounds"
 export const DETAIL_RESOURCES = ["test_round_details"]
@@ -89,7 +92,8 @@ export const TestRoundsList = (props: ListProps) => {
         <TopToolbar>
             <TestPreparationButton 
                 actionType={"test"} 
-                component={CreateButton} to={{ redirect: false }} 
+                component={CreateButton} to={{ redirect: false }}
+                title="Start New Test" 
             />
         </TopToolbar>
     )
@@ -101,8 +105,8 @@ export const TestRoundsList = (props: ListProps) => {
                 <DataTable.Col source="concept_id" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="round_number" field={NumberField}/>
-                <DataTable.Col source="started_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
-                <DataTable.Col source="completed_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                <DataTable.Col label="Completed" source="completed_timestamp" field={RelativeDateField}/>
+                <DataTable.Col source="comfort_score" label="Score" field={() => <ComfortLevelWithTrend previousSource="previous_comfort_score" currentSource="comfort_score" />}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -167,19 +171,7 @@ const TestRoundEdit = (props: EditProps) => {
 const TestRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
-                <UsersReferenceField source="user_id" />
-                <ConceptsReferenceField source="concept_id" />
-                <NumberField source="round_number" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <SelectField source="status" choices={statusChoices} />
-                <SelectField source="comfort_score" choices={comfortScoreChoices} />
-            </SimpleShowLayout>
-            <DetailResources/>
+            <RoundReviewContent roundType="test" />
         </Show>
     );
 };
@@ -288,7 +280,11 @@ export const TestRoundsResource = (
             round_number: { required: true },
             started_timestamp: { required: true },
             completed_timestamp: {},
+            total_time_seconds_number: {},
+            total_marks_number: {},
+            marks_obtained_number: {},
             status: { type: 'choice', ui: 'select', required: true, choices: statusChoices },
+            previous_comfort_score: { type: 'choice', ui: 'select', choices: comfortScoreChoices },
             comfort_score: { type: 'choice', ui: 'select', choices: comfortScoreChoices }
         }}
         filters={filters}
@@ -309,7 +305,12 @@ export const TestRoundDetailsResource = (
         prefetch={DETAIL_PREFETCH[0]}
         recordRepresentation={(record: any) => `${recordRep(RESOURCE, record.test_round)} ${recordRep('questions', record.question)}`}
         fieldSchema={{
-            question_id: { required: true, resource: 'questions' }
+            question_id: { required: true, resource: 'questions' },
+            selected_answer: {},
+            is_correct: {},
+            marks: {},
+            marks_obtained: {},
+            time_taken_seconds_number: {}
         }}
         filters={detail0Filters}
         list={<TestRoundDetailsList/>}

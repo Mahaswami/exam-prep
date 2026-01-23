@@ -12,18 +12,27 @@ const customEnglishMessages: TranslationMessages = {
         },
         test_rounds: {
             name: 'Test Rounds',
+            action: {
+                create: 'Start New Test',
+            }
         },
         revision_round_details: {
             name: 'Revision Round Details',
         },
         revision_rounds: {
             name: 'Revision Rounds',
+              action: {
+                create: 'Revise Concept',
+            }
         },
         diagnostic_test_details: {
             name: 'Diagnostic Test Details',
         },
         diagnostic_tests: {
             name: 'Diagnostic Tests',
+            action: {
+                create: 'Take New Diagnostic Test',
+            }
         },
         concept_scores: {
             name: 'Concept Scores',

@@ -59,6 +59,7 @@ export const DiagnosticTestPage: React.FC = () => {
             chapter_id: chapterId,
             started_timestamp: timing.startedAt,
             completed_timestamp: timing.completedAt,
+            total_time_taken_seconds_number: timing.totalSeconds,
             status:'completed',
             total_questions_number: diagnosticDetails.length,
             correct_answers_number: diagnosticDetails.filter(d => d.is_correct).length

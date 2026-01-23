@@ -49,6 +49,7 @@ import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 import { calculateConceptScores } from '../logic/score_helper';
 import { TestPreparationDialog } from '../analytics/StudentDashboard';
 import { QuestionDisplay } from '../components/QuestionDisplay';
+import { RoundReviewContent } from '../components/RoundReviewContent';
 
 export const RESOURCE = "diagnostic_tests"
 export const DETAIL_RESOURCES = ["diagnostic_test_details"]
@@ -166,7 +167,7 @@ export const DiagnosticTestsList = (props: ListProps) => {
     const handleOnCreate = () => {
         openDialog( 
             <TestPreparationDialog actionType={"diagnostic"}/>,
-            { Title: "Create Diagnostic Test Round" }
+            { Title: "Take New Diagnostic Test" }
         )
     }
     
@@ -245,27 +246,15 @@ const DiagnosticTestEdit = (props: EditProps) => {
 };
 
 const DiagnosticTestShow = (props: ShowProps) => {
-        const { permissions } = usePermissions();
+    const { permissions } = usePermissions();
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
-                {!isStudent(permissions) && <UsersReferenceField source="user_id" />}
-                <ChaptersReferenceField source="chapter_id" />
-                {/* <DateField source="started_timestamp" showTime /> */}
-                <RelativeDateField label="Completed" source="completed_timestamp"  />
-                {/* <SelectField source="status" choices={statusChoices} /> */}
-                <NumberField source="total_questions_number" />
-                <NumberField source="correct_answers_number" />
-                {!isStudent(permissions) && (
-                    <Box sx={{ gridColumn: '1 / -1', mt: 2 }}>
-                        <RegenConceptScoresButton />
-                    </Box>
-                )}
-            </SimpleShowLayout>
-            <DetailResources/>
+            <RoundReviewContent roundType="diagnostic" />
+            {!isStudent(permissions) && (
+                <Box sx={{ px: 2, pb: 2 }}>
+                    <RegenConceptScoresButton />
+                </Box>
+            )}
         </Show>
     );
 };
@@ -387,6 +376,7 @@ export const DiagnosticTestsResource = (
             chapter_id: { required: true, resource: 'chapters' },
             started_timestamp: { required: true },
             completed_timestamp: {},
+            total_time_taken_seconds_number: {},
             status: { type: 'choice', ui: 'select', required: true, choices: statusChoices },
             total_questions_number: {},
             correct_answers_number: {}

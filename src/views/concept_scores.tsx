@@ -3,8 +3,8 @@ import { Resource, createDefaults, tableDefaults,
 	showDefaults, RowActions, CardGrid,
 	createReferenceField,
 	createReferenceInput, ReferenceLiveFilter, ChoicesLiveFilter, DateLiveFilter, recordRep, RelativeDateField  } from '@mahaswami/swan-frontend';
-import { Assessment, TrendingUp, TrendingDown, Refresh, Timer } from '@mui/icons-material';
-import { Box, Chip, IconButton, Tooltip } from '@mui/material';
+import { Assessment, Refresh, Timer } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
 import {
     Create,
     DataTable,
@@ -30,52 +30,7 @@ import {redirect, useNavigate} from 'react-router-dom';
 import { UsersReferenceField, UsersReferenceInput } from './users';
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { ChaptersReferenceField } from './chapters';
-
-const LEVEL_ORDER = { 'needs_improvement': 0, 'good': 1, 'very_good': 2 } as const;
-const LEVEL_COLORS = {
-    'needs_improvement': { bg: '#ffebee', color: '#c62828' },
-    'good': { bg: '#fff8e1', color: '#f57c00' },
-    'very_good': { bg: '#e8f5e9', color: '#2e7d32' }
-} as const;
-const LEVEL_LABELS = { 'needs_improvement': 'Needs Work', 'good': 'Good', 'very_good': 'Very Good' } as const;
-
-const ComfortLevelChip = ({ value }: { value: string }) => {
-    const colors = LEVEL_COLORS[value as keyof typeof LEVEL_COLORS] || { bg: '#f5f5f5', color: '#757575' };
-    const label = LEVEL_LABELS[value as keyof typeof LEVEL_LABELS] || value;
-    return (
-        <Chip 
-            label={label} 
-            size="small" 
-            sx={{ bgcolor: colors.bg, color: colors.color, fontWeight: 500 }} 
-        />
-    );
-};
-
-const ComfortLevelField = ({ source }: { source: string }) => {
-    const record = useRecordContext();
-    if (!record?.[source]) return null;
-    return <ComfortLevelChip value={record[source]} />;
-};
-
-const ComfortLevelWithTrend = () => {
-    const record = useRecordContext();
-    if (!record?.comfort_level) return null;
-    
-    const initial = LEVEL_ORDER[record.initial_comfort_level as keyof typeof LEVEL_ORDER] ?? -1;
-    const current = LEVEL_ORDER[record.comfort_level as keyof typeof LEVEL_ORDER] ?? -1;
-    
-    return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <ComfortLevelChip value={record.comfort_level} />
-            {initial >= 0 && current > initial && (
-                <TrendingUp sx={{ fontSize: 18, color: '#2e7d32' }} />
-            )}
-            {initial >= 0 && current < initial && (
-                <TrendingDown sx={{ fontSize: 18, color: '#c62828' }} />
-            )}
-        </Box>
-    );
-};
+import { ComfortLevelField, ComfortLevelWithTrend } from '../components/ComfortLevelChip';
 
 // Custom field to show chapter name via concept relationship
 const ChapterViaConceptField = () => {
@@ -95,7 +50,7 @@ const ConceptScoreRowActions = () => {
 
     return (
         <>
-            <Tooltip title="Revision">
+            <Tooltip title="Revise Concept">
                 <IconButton 
                     size="small"
                     onClick={async(e) => {
@@ -150,7 +105,7 @@ export const ConceptScoresList = (props: ListProps) => {
                 <DataTable.Col source="chapter" label="Chapter" field={ChapterViaConceptField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
                 <DataTable.Col source="initial_comfort_level" label="Initial" field={() => <ComfortLevelField source="initial_comfort_level" />}/>
-                <DataTable.Col source="comfort_level" label="Current" field={ComfortLevelWithTrend}/>
+                <DataTable.Col source="comfort_level" label="Current" field={() => <ComfortLevelWithTrend previousSource="initial_comfort_level" currentSource="comfort_level" />}/>
                 <DataTable.Col source="updated_timestamp" label="Updated" field={RelativeDateField}/>
                 <RowActions/>
             </DataTable>
