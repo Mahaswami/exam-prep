@@ -172,7 +172,7 @@ export const TestRoundPage: React.FC = () => {
             updated_timestamp: new Date().toISOString()
         }});
         notify('Test Completed Successfully')
-        redirect('/concept_scores');
+        redirect(`/test_rounds/${master.id}/show`);
     }
 
 
