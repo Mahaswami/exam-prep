@@ -63,15 +63,15 @@ const Welcome = () => {
 }
 
 export const configureResources = (permissions: any) => {
-    let result = [
-        <CustomRoutes noLayout key="public">
+    return [
+        <CustomRoutes noLayout>
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/cancellation-refund" element={<CancellationRefund />} />
         </CustomRoutes>,
-        <CustomRoutes key={103}>
+        <CustomRoutes>
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/analytics/admin" element={<AdminDashboard />} />
             <Route path="/analytics/student" element={<StudentDashboard />} />
@@ -80,27 +80,25 @@ export const configureResources = (permissions: any) => {
             <Route path="/testrounds/start/:chapterId/:conceptId" element={<TestRoundPage />} />
         </CustomRoutes>,
         HistoryResource,
-        UsersResource,    
+        UsersResource,
         DocumentTemplatesResource,
         DigitalSignaturesResource,
         SubjectsResource,
-    ChaptersResource,
-    ConceptsResource,
-    QuestionsResource,
-    ChapterDiagnosticQuestionsResource,
-    PaymentsResource,
-    ConceptScoresResource,
-    DiagnosticTestsResource,
-    DiagnosticTestDetailsResource,
-    RevisionRoundsResource,
-    RevisionRoundDetailsResource,
-    TestRoundsResource,
-    TestRoundDetailsResource,
-    ActivitiesResource,
-    // SWAN:INSERT:RESOURCE_ENTRY
-    ]
-
-    return result;
+        ChaptersResource,
+        ConceptsResource,
+        QuestionsResource,
+        ChapterDiagnosticQuestionsResource,
+        PaymentsResource,
+        ConceptScoresResource,
+        DiagnosticTestsResource,
+        DiagnosticTestDetailsResource,
+        RevisionRoundsResource,
+        RevisionRoundDetailsResource,
+        TestRoundsResource,
+        TestRoundDetailsResource,
+        ActivitiesResource,
+        // SWAN:INSERT:RESOURCE_ENTRY
+    ];
 }
 
 export const configureMenus = (permissions: any) => {
