@@ -43,3 +43,13 @@ export const createStudentLoginActivity = async (dataProvider: any, user: any) =
     }
 }
 
+export const updateActivity = async (activityId: number, updatedData: any) => {
+    try {
+        const dataProvider = (window as any).swanAppFunctions.dataProvider;
+        await dataProvider.update('activities', { id: activityId, data: updatedData });
+    } catch (error) {
+        console.log("Error in updateActivity: ", error);
+        remoteLog("Error in updateActivity: ", error)
+    }
+}
+

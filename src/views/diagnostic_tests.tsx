@@ -166,7 +166,7 @@ export const DiagnosticTestsList = (props: ListProps) => {
     const { permissions } = usePermissions();
     const handleOnCreate = () => {
         openDialog( 
-            <TestPreparationDialog actionType={"diagnostic"}/>,
+            <TestPreparationDialog actionType={"diagnostic"} />,
             { Title: "Take New Diagnostic Test" }
         )
     }

@@ -5,12 +5,15 @@ import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import { Loading, useNotify, useRedirect } from "react-admin";
 import { getExistingRevisionRounds } from "../logic/revisions.ts";
-import { getLocalStorage } from "@mahaswami/swan-frontend";
+import { getLocalStorage, remoteLog } from "@mahaswami/swan-frontend";
+import { updateActivity } from "../logic/activities.ts";
 
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
 export const RevisionRoundPage: React.FC = () => {
-    const { chapterId,conceptId } = useParams();
+    const { chapterId, conceptId } = useParams();
+    const parsedChapterId = Number(chapterId);
+    const parsedConceptId = Number(conceptId);
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
@@ -18,27 +21,57 @@ export const RevisionRoundPage: React.FC = () => {
     const [isInvalidRevisionRound, setIsInvalidRevisionRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const user = JSON.parse(getLocalStorage('user') || '{}');
+    // Status is used to avoid duplicate create calls in dev StrictMode
+    const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
+
+    useEffect(() => {
+        if (!parsedChapterId || !parsedConceptId || pendingActivityRef.current.status !== 'idle') return;
+        pendingActivityRef.current.status = 'creating';
+        const createPendingActivity = async () => {
+            try {
+                const dataProvider = (window as any).swanAppFunctions.dataProvider;
+                const payload = {
+                    activity_type: 'revision_round_pending',
+                    user_id: user.id,
+                    chapter_id: parsedChapterId,
+                    concept_id: parsedConceptId,
+                    activity_timestamp: new Date().toISOString(),
+                };
+                const { data: pendingActivity } = await dataProvider.create('activities', { data: payload });
+                pendingActivityRef.current = {
+                    status: 'created',
+                    pendingActivity,
+                };
+            } catch (error) {
+                console.log("Error creating pending activity: ", error);
+                remoteLog("Error creating pending activity: ", error);
+            }
+        }
+        createPendingActivity();
+    }, []);
+
     useEffect(() => {
         const fetchRevisionRoundQuestions = async () => {
             try {
-                console.log("Fetching revisions for chapterId: ", chapterId,conceptId);
+                console.log("Fetching revisions for chapterId: ", parsedChapterId, parsedConceptId);
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
                 const user_id = user.id;
 
                 //Fetch diagnostic test questions based on chapterId
                 const dataProvider = window.swanAppFunctions.dataProvider;
-                const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
+                const {data: chapter} = await dataProvider.getOne('chapters', {id: parsedChapterId});
                 setChapterName(chapter.name);
 
-                const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
+                const {data: concept} = await dataProvider.getOne('concepts', {id: parsedConceptId});
                 setConceptName(concept.name);
 
                 const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
+                    filter: {chapter_id: parsedChapterId}
                 })
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
-                    filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
+                    filter: {concept_id: parsedConceptId, status:'completed', user_id: user_id}});
 
                 const {data: previousRevisionQuestions} = await dataProvider.getList('revision_round_details',{
                     filter: {revision_round_id: previousRevisionRounds.map((rr:any) => rr.id)}
@@ -51,7 +84,7 @@ export const RevisionRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id:conceptId,
+                    filter: {concept_id: parsedConceptId,
                         id_neq_any: Array.from(attemptedQuestionIds)
                         },
                 })
@@ -84,20 +117,19 @@ export const RevisionRoundPage: React.FC = () => {
         }
 
         fetchRevisionRoundQuestions();
-    }, [chapterId,conceptId]);
+    }, [parsedChapterId, parsedConceptId]);
 
     const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
         let roundNumber = 1;
-        const existingRounds = await getExistingRevisionRounds(Number(conceptId));
+        const existingRounds = await getExistingRevisionRounds(parsedConceptId);
         if (existingRounds.length > 0) {
             roundNumber = existingRounds.length + 1;
         }
-        const userId = JSON.parse(getLocalStorage('user') || '{}').id
         const { data: master } = await dataProvider.create('revision_rounds', {
             data: {
-                user_id: userId,
-                concept_id: conceptId,
+                user_id: user.id,
+                concept_id: parsedConceptId,
                 round_number: roundNumber,
                 started_timestamp: timing.startedAt,
                 completed_timestamp: timing.completedAt,
@@ -105,7 +137,13 @@ export const RevisionRoundPage: React.FC = () => {
                 status:'completed',
             }
         });
-        
+        // Updating the pending activity
+        if (pendingActivityRef.current.pendingActivity) {
+            await updateActivity(pendingActivityRef.current.pendingActivity.id, {
+                activity_type: "revision_round",
+                activity_timestamp: new Date().toISOString(),
+            });
+        }
         for(const q of questions){
             await dataProvider.create('revision_round_details',{data:{
                 revision_round_id: master.id,

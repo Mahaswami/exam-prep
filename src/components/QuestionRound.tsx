@@ -86,6 +86,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     initialTiming,
     questionCorrectness,
     userName,
+    addConceptName = false,
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
     const isReviewMode = !onComplete;
@@ -131,7 +132,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         setIndex(i => i - 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (isSubmitting || !onComplete) return;
         setIsSubmitting(true);
         const finalTimeMap = saveCurrentQuestionTime();
@@ -150,7 +151,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
             },
         };
 
-        onComplete(result);
+        await onComplete(result);
     };
 
     const handleAnswer = (result: AnswerResult) => {
@@ -200,7 +201,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                     ) : (
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
-                                {title}
+                                {title} {addConceptName && ` - ${question?.concept?.name}`}
                             </Typography>
                             <Typography variant="body2" fontWeight={600} color="text.secondary">
                                 {index + 1} / {sortedQuestions.length}
@@ -215,6 +216,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                 <CardContent sx={{ px: 2, py: 1.5 }}>
                     <QuestionDisplay
                         question={question}
+                        key={question.id}
                         mode={mode}
                         allowHint={allowHint}
                         allowSolution={allowSolution}
@@ -222,7 +224,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         selectedAnswer={answersMap[question.id]?.selectedOption}
                         marksObtained={answersMap[question.id]?.marksObtained}
                         onAnswer={allowAnswer ? handleAnswer : undefined}
-                        timeTaken={currentTimeTaken}
+                        timeTaken={isReviewMode ? currentTimeTaken : undefined}
                         isCorrect={currentCorrectness}
                     />
                     {allowAnswer && !canProceed() && (
