@@ -259,7 +259,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                                             {key}.
                                         </Typography>
                                         <Box sx={{ flex: 1 }}>
-                                            <RenderMath content={value} />
+                                            <RenderMath content={wrapMathFracWithDollar(value)} preventDollarWrap/>
                                         </Box>
                                     </Box>
                                 </Box>

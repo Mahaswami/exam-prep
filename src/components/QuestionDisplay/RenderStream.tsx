@@ -59,7 +59,7 @@ export const RenderStream: React.FC<RenderStreamProps> = ({ stream }) => {
                         remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}
                     >
-                        {block.content || ""}
+                        {(block.content || "").replace(/\n/g, "  \n")}
                     </ReactMarkdown>
                 );
             })}
