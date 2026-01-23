@@ -10,7 +10,7 @@
     "format": "prettier --write ./src"
   },
   "dependencies": {
-    "@mahaswami/swan-frontend": "^2.0.92",
+    "@mahaswami/swan-frontend": "^2.0.93",
     "@mui/x-charts": "^7.24.1",
     "@tiptap/suggestion": "^2.11.5",
     "buffer": "^6.0.3",
@@ -36,13 +36,13 @@
     "react-markdown": "^10.1.0",
     "react-player": "^2.16.0",
     "react-router-dom": "^7.3.0",
+    "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "stream-browserify": "^3.0.0",
     "tiptap-extension-resize-image": "1.2.1",
     "util": "^0.12.5",
-    "write-excel-file": "^2.3.0",
-    "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "write-excel-file": "^2.3.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",

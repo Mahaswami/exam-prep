@@ -165,7 +165,6 @@ export const customizeI18nProvider = () => {
             if (navigator.language.startsWith('en-') ) {
                 localVariation = 'en';
             } 
-            console.log("DEBUG: locale = " , locale, localVariation);
             return messages[localVariation]
         },
         navigator.language,
