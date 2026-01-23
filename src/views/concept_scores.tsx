@@ -95,7 +95,7 @@ const ConceptScoreRowActions = () => {
 
     return (
         <>
-            <Tooltip title="Revision">
+            <Tooltip title="Revise Concept">
                 <IconButton 
                     size="small"
                     onClick={async(e) => {
