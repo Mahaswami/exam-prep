@@ -87,7 +87,7 @@ export const RevisionRoundsList = (props: ListProps) => {
             <TestPreparationButton 
                 actionType={"revision"} 
                 component={CreateButton} to={{ redirect: false }}
-                title={"New Revision Round"} 
+                title={"Revise Concept"} 
             />
         </TopToolbar>
     )

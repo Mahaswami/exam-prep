@@ -166,7 +166,7 @@ export const DiagnosticTestsList = (props: ListProps) => {
     const handleOnCreate = () => {
         openDialog( 
             <TestPreparationDialog actionType={"diagnostic"}/>,
-            { Title: "New Diagnostic Test" }
+            { Title: "Take New Diagnostic Test" }
         )
     }
     

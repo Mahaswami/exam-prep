@@ -90,7 +90,7 @@ export const TestRoundsList = (props: ListProps) => {
             <TestPreparationButton 
                 actionType={"test"} 
                 component={CreateButton} to={{ redirect: false }}
-                title="New Test Round" 
+                title="Start New Test" 
             />
         </TopToolbar>
     )
