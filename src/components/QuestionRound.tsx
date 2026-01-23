@@ -131,7 +131,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         setIndex(i => i - 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (isSubmitting || !onComplete) return;
         setIsSubmitting(true);
         const finalTimeMap = saveCurrentQuestionTime();
@@ -150,7 +150,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
             },
         };
 
-        onComplete(result);
+        await onComplete(result);
     };
 
     const handleAnswer = (result: AnswerResult) => {

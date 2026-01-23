@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
-import {getLocalStorage, remoteLog} from "@mahaswami/swan-frontend";
+import {getLocalStorage, remoteLog, setLocalStorage} from "@mahaswami/swan-frontend";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
 import {calculateConceptScores} from "../logic/score_helper.ts";
@@ -104,6 +104,7 @@ export const DiagnosticTestPage: React.FC = () => {
                 time_taken_seconds_number: detail.time_taken,
             }});
         }
+        setLocalStorage('has_diagnostic_test', true);
         // Updating the pending activity
         if (pendingActivityRef.current.pendingActivity) {
             await updateActivity(pendingActivityRef.current.pendingActivity.id, {

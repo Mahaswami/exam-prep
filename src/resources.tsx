@@ -37,6 +37,7 @@ import { CancellationRefund } from './policies/CancellationRefund.tsx';
 import {RevisionRoundPage} from "./views/RevisionRoundPage.tsx";
 import {DiagnosticTestPage} from "./views/DiagnosticTestPage.tsx";
 import {TestRoundPage} from "./views/TestRoundPage.tsx";
+import { hasDiagnosticTests } from './configuration.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
@@ -102,7 +103,7 @@ export const configureResources = (permissions: any) => {
 }
 
 export const configureMenus = (permissions: any) => {
-
+    const showRevisionAndTestRounds = hasDiagnosticTests();
     //TODO: This could be done in a less verbose way by having a hash and use React.createElement style
 
         const superAdminMenus = 
@@ -142,10 +143,10 @@ export const configureMenus = (permissions: any) => {
         <>
             <AutoLayoutMenu maxCount={6}>
             <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
-            <ConceptScoresMenu />
+            {showRevisionAndTestRounds && <ConceptScoresMenu />}
             <DiagnosticTestsMenu />
-            <RevisionRoundsMenu />
-            <TestRoundsMenu />
+            {showRevisionAndTestRounds && <RevisionRoundsMenu />}
+            {showRevisionAndTestRounds && <TestRoundsMenu />}
             </AutoLayoutMenu>
         </>            
         
