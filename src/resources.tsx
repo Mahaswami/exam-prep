@@ -138,6 +138,27 @@ export const configureMenus = (permissions: any) => {
             </NestedMenu>
             {/* {{SWAN:INSERT:MENU_ENTRY}} */}
         </>   
+
+         const schoolAdminMenusAll = 
+        <>
+            <NestedMenu label="Analytics" icon={<DashboardIcon />} defaultOpen={true}>
+                <Menu.Item to="/analytics/admin" primaryText="Dashboard" leftIcon={<AssessmentIcon />} />
+                <Menu.Item to="/analytics/student" primaryText="Student Progress" leftIcon={<SchoolIcon />} />
+            </NestedMenu>
+           <NestedMenu label="Learning" icon={<SchoolIcon />} defaultOpen={true}>
+                <ConceptScoresMenu />
+                <DiagnosticTestsMenu />
+                <RevisionRoundsMenu />
+                <TestRoundsMenu />
+                <ActivitiesMenu />
+            </NestedMenu>
+            <NestedMenu label="Settings" icon={<SettingsIcon />} defaultOpen={true}>
+                <UsersMenu />
+                {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
+                {isHistoryModuleActive() && <HistoryMenu />}
+            </NestedMenu>
+            {/* {{SWAN:INSERT:MENU_ENTRY}} */}
+        </>          
         
         const studentMenus = 
         <>
@@ -159,13 +180,16 @@ export const configureMenus = (permissions: any) => {
         if ('student' === permissions) {
             return studentMenus;
         }  
+        if ('school_admin' === permissions) {
+            return schoolAdminMenusAll;
+        }
         return null;
 
 }
 
 export const configureLandingPage = (permissions: any) => {
     let startPage = undefined 
-    if ([ 'admin'].includes( permissions )) {
+    if ([ 'school_admin','admin'].includes( permissions )) {
         startPage = "/analytics/admin"
     }
     if ([ 'student'].includes( permissions )) {
@@ -175,6 +199,7 @@ export const configureLandingPage = (permissions: any) => {
         "unauthenticated": "/signup",
         "super_admin": "/tenants",
         "admin": startPage,
+        'school_admin': startPage,
         "student": startPage,
     }
 }
