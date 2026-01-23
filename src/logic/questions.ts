@@ -17,7 +17,15 @@ export const QuestionsLogic: any = {
     beforeCreate: [],
     beforeDelete: [],
     beforeDeleteMany: [],
-    beforeGetList: [],
+    beforeGetList: [(params: any) => {
+        if (params.filter?.status == undefined) {
+            params.filter = {
+                ...params.filter,
+                status: "Active"
+            }
+        }
+        return params;
+    }],
     beforeGetMany: [],
     beforeGetManyReference: [],
     beforeGetOne: [],
