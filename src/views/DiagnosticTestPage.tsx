@@ -9,6 +9,7 @@ import { Loading, useNotify, useRedirect } from "react-admin";
 
 export const DiagnosticTestPage: React.FC = () => {
     const { chapterId,diagnosticTestId } = useParams();
+    const chapterIdNumber = Number(chapterId);
     const [questions, setQuestions] = React.useState<any[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [chapterName, setChapterName] = React.useState<string>('');
@@ -17,14 +18,14 @@ export const DiagnosticTestPage: React.FC = () => {
     useEffect(() => {
         const fetchDiagnosticTestQuestions = async () => {
             try {
-                console.log("Fetching diagnostic test for chapterId: ", chapterId);
+                console.log("Fetching diagnostic test for chapterId: ", chapterIdNumber);
 
                 //Fetch diagnostic test questions based on chapterId
                 const dataProvider = window.swanAppFunctions.dataProvider;
-                const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
+                const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterIdNumber});
                 setChapterName(chapter.name);
                 const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
+                    filter: {chapter_id: chapterIdNumber}
                 })
                 const {data: questions} = await dataProvider.getList('questions', {
                     filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
@@ -39,7 +40,7 @@ export const DiagnosticTestPage: React.FC = () => {
         }
 
         fetchDiagnosticTestQuestions();
-    }, [chapterId]);
+    }, [chapterIdNumber]);
 
     const onCompleteDiagnosticTest = async ({ answers, timing }: QuestionRoundResult) => {
         console.log("Diagnostic Test Completed: ", { answers, timing });
@@ -56,7 +57,7 @@ export const DiagnosticTestPage: React.FC = () => {
 
         const {data: master} = await dataProvider.create('diagnostic_tests',{ data:{
             user_id: JSON.parse(getLocalStorage('user') || '{}').id,
-            chapter_id: chapterId,
+            chapter_id: chapterIdNumber,
             started_timestamp: timing.startedAt,
             completed_timestamp: timing.completedAt,
             total_time_taken_seconds_number: timing.totalSeconds,

@@ -453,7 +453,7 @@ export const StudentDashboard = () => {
                         <TestPreparationButton
                             chapters={chapters}
                             title={dialogTitles.diagnostic}
-                            shouldValidateConceptScores={false}
+                            validateSelectOption={false}
                             variant="contained"
                             actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
@@ -526,21 +526,20 @@ export const TestPreparationButton = (props: TestPreparationDialogProps & Button
 interface TestPreparationDialogProps {
     actionType: ActionType;
     chapters?: any[];
-    shouldValidateConceptScores?: boolean;
+    validateSelectOption?: boolean;
 }
 
-export const TestPreparationDialog = ({ actionType, chapters=[], shouldValidateConceptScores = true }: TestPreparationDialogProps) => {
+export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectOption = true }: TestPreparationDialogProps) => {
     const notify = useNotify();
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
     const [isPreparingTest, setIsPreparingTest] = useState<boolean>(false);
-    const { data: userConceptScores } = useGetList('concept_scores', {
+    const { data: userDiagnosticTests } = useGetList('diagnostic_tests', {
         pagination: { page: 1, perPage: 1000 },
         sort: { field: 'id', order: 'ASC' },
         filter: { user_id: JSON.parse(getLocalStorage("user"))?.id },
-        meta: { prefetch: ['concepts'] }
-    }, { enabled: shouldValidateConceptScores });
-    const { data: concepts = [] } = useGetList('concepts', {
+    }, { enabled: validateSelectOption });
+    const { data: conceptsForChapter = [] } = useGetList('concepts', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
         filter: selectedChapterId ? { chapter_id: selectedChapterId } : {}
@@ -554,14 +553,11 @@ export const TestPreparationDialog = ({ actionType, chapters=[], shouldValidateC
         enabled: chapters.length == 0
     });
     const finalChapters = chapters?.length ? chapters : fetchedChapters;
-    const chapterIdsHaveConceptScore = userConceptScores?.map((c: any) => c.concept.chapter_id);
-    const conceptIdsHaveConceptScore = userConceptScores?.map((c: any) => c.concept_id);
-    const validChapters = shouldValidateConceptScores 
-        ? finalChapters.filter(chapter => chapterIdsHaveConceptScore?.includes(chapter.id))
+    
+    const chapterIds = userDiagnosticTests?.map((c: any) => c.chapter_id).filter(Boolean);
+    const validChapters = validateSelectOption 
+        ? finalChapters.filter(chapter => chapterIds?.includes(chapter.id))
         : finalChapters;
-    const validConcepts = shouldValidateConceptScores 
-        ? concepts.filter(concept => conceptIdsHaveConceptScore?.includes(concept.id))
-        : concepts;
     
 
     const isStudent = getLocalStorage('role') === 'student';
@@ -626,7 +622,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[], shouldValidateC
             />
             {needsConceptSelection && selectedChapterId && (
                 <Autocomplete
-                    options={validConcepts}
+                    options={conceptsForChapter}
                     getOptionLabel={(option: any) => option.name || `Concept ${option.id}`}
                     onChange={(_, value) => setSelectedConceptId(value?.id || null)}
                     renderInput={(params) => <TextField {...params} label="Select Concept" />}
