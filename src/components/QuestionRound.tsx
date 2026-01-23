@@ -215,6 +215,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                 <CardContent sx={{ px: 2, py: 1.5 }}>
                     <QuestionDisplay
                         question={question}
+                        key={question.id}
                         mode={mode}
                         allowHint={allowHint}
                         allowSolution={allowSolution}

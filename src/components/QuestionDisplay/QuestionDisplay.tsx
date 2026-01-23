@@ -103,7 +103,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     const correctAnswer = getCorrectAnswer(question);
     const isInteractive = mode === "interactive";
     const isReview = mode === "review";
-    const shouldHighlightCorrect = isReview && showCorrectAnswer;
+    const shouldHighlightCorrect = (isReview && solutionVisible) && showCorrectAnswer;
     const shouldHighlightUserAnswer = isReview && selectedAnswer;
     const isMCQ = question.type === "MCQ";
     const eligibleMarks = getEligibleMarks(question.type, question.marks_number);
