@@ -12,8 +12,16 @@ import {
 import { useTheme } from "@mui/material/styles";
 import LightbulbOutlinedIcon from "@mui/icons-material/LightbulbOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { RenderStream, RenderMath, wrapMathFracWithDollar } from "./RenderStream";
 import { QuestionDisplayProps, ContentBlock, getEligibleMarks } from "./types";
+
+const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+};
 
 const parseOptions = (
     question: QuestionDisplayProps["question"]
@@ -80,6 +88,8 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     allowSolution = false,
     showDifficulty = true,
     compact = false,
+    timeTaken,
+    isCorrect,
 }) => {
     const theme = useTheme();
     const [hintVisible, setHintVisible] = useState(false);
@@ -93,6 +103,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     const isInteractive = mode === "interactive";
     const isReview = mode === "review";
     const shouldHighlightCorrect = isReview && showCorrectAnswer;
+    const shouldHighlightUserAnswer = isReview && selectedAnswer;
     const isMCQ = question.type === "MCQ";
     const eligibleMarks = getEligibleMarks(question.type, question.marks_number);
     const hasHint = Boolean(getHintContent(question));
@@ -114,6 +125,31 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                     <Chip
                         label={`${eligibleMarks} Mark${eligibleMarks > 1 ? 's' : ''}`}
                         size="small"
+                        variant="outlined"
+                    />
+                )}
+                {timeTaken !== undefined && timeTaken > 0 && (
+                    <Chip
+                        icon={<TimerOutlinedIcon sx={{ fontSize: 16 }} />}
+                        label={formatTime(timeTaken)}
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                    />
+                )}
+                {isReview && isCorrect !== undefined && isCorrect !== null && (
+                    <Chip
+                        label={isCorrect ? "Correct" : "Incorrect"}
+                        size="small"
+                        color={isCorrect ? "success" : "error"}
+                        variant="filled"
+                    />
+                )}
+                {isReview && marksObtained !== undefined && marksObtained !== null && eligibleMarks > 0 && (
+                    <Chip
+                        label={`${marksObtained}/${eligibleMarks}`}
+                        size="small"
+                        color={marksObtained === eligibleMarks ? "success" : marksObtained > 0 ? "warning" : "error"}
                         variant="outlined"
                     />
                 )}
@@ -159,18 +195,30 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                 <Grid container spacing={1}>
                     {Object.entries(options).map(([key, value]) => {
                         const isSelected = selectedAnswer === key;
-                        const isCorrect = key === correctAnswer;
-                        const highlightCorrect = shouldHighlightCorrect && isCorrect;
+                        const isOptionCorrect = key === correctAnswer;
+                        const highlightCorrect = shouldHighlightCorrect && isOptionCorrect;
+                        const highlightUserWrong = shouldHighlightUserAnswer && isSelected && !isOptionCorrect;
 
                         let borderColor = theme.palette.divider;
                         let bgColor = "transparent";
+                        let borderWidth = 1;
 
                         if (isInteractive && isSelected) {
                             borderColor = theme.palette.primary.main;
                             bgColor = theme.palette.info.light;
+                            borderWidth = 2;
+                        } else if (highlightUserWrong) {
+                            borderColor = theme.palette.error.main;
+                            bgColor = theme.palette.error.light;
+                            borderWidth = 2;
                         } else if (highlightCorrect) {
                             borderColor = theme.palette.success.main;
                             bgColor = theme.palette.success.light;
+                            borderWidth = 2;
+                        } else if (shouldHighlightUserAnswer && isSelected) {
+                            borderColor = theme.palette.success.main;
+                            bgColor = theme.palette.success.light;
+                            borderWidth = 2;
                         }
 
                         return (
@@ -191,7 +239,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                                         cursor: isInteractive ? "pointer" : "default",
                                         borderRadius: 1,
                                         p: compact ? 0.5 : 0.75,
-                                        border: `${isInteractive ? 2 : 1}px solid ${borderColor}`,
+                                        border: `${borderWidth}px solid ${borderColor}`,
                                         backgroundColor: bgColor,
                                         transition: "all 0.2s ease",
                                     }}

@@ -97,6 +97,9 @@ export type QuestionDisplayProps = {
     
     showDifficulty?: boolean;
     compact?: boolean;
+    
+    timeTaken?: number;
+    isCorrect?: boolean | null;
 };
 
 export type QuestionRoundTiming = {
@@ -114,9 +117,13 @@ export type QuestionRoundResult = {
 export type QuestionRoundProps<T extends QuestionData & { difficulty: Difficulty } = QuestionData & { difficulty: Difficulty }> = {
     questions: T[];
     title: string;
-    onComplete: (result: QuestionRoundResult) => void;
+    onComplete?: (result: QuestionRoundResult) => void;
     allowAnswer?: boolean;
     allowHint?: boolean;
     allowSolution?: boolean;
     showCorrectAnswer?: boolean;
+    initialAnswers?: Record<string, AnswerResult>;
+    initialTiming?: Record<string, number>;
+    questionCorrectness?: Record<string, boolean>;
+    userName?: string;
 };

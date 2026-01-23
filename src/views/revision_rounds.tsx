@@ -47,6 +47,7 @@ import { ChaptersReferenceField } from './chapters';
 import { TestPreparationButton } from '../analytics/StudentDashboard';
 import { RoundEmpty } from '../components/RoundEmpty';
 import { QuestionDisplay } from '../components/QuestionDisplay';
+import { RoundReviewContent } from '../components/RoundReviewContent';
 
 export const RESOURCE = "revision_rounds"
 export const DETAIL_RESOURCES = ["revision_round_details"]
@@ -164,19 +165,7 @@ const RevisionRoundEdit = (props: EditProps) => {
 const RevisionRoundShow = (props: ShowProps) => {
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout
-                display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}
-                gap="1rem">
-                <UsersReferenceField source="user_id" />
-                <ConceptsReferenceField source="concept_id" />
-                <NumberField source="round_number" />
-                <DateField source="started_timestamp" showTime />
-                <DateField source="completed_timestamp" showTime />
-                <NumberField source="total_time_seconds_number" label="Total Time (seconds)" />
-                <SelectField source="status" choices={statusChoices} />
-            </SimpleShowLayout>
-            <DetailResources/>
+            <RoundReviewContent roundType="revision" />
         </Show>
     );
 };
