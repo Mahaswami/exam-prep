@@ -133,7 +133,7 @@ export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) =>
     const concepts = [];
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
     try {
-        for(const concept of conceptualMap){
+        for (const concept of conceptualMap){
             concepts.push({
                 chapter_id: chapterId,
                 name: concept.broad_concept,
@@ -142,28 +142,26 @@ export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) =>
                 is_active: true
             })
         }
-        const { data: existingConcepts } = await dataProvider.getList('concepts', {
+        const { data: chapterConcepts } = await dataProvider.getList('concepts', {
             filter: { chapter_id: chapterId }
         });
-        if (existingConcepts.length > 0) {
-            await dataProvider.deleteMany('concepts', {
-                ids: existingConcepts.map((exC: {
-                    id: any;
-                }) => exC.id)
+        const bulkRequests = [];
+        for (const chapterConcept of chapterConcepts) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'concepts',
+                params: { id: chapterConcept.id }
             });
         }
-        const bulkCreateRequests = [];
         for (const concept of concepts) {
-            bulkCreateRequests.push(
-                {
-                    type: 'create',
-                    resource: 'concepts',
-                    params: { data: { ...concept } }
-                }
-            );
+            bulkRequests.push({
+                type: 'create',
+                resource: 'concepts',
+                params: { data: {...concept} }
+            });
         }
         const dbTransactionId = await dataProvider.beginTransaction();
-        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.executeBatch(bulkRequests, dbTransactionId);
         await dataProvider.commitTransaction(dbTransactionId);
     } catch (Error) {
         console.log("Error uploading chapter concept: ", Error);
