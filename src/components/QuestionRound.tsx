@@ -87,6 +87,8 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     questionCorrectness,
     userName,
     addConceptName = false,
+    submitLabel = "Submit",
+    submitLoadingLabel = "Submitting...",
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
     const isReviewMode = !onComplete;
@@ -224,7 +226,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         selectedAnswer={answersMap[question.id]?.selectedOption}
                         marksObtained={answersMap[question.id]?.marksObtained}
                         onAnswer={allowAnswer ? handleAnswer : undefined}
-                        timeTaken={isReviewMode ? currentTimeTaken : undefined}
+                        timeTaken={currentTimeTaken}
                         isCorrect={currentCorrectness}
                     />
                     {allowAnswer && !canProceed() && (
@@ -270,7 +272,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                                 onClick={handleSubmit}
                                 startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit'}
+                                {isSubmitting ? submitLoadingLabel : submitLabel}
                             </Button>
                         ) : (
                             <Button

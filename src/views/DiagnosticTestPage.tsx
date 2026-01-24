@@ -55,7 +55,7 @@ export const DiagnosticTestPage: React.FC = () => {
             try {
                 const dataProvider = (window as any).swanAppFunctions.dataProvider;
                 const payload = {
-                    activity_type: 'diagnostic_test_pending',
+                    activity_type: 'diagnostic_test_in_progress',
                     user_id: user.id,
                     chapter_id: chapterIdNumber,
                     activity_timestamp: new Date().toISOString(),

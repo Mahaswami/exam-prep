@@ -165,7 +165,7 @@ export const configureMenus = (permissions: any) => {
             <AutoLayoutMenu maxCount={6}>
             <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
             {showRevisionAndTestRounds && <ConceptScoresMenu />}
-            <DiagnosticTestsMenu />
+            {showRevisionAndTestRounds && <DiagnosticTestsMenu />}
             {showRevisionAndTestRounds && <RevisionRoundsMenu />}
             {showRevisionAndTestRounds && <TestRoundsMenu />}
             </AutoLayoutMenu>
