@@ -72,6 +72,7 @@ const ChapterRowActions = () => {
     const [loadingConcepts, setLoadingConcepts] = useState(false);
     const [loadingPrepare, setLoadingPrepare] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
+    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
     const [loadingConvert, setLoadingConvert] = useState(false);
     if (!record?.id) return null;
 
@@ -203,10 +204,10 @@ const ChapterRowActions = () => {
                     )}
                 </IconButton>
             </Tooltip>
+            <GenerateDiagnosticButton chapterId={record?.id} />
         </>
     );
 };
-
 
 export const ChaptersList = (props: ListProps) => {
     const [questionDetails, setQuestionDetails] = useState<Record<number, QuestionCountsType>>({});
@@ -227,53 +228,12 @@ export const ChaptersList = (props: ListProps) => {
         fetchData();
     }, []);
 
-    const ChapterListAction = () => {
-        const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
-        const notify = useNotify();
-        const dataProvider = (window as any).swanAppFunctions.dataProvider;
-
-        const handleGenerateDiagnosticTest = async (e) => {
-            e.stopPropagation();
-            setLoadingDiagnostic(true);
-            showLoading();
-            try {
-                const { data: chapters } = await dataProvider.getList('chapters');
-                const bulkCreateRequests = [];
-                for (const chapter of chapters) {
-                    const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
-                    console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                    const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
-                    if (chapterGenerateDiagnostics)
-                        bulkCreateRequests.push(...chapterGenerateDiagnostics);
-                }
-                if (bulkCreateRequests.length > 0) {
-                    const dbTransactionId = await dataProvider.beginTransaction();
-                    await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
-                    await dataProvider.commitTransaction(dbTransactionId);
-                }
-                notify("Generate Diagnostic Test Questions completed", { type: "info" });
-            } catch (Error) {
-                notify("Error generating diagnostic test questions: " + Error, { type: "error" });
-            } finally {
-                setLoadingDiagnostic(false)
-                hideLoading();
-            }
-        }
-
-        return (
-            <TopToolbar sx={{ display: 'flex', alignItems: 'center' }}>
-                <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
-                    {loadingDiagnostic ? (
-                        <CircularProgress size={18} />
-                    ) : (
-                        <Timer fontSize="small" />
-                    )}
-                    Generate Diagnostic Test
-                </Button>
-                <CreateButton />
-            </TopToolbar>
-        )
-    }
+    const ChapterListAction = () => (
+        <TopToolbar sx={{ display: 'flex', alignItems: 'center' }}>
+            <GenerateDiagnosticButton />
+            <CreateButton />
+        </TopToolbar>
+    )
 
     return (
         <List {...listDefaults(props)} actions={<ChapterListAction/>}>
@@ -316,6 +276,62 @@ const ChapterForm = (props: any) => {
             <SimpleFileField source="questions_attachment_file_id" title={"questions_attachment_file"}/>
             <BooleanInput source="is_active" />
         </SimpleForm>
+    )
+}
+
+const GenerateDiagnosticButton = ({ chapterId }) => {
+    const notify = useNotify();
+    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+
+    const handleGenerateDiagnosticTest = async (e) => {
+        e.stopPropagation();
+        setLoadingDiagnostic(true);
+        if (!chapterId) showLoading();
+        try {
+            const dataProvider = (window as any).swanAppFunctions.dataProvider;
+            const { data: chapters } = await dataProvider.getList('chapters', {
+                filter: { id:  chapterId }
+            });
+            const bulkCreateRequests = [];
+            for (const chapter of chapters) {
+                const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
+                console.log('Generated Diagnostic Test Question IDs: ', questionIds);
+                const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                if (chapterGenerateDiagnostics)
+                    bulkCreateRequests.push(...chapterGenerateDiagnostics);
+            }
+            if (bulkCreateRequests.length > 0) {
+                const dbTransactionId = await dataProvider.beginTransaction();
+                await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+                await dataProvider.commitTransaction(dbTransactionId);
+            }
+            notify("Generate Diagnostic Test Questions completed", { type: "info" });
+        } catch (Error) {
+            notify("Error generating diagnostic test questions: " + Error, { type: "error" });
+        } finally {
+            setLoadingDiagnostic(false)
+            hideLoading();
+        }
+    }
+
+    const GenerateDiagnosticIcon = () => (
+        <>
+            { loadingDiagnostic ? <CircularProgress size={18} /> : <Timer fontSize="small" />}
+        </>
+    )
+
+    return (
+        <>{ chapterId ?
+            <Tooltip title="Generate Diagnostic Test">
+                <IconButton size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+                    <GenerateDiagnosticIcon />
+                </IconButton>
+            </Tooltip> :
+            <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+                <GenerateDiagnosticIcon />
+                Generate Diagnostic Test
+            </Button>
+        }</>
     )
 }
 
