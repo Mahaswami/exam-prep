@@ -49,7 +49,8 @@ import {
     uploadChapterDiagnosticQuestions
 } from "../logic/chapter_diagnostic_questions.ts";
 import {uploadChapterConcepts} from "../logic/questionbank.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import { getChaptersQuestionCounts, QuestionCountsType, QuestionCounts } from '../components/QuestionCounts.tsx';
 
 export const RESOURCE = "chapters"
 export const ICON = Book
@@ -208,6 +209,23 @@ const ChapterRowActions = () => {
 
 
 export const ChaptersList = (props: ListProps) => {
+    const [questionDetails, setQuestionDetails] = useState<Record<number, QuestionCountsType>>({});
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const questionCounts = await getChaptersQuestionCounts();
+                setQuestionDetails(questionCounts);
+            } catch (error) {
+                console.error("Error:  Question counts data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const ChapterListAction = () => {
         const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
@@ -259,16 +277,16 @@ export const ChaptersList = (props: ListProps) => {
 
     return (
         <List {...listDefaults(props)} actions={<ChapterListAction/>}>
-            <DataTable {...tableDefaults(RESOURCE)}>
+            <DataTable {...tableDefaults(RESOURCE)} isLoading={loading} expand={<QuestionCounts questionCounts={questionDetails} />}>
                 <DataTable.Col source="subject_id" field={SubjectsReferenceField}/>
                 <DataTable.Col source="chapter_number" field={NumberField}/>
                 <DataTable.Col source="name" />
-                <DataTable.Col source="is_active" field={BooleanField}/>
-                <RowActions/>
+                <DataTable.Col source="is_active" field={BooleanField} />
+                <RowActions />
             </DataTable>
         </List>
-    )
-}
+    );
+};
 
 
 export const ChaptersCardGrid = (props: ListProps) => {
