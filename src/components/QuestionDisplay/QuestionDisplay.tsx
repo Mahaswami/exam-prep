@@ -91,6 +91,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     compact = false,
     timeTaken,
     isCorrect,
+    isPartial,
 }) => {
     const theme = useTheme();
     const [hintVisible, setHintVisible] = useState(false);
@@ -140,9 +141,9 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                 )}
                 {isReview && isCorrect !== undefined && isCorrect !== null && (
                     <Chip
-                        label={isCorrect ? "Correct" : "Incorrect"}
+                        label={isCorrect ? "Correct" :  isPartial ? "Partial" : "Incorrect"}
                         size="small"
-                        color={isCorrect ? "success" : "error"}
+                        color={isCorrect ? "success" : isPartial ? "warning" : "error"}
                         variant="filled"
                     />
                 )}

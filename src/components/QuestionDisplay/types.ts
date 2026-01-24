@@ -34,6 +34,7 @@ export const getEligibleMarks = (type: string, marksNumber?: number): number => 
 export type AnswerResult = {
     selectedOption?: string;
     marksObtained: number;
+    marksTotal?: number;
 };
 
 export type BaseQuestion = {
@@ -100,6 +101,7 @@ export type QuestionDisplayProps = {
     
     timeTaken?: number;
     isCorrect?: boolean | null;
+    isPartial?: boolean | null;
 };
 
 export type QuestionRoundTiming = {
@@ -125,6 +127,7 @@ export type QuestionRoundProps<T extends QuestionData & { difficulty: Difficulty
     initialAnswers?: Record<string, AnswerResult>;
     initialTiming?: Record<string, number>;
     questionCorrectness?: Record<string, boolean>;
+    questionPartialness?: Record<string, boolean>;
     userName?: string;
     addConceptName?: boolean;
     submitLabel?: string;
