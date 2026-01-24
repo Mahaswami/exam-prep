@@ -3,6 +3,13 @@ import {englishMessages} from '@mahaswami/swan-frontend'
 
 const customEnglishMessages: TranslationMessages = {
     ...englishMessages,
+    ra: {
+        ...englishMessages.ra,
+        notification: {
+            ...englishMessages.ra.notification,
+            no_questions: "You have exhausted all available attempts for chapter %{chapterName} %{conceptName}. Please try another chapter and return later.",
+        }
+    },
     resources: {
         activities: {
             name: 'Activities',
