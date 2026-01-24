@@ -54,7 +54,6 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
     const questionRecords = [];
     for (const question of questions) {
-        if (question.status === 'Active') {
             const concept = concepts.find((c: any) => c.name === question.concept);
             const conceptId = concept ? concept.id : null;
             const questionData = {
@@ -71,7 +70,6 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
                 is_invented: isInventQuestions,
             };
             questionRecords.push(questionData);
-        }
     }
    // const dbTransactionId = await dataProvider.beginTransaction();
     const {data: existingQuestions} = await dataProvider.getList('questions', {filter: {concept_id: concepts.map(c => c.id)}});

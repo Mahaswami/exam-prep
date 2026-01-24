@@ -36,7 +36,7 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
         //Filter MCQs for the chapter
         const {data:mcqs} = await dataProvider.getList('questions',{
             meta:{prefetch:['concepts']},
-            filter:{concept:{chapter_id:chapterId },type:'MCQ'}}
+            filter:{concept:{chapter_id:chapterId },type:'MCQ', status: 'Active'}}
             );
         console.log("Fetched Questions for Diagnostic: ", mcqs);
         if (mcqs.length === 0) return [];

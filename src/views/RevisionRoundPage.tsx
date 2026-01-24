@@ -48,7 +48,8 @@ export const RevisionRoundPage: React.FC = () => {
 
                 const {data: questions} = await dataProvider.getList('questions', {
                     filter: {concept_id:conceptId,
-                        id_neq_any: Array.from(attemptedQuestionIds)
+                        id_neq_any: Array.from(attemptedQuestionIds),
+                        status: "Active"
                         },
                 })
 
