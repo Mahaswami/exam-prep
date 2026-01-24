@@ -23,7 +23,9 @@ export const DiagnosticTestPage: React.FC = () => {
                 const dataProvider = window.swanAppFunctions.dataProvider;
                 const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
                 setChapterName(chapter.name);
-                const { data: diagnosticTestQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
+                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
+                    filter: {chapter_id: chapterId}
+                })
                 const {data: questions} = await dataProvider.getList('questions', {
                     filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
                 })

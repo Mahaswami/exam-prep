@@ -112,13 +112,13 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
         const questionRecords = [];
         for (const questionId of questionIds) {
             const questionData = {
+                chapter_id: chapterId,
                 question_id: questionId,
                 question_order_number: questionRecords.length + 1,
             };
             questionRecords.push(questionData);
         }
-
-        const { data: existingQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
+        const {data:existingQuestions} = await dataProvider.getList('chapter_diagnostic_questions',{filter:{chapter_id:chapterId}});
         if (existingQuestions.length > 0) {
             await dataProvider.deleteMany('chapter_diagnostic_questions', {
                 ids: existingQuestions.map((exQ: {

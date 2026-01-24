@@ -15,10 +15,12 @@ import {
     BooleanLiveFilter,
     TextLiveFilter,
     SimpleFileInput,
-    SimpleFileField
+    SimpleFileField,
+    showLoading,
+    hideLoading
 } from '@mahaswami/swan-frontend';
 import {Book, Refresh, Timer,} from '@mui/icons-material';
-import {Box, CardContent, CardHeader, IconButton, Tooltip,CircularProgress} from '@mui/material';
+import {Box, CardContent, CardHeader, IconButton, Tooltip,CircularProgress, Button} from '@mui/material';
 import {
     Create,
     DataTable,
@@ -38,7 +40,7 @@ import {
     AutocompleteInput,
     required,
     useUnique,
-    useRecordContext, useNotify
+    useRecordContext, useNotify, TopToolbar, CreateButton, useListContext
 } from "react-admin";
 import { SubjectsReferenceField, SubjectsReferenceInput } from './subjects';
 import {identifyConceptsForChapter, prepareQuestions} from "../logic/questionbank.ts";
@@ -69,7 +71,6 @@ const ChapterRowActions = () => {
     const [loadingConcepts, setLoadingConcepts] = useState(false);
     const [loadingPrepare, setLoadingPrepare] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
-    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
     const [loadingConvert, setLoadingConvert] = useState(false);
     if (!record?.id) return null;
 
@@ -201,42 +202,55 @@ const ChapterRowActions = () => {
                     )}
                 </IconButton>
             </Tooltip>
-            <Tooltip title="Generate Diagnostic Test">
-                <IconButton
-                    size="small"
-                    disabled={loadingDiagnostic}
-                    onClick={async(e) => {
-                        e.stopPropagation();
-                        setLoadingDiagnostic(true)
-                        try{
-                            const questionIds = await generateChapterDiagnosticQuestions(record.id);
-                            console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                            await uploadChapterDiagnosticQuestions(record.id, questionIds);
-                            notify("Generate Diagnostic Test Questions completed", { type: "info" });
-                        }
-                        catch(Error){
-                            notify("Error generating diagnostic test questions: " + Error, { type: "error" });
-                        }
-                        finally {
-                            setLoadingDiagnostic(false)
-                        }
-                    }}
-                >
-                    {loadingDiagnostic ? (
-                        <CircularProgress size={18} />
-                    ) : (
-                        <Timer fontSize="small" />
-                    )}
-                </IconButton>
-            </Tooltip>
         </>
     );
 };
 
 
 export const ChaptersList = (props: ListProps) => {
+
+    const ChapterListAction = () => {
+        const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+        const notify = useNotify();
+        const dataProvider = (window as any).swanAppFunctions.dataProvider;
+
+        const handleGenerateDiagnosticTest = async (e) => {
+            e.stopPropagation();
+            setLoadingDiagnostic(true);
+            showLoading();
+            try {
+                const { data: chapters } = await dataProvider.getList('chapters');
+                for (const chapter of chapters) {
+                    const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
+                    console.log('Generated Diagnostic Test Question IDs: ', questionIds);
+                    await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                }
+                notify("Generate Diagnostic Test Questions completed", { type: "info" });
+            } catch (Error) {
+                notify("Error generating diagnostic test questions: " + Error, { type: "error" });
+            } finally {
+                setLoadingDiagnostic(false)
+                hideLoading();
+            }
+        }
+
+        return (
+            <TopToolbar sx={{ display: 'flex', alignItems: 'center' }}>
+                <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+                    {loadingDiagnostic ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Timer fontSize="small" />
+                    )}
+                    Generate Diagnostic Test
+                </Button>
+                <CreateButton />
+            </TopToolbar>
+        )
+    }
+
     return (
-        <List {...listDefaults(props)}>
+        <List {...listDefaults(props)} actions={<ChapterListAction/>}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 <DataTable.Col source="subject_id" field={SubjectsReferenceField}/>
                 <DataTable.Col source="chapter_number" field={NumberField}/>

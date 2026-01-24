@@ -34,7 +34,9 @@ export const TestRoundPage: React.FC = () => {
                 const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
                 setConceptName(concept.name);
 
-                const { data: diagnosticTestQuestions } = await dataProvider.getList('chapter_diagnostic_questions')
+                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
+                    filter: {chapter_id: chapterId}
+                })
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
                     filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
