@@ -132,7 +132,7 @@ export const prepareQuestions = async(chapterId:any,questions_attachment_file: a
 export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) => {
     const concepts = [];
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
-    try{
+    try {
         for(const concept of conceptualMap){
             concepts.push({
                 chapter_id: chapterId,
@@ -142,21 +142,30 @@ export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) =>
                 is_active: true
             })
         }
-        //const dbTransactionId = await dataProvider.beginTransaction();
-        const {data:existingConcepts} = await dataProvider.getList('concepts',{filter:{chapter_id:chapterId}});
-        if(existingConcepts.length > 0) {
+        const { data: existingConcepts } = await dataProvider.getList('concepts', {
+            filter: { chapter_id: chapterId }
+        });
+        if (existingConcepts.length > 0) {
             await dataProvider.deleteMany('concepts', {
                 ids: existingConcepts.map((exC: {
                     id: any;
                 }) => exC.id)
             });
-        } //Commenting this as batch delete and create doesn;t work together in transactions in SWAN
-        for(const conceptRecord of concepts){
-            await dataProvider.create('concepts', {data: conceptRecord});
         }
-        //await dataProvider.commitTransaction(dbTransactionId);
-    }
-    catch(Error){
+        const bulkCreateRequests = [];
+        for (const concept of concepts) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'concepts',
+                    params: { data: { ...concept } }
+                }
+            );
+        }
+        const dbTransactionId = await dataProvider.beginTransaction();
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
+    } catch (Error) {
         console.log("Error uploading chapter concept: ", Error);
     }
 }
