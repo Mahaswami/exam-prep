@@ -66,39 +66,36 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             hint: question.hint,
             final_answer: question.final_answer,
             answer_stream: JSON.stringify(question.detailed_solution_stream),
-            is_active: true,
-            is_invented:isInventQuestions,
+            status: "need_verification",
+            is_invented: isInventQuestions,
         };
         questionRecords.push(questionData);
     }
-   // const dbTransactionId = await dataProvider.beginTransaction();
-    const {data: existingQuestions} = await dataProvider.getList('questions', {filter: {concept_id: concepts.map(c => c.id)}});
-    /*if (!isInventQuestions && existingQuestions.length > 0) {
-        await dataProvider.deleteMany('questions', {
-            ids: existingQuestions.map((exQ: {
-                id: any;
-            }) => exQ.id)
-        });
+    const { data: existQuestions } = await dataProvider.getList('questions', {
+        filter: { concept_id: concepts.map(concept => concept.id) }
+    });
+    const bulkRequests = [];
+    /*if (!isInventQuestions) {
+        for (const existQuestion of existQuestions) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'questions',
+                params: { id: existQuestion.id }
+            });
+        }
     }*/
-    /*for (const questionRecord of questionRecords) {
-        await dataProvider.create('questions', {data: questionRecord});
-    }*/
-    const bulkCreateRequests = [];
     for (const questionRecord of questionRecords) {
-        bulkCreateRequests.push(
-            {
-                type:'create',
-                resource:'questions',
-                params: {
-                    data: {
-                        ...questionRecord
-                    }
-                }
+        bulkRequests.push({
+            type: 'create',
+            resource: 'questions',
+            params: {
+                data: { ...questionRecord }
             }
-        );
+        });
     }
-    await dataProvider.executeBatch(bulkCreateRequests);
-   // await dataProvider.commitTransaction(dbTransactionId);
+    const dbTransactionId = await dataProvider.beginTransaction();
+    await dataProvider.executeBatch(bulkRequests, dbTransactionId);
+    await dataProvider.commitTransaction(dbTransactionId);
 }
 
 export const prepareQuestions = async(chapterId:any,questions_attachment_file: any,isInventQuestions = false) => {
@@ -131,8 +128,8 @@ export const prepareQuestions = async(chapterId:any,questions_attachment_file: a
 export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) => {
     const concepts = [];
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
-    try{
-        for(const concept of conceptualMap){
+    try {
+        for (const concept of conceptualMap){
             concepts.push({
                 chapter_id: chapterId,
                 name: concept.broad_concept,
@@ -141,21 +138,28 @@ export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) =>
                 is_active: true
             })
         }
-        //const dbTransactionId = await dataProvider.beginTransaction();
-        const {data:existingConcepts} = await dataProvider.getList('concepts',{filter:{chapter_id:chapterId}});
-        if(existingConcepts.length > 0) {
-            await dataProvider.deleteMany('concepts', {
-                ids: existingConcepts.map((exC: {
-                    id: any;
-                }) => exC.id)
+        const { data: chapterConcepts } = await dataProvider.getList('concepts', {
+            filter: { chapter_id: chapterId }
+        });
+        const bulkRequests = [];
+        for (const chapterConcept of chapterConcepts) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'concepts',
+                params: { id: chapterConcept.id }
             });
-        } //Commenting this as batch delete and create doesn;t work together in transactions in SWAN
-        for(const conceptRecord of concepts){
-            await dataProvider.create('concepts', {data: conceptRecord});
         }
-        //await dataProvider.commitTransaction(dbTransactionId);
-    }
-    catch(Error){
+        for (const concept of concepts) {
+            bulkRequests.push({
+                type: 'create',
+                resource: 'concepts',
+                params: { data: {...concept} }
+            });
+        }
+        const dbTransactionId = await dataProvider.beginTransaction();
+        await dataProvider.executeBatch(bulkRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
+    } catch (Error) {
         console.log("Error uploading chapter concept: ", Error);
     }
 }

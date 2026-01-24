@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
@@ -7,6 +7,7 @@ import { Loading, useNotify, useRedirect } from "react-admin";
 import { getExistingRevisionRounds } from "../logic/revisions.ts";
 import { getLocalStorage, remoteLog } from "@mahaswami/swan-frontend";
 import { updateActivity } from "../logic/activities.ts";
+import { sendQuestionExcusedEmail } from "../logic/email_helper.ts";
 
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
@@ -21,6 +22,7 @@ export const RevisionRoundPage: React.FC = () => {
     const [isInvalidRevisionRound, setIsInvalidRevisionRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const navigate = useNavigate();
     const user = JSON.parse(getLocalStorage('user') || '{}');
     // Status is used to avoid duplicate create calls in dev StrictMode
     const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
@@ -52,6 +54,8 @@ export const RevisionRoundPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        let isMounted = true
+
         const fetchRevisionRoundQuestions = async () => {
             try {
                 console.log("Fetching revisions for chapterId: ", parsedChapterId, parsedConceptId);
@@ -65,10 +69,6 @@ export const RevisionRoundPage: React.FC = () => {
 
                 const {data: concept} = await dataProvider.getOne('concepts', {id: parsedConceptId});
                 setConceptName(concept.name);
-
-                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: parsedChapterId}
-                })
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
                     filter: {concept_id: parsedConceptId, status:'completed', user_id: user_id}});
@@ -84,9 +84,11 @@ export const RevisionRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id: parsedConceptId,
-                        id_neq_any: Array.from(attemptedQuestionIds)
-                        },
+                    filter: {
+                        concept_id: parsedConceptId,
+                        id_neq_any: Array.from(attemptedQuestionIds),
+                        status: "active"
+                    },
                 })
 
                 //Select questions based on difficulty levels. Atleast 1 Hard, 2 Medium, 2 Easy. If not enough questions in a category, fill from other categories.
@@ -104,7 +106,18 @@ export const RevisionRoundPage: React.FC = () => {
                 }
                 if(selectedQuestions.length < MIN_REVISION_QUESTIONS){
                     setIsInvalidRevisionRound(true);
-                    notify('Not enough new questions available for test round. Please try again later or contact support.');
+                    if (isMounted) {
+                        notify("ra.notification.no_questions", { 
+                            multiLine: true,
+                            messageArgs: {
+                                chapterName: chapter.name,
+                                conceptName: concept.name,
+                                testName: "Test Round"
+                            }
+                        })
+                        sendQuestionExcusedEmail("Revision Round", chapter.name, concept.name);
+                        navigate(-1);
+                    }
                     return;
                 }
                 console.log("Fetched Revision questions: ", selectedQuestions);
@@ -117,10 +130,12 @@ export const RevisionRoundPage: React.FC = () => {
         }
 
         fetchRevisionRoundQuestions();
+        return () => { isMounted = false }
     }, [parsedChapterId, parsedConceptId]);
 
     const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        const dbTransactionId = await dataProvider.beginTransaction();
         let roundNumber = 1;
         const existingRounds = await getExistingRevisionRounds(parsedConceptId);
         if (existingRounds.length > 0) {
@@ -144,24 +159,31 @@ export const RevisionRoundPage: React.FC = () => {
                 activity_timestamp: new Date().toISOString(),
             });
         }
-        for(const q of questions){
-            await dataProvider.create('revision_round_details',{data:{
-                revision_round_id: master.id,
-                question_id: q.id,
-                time_viewed_seconds_number: timing.perQuestion[q.id] ?? 0,
-            }});
+        const bulkCreateRequests = [];
+        for (const question of questions) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'revision_round_details',
+                    params: {
+                        data: {
+                            revision_round_id: master.id,
+                            question_id: question.id,
+                            time_viewed_seconds_number: timing.perQuestion[question.id] ?? 0,
+                        }
+                    }
+                }
+            );
         }
-        
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         notify('Revision Completed Successfully')
         redirect(`/revision_rounds/${master.id}/show`);
     }
 
 
-    if (isLoading) {
+    if (isLoading || !questions.length) {
         return <Loading />;
-    }
-    if (!questions.length) {
-        return <div>No questions found.</div>;
     }
     if(isInvalidRevisionRound){
         return <div>Not enough new questions available for revision round. Please try again later or contact support.</div>;

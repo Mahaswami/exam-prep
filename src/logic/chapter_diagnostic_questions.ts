@@ -36,7 +36,7 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
         //Filter MCQs for the chapter
         const {data:mcqs} = await dataProvider.getList('questions',{
             meta:{prefetch:['concepts']},
-            filter:{concept:{chapter_id:chapterId },type:'MCQ'}}
+            filter:{concept:{chapter_id:chapterId },type:'MCQ', status: 'active'}}
             );
         console.log("Fetched Questions for Diagnostic: ", mcqs);
         if (mcqs.length === 0) return [];
@@ -118,21 +118,28 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
             };
             questionRecords.push(questionData);
         }
-     //   const dbTransactionId = await dataProvider.beginTransaction();
-        const {data:existingQuestions} = await dataProvider.getList('chapter_diagnostic_questions',{filter:{chapter_id:chapterId}});
-        if(existingQuestions.length > 0) {
-            await dataProvider.deleteMany('chapter_diagnostic_questions', {
-                ids: existingQuestions.map((exQ: {
-                    id: any;
-                }) => exQ.id)
+        const { data: chapterQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
+            filter: { chapter_id: chapterId }
+        });
+        const bulkRequests = [];
+        for (const chapterQuestion of chapterQuestions) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'chapter_diagnostic_questions',
+                params: { id: chapterQuestion.id }
             });
         }
         for (const questionRecord of questionRecords) {
-            await dataProvider.create('chapter_diagnostic_questions', {data: questionRecord});
+            bulkRequests.push({
+                type: 'create',
+                resource: 'chapter_diagnostic_questions',
+                params: {
+                    data: { ...questionRecord }
+                }
+            });
         }
-     //   await dataProvider.commitTransaction(dbTransactionId);
-    }
-    catch(Error){
+        return bulkRequests;
+    } catch (Error) {
         console.log("Error uploading diagnostic questions: ", Error);
     }
 }
