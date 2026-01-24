@@ -72,7 +72,6 @@ const ChapterRowActions = () => {
     const [loadingConcepts, setLoadingConcepts] = useState(false);
     const [loadingPrepare, setLoadingPrepare] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
-    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
     const [loadingConvert, setLoadingConvert] = useState(false);
     if (!record?.id) return null;
 
