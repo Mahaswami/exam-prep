@@ -279,9 +279,12 @@ export const ChaptersList = (props: ListProps) => {
         <List {...listDefaults(props)} actions={<ChapterListAction/>}>
             <DataTable {...tableDefaults(RESOURCE)} isLoading={loading} expand={<QuestionCounts questionCounts={questionDetails} />}>
                 <DataTable.Col source="subject_id" field={SubjectsReferenceField}/>
-                <DataTable.Col source="chapter_number" field={NumberField}/>
+                <DataTable.Col source="chapter_number" label="Chapter number" field={NumberField}/>
                 <DataTable.Col source="name" />
-                <DataTable.Col source="is_active" field={BooleanField} />
+                <DataTable.Col source="is_active" label="Active?" field={BooleanField} />
+                <DataTable.Col label="Active Q" render={(record: any) => questionDetails[record.id]?.activeQuestions} />
+                <DataTable.Col label="Diagnostic Q" render={(record: any) => questionDetails[record.id]?.diagnosticQuestions} />
+                <DataTable.Col label="Non-Diagnostic Q" render={(record: any) => questionDetails[record.id]?.nonDiagnosticQuestions} />
                 <RowActions />
             </DataTable>
         </List>
