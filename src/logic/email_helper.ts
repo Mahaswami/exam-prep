@@ -33,3 +33,28 @@ export const sendQuestionExcusedEmail = async (testName:string, chapter: string,
         console.log("Error in sendQuestionExcusedEmail: ", error)
     }
 }
+
+export const sendAskSupportEmail = async (values:{ message: string, attachments: any }) => {
+    try {
+        const appName = (window as any).app_title
+        const user = JSON.parse(getLocalStorage('user') || '{}');
+        
+        const subject = `${appName} - Ask Support`
+        const messageBody = `
+            <p>Hello,</p>
+            <p>A user "${user.fullName}" has asked support for the following:</p>
+            <p>${values.message}</p>
+            
+            <p>Regards,<br/>${appName} Team</p>
+        `;
+        await swanAPI("send_email", {
+            to: getSupportEmail(),
+            subject, 
+            message: messageBody,
+            attachments: values.attachments
+        })
+    } catch (error) {
+        remoteLog("Error in sendAskSupportEmail: ", error)
+        console.log("Error in sendAskSupportEmail: ", error)
+    }
+}
