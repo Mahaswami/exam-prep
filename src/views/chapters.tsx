@@ -15,10 +15,12 @@ import {
     BooleanLiveFilter,
     TextLiveFilter,
     SimpleFileInput,
-    SimpleFileField
+    SimpleFileField,
+    showLoading,
+    hideLoading
 } from '@mahaswami/swan-frontend';
 import {Book, Refresh, Timer,} from '@mui/icons-material';
-import {Box, CardContent, CardHeader, IconButton, Tooltip,CircularProgress} from '@mui/material';
+import { IconButton, Tooltip,CircularProgress, Button} from '@mui/material';
 import {
     Create,
     DataTable,
@@ -38,7 +40,7 @@ import {
     AutocompleteInput,
     required,
     useUnique,
-    useRecordContext, useNotify
+    useRecordContext, useNotify, TopToolbar, CreateButton
 } from "react-admin";
 import { SubjectsReferenceField, SubjectsReferenceInput } from './subjects';
 import {identifyConceptsForChapter, prepareQuestions} from "../logic/questionbank.ts";
@@ -47,7 +49,8 @@ import {
     uploadChapterDiagnosticQuestions
 } from "../logic/chapter_diagnostic_questions.ts";
 import {uploadChapterConcepts} from "../logic/questionbank.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import { getChaptersQuestionCounts, QuestionCountsType, QuestionCounts } from '../components/QuestionCounts.tsx';
 
 export const RESOURCE = "chapters"
 export const ICON = Book
@@ -69,7 +72,6 @@ const ChapterRowActions = () => {
     const [loadingConcepts, setLoadingConcepts] = useState(false);
     const [loadingPrepare, setLoadingPrepare] = useState(false);
     const [loadingAdd, setLoadingAdd] = useState(false);
-    const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
     const [loadingConvert, setLoadingConvert] = useState(false);
     if (!record?.id) return null;
 
@@ -201,52 +203,90 @@ const ChapterRowActions = () => {
                     )}
                 </IconButton>
             </Tooltip>
-            <Tooltip title="Generate Diagnostic Test">
-                <IconButton
-                    size="small"
-                    disabled={loadingDiagnostic}
-                    onClick={async(e) => {
-                        e.stopPropagation();
-                        setLoadingDiagnostic(true)
-                        try{
-                            const questionIds = await generateChapterDiagnosticQuestions(record.id);
-                            console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                            await uploadChapterDiagnosticQuestions(record.id, questionIds);
-                            notify("Generate Diagnostic Test Questions completed", { type: "info" });
-                        }
-                        catch(Error){
-                            notify("Error generating diagnostic test questions: " + Error, { type: "error" });
-                        }
-                        finally {
-                            setLoadingDiagnostic(false)
-                        }
-                    }}
-                >
-                    {loadingDiagnostic ? (
-                        <CircularProgress size={18} />
-                    ) : (
-                        <Timer fontSize="small" />
-                    )}
-                </IconButton>
-            </Tooltip>
         </>
     );
 };
 
 
 export const ChaptersList = (props: ListProps) => {
+    const [questionDetails, setQuestionDetails] = useState<Record<number, QuestionCountsType>>({});
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const questionCounts = await getChaptersQuestionCounts();
+                setQuestionDetails(questionCounts);
+            } catch (error) {
+                console.error("Error:  Question counts data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const ChapterListAction = () => {
+        const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+        const notify = useNotify();
+        const dataProvider = (window as any).swanAppFunctions.dataProvider;
+
+        const handleGenerateDiagnosticTest = async (e) => {
+            e.stopPropagation();
+            setLoadingDiagnostic(true);
+            showLoading();
+            try {
+                const { data: chapters } = await dataProvider.getList('chapters');
+                const bulkCreateRequests = [];
+                for (const chapter of chapters) {
+                    const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
+                    console.log('Generated Diagnostic Test Question IDs: ', questionIds);
+                    const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                    if (chapterGenerateDiagnostics)
+                        bulkCreateRequests.push(...chapterGenerateDiagnostics);
+                }
+                if (bulkCreateRequests.length > 0) {
+                    const dbTransactionId = await dataProvider.beginTransaction();
+                    await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+                    await dataProvider.commitTransaction(dbTransactionId);
+                }
+                notify("Generate Diagnostic Test Questions completed", { type: "info" });
+            } catch (Error) {
+                notify("Error generating diagnostic test questions: " + Error, { type: "error" });
+            } finally {
+                setLoadingDiagnostic(false)
+                hideLoading();
+            }
+        }
+
+        return (
+            <TopToolbar sx={{ display: 'flex', alignItems: 'center' }}>
+                <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+                    {loadingDiagnostic ? (
+                        <CircularProgress size={18} />
+                    ) : (
+                        <Timer fontSize="small" />
+                    )}
+                    Generate Diagnostic Test
+                </Button>
+                <CreateButton />
+            </TopToolbar>
+        )
+    }
+
     return (
-        <List {...listDefaults(props)}>
-            <DataTable {...tableDefaults(RESOURCE)}>
+        <List {...listDefaults(props)} actions={<ChapterListAction/>}>
+            <DataTable {...tableDefaults(RESOURCE)} isLoading={loading} expand={<QuestionCounts questionCounts={questionDetails} />}>
                 <DataTable.Col source="subject_id" field={SubjectsReferenceField}/>
                 <DataTable.Col source="chapter_number" field={NumberField}/>
                 <DataTable.Col source="name" />
-                <DataTable.Col source="is_active" field={BooleanField}/>
-                <RowActions/>
+                <DataTable.Col source="is_active" field={BooleanField} />
+                <RowActions />
             </DataTable>
         </List>
-    )
-}
+    );
+};
 
 
 export const ChaptersCardGrid = (props: ListProps) => {

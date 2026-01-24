@@ -18,15 +18,7 @@ export const QuestionsLogic: any = {
     beforeCreate: [],
     beforeDelete: [],
     beforeDeleteMany: [],
-    beforeGetList: [(params: any) => {
-        if (params.filter?.status == undefined) {
-            params.filter = {
-                ...params.filter,
-                status: "Active"
-            }
-        }
-        return params;
-    }],
+    beforeGetList: [],
     beforeGetMany: [],
     beforeGetManyReference: [],
     beforeGetOne: [],
@@ -38,7 +30,7 @@ export const QuestionsLogic: any = {
 }
 
 async function removeCommentAndSendNotification(data: any) {
-    if (data.status && data.status == "Active") {
+    if (data.status && data.status == "active") {
         data.comment = "";
         data.comment_attachments = null;
     } else if (data.status && data.status == "Need-Review") {

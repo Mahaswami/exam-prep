@@ -8,6 +8,8 @@ import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
     TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, AutocompleteInput, required } from "react-admin";
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
+import { getConceptQuestionCounts, QuestionCounts, type QuestionCountsType } from '../components/QuestionCounts';
+import { useEffect, useState } from 'react';
 
 export const RESOURCE = "concepts"
 export const ICON = Class
@@ -23,9 +25,27 @@ const filters = [
 ]
 
 export const ConceptsList = (props: ListProps) => {
+    const [questionDetails, setQuestionDetails] = useState<Record<number, QuestionCountsType>>({});
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const questionCounts = await getConceptQuestionCounts();
+                setQuestionDetails(questionCounts);
+            } catch (error) {
+                console.error("Error:  Question counts data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     return (
         <List {...listDefaults(props)}>
-            <DataTable {...tableDefaults(RESOURCE)}>
+            <DataTable {...tableDefaults(RESOURCE)} isLoading={loading} expand={<QuestionCounts questionCounts={questionDetails} />}>
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
                 <DataTable.Col source="concept_order_number" field={NumberField}/>
                 <DataTable.Col source="name" />

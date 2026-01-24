@@ -29,7 +29,7 @@ export const QuestionsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const QuestionsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 export const questionTypeChoices = [{ id: 'MCQ', name: 'MCQ' }, { id: 'VSA', name: '2 Marks' }, { id: 'SA', name: '3 Marks' },{ id: 'Case-Based', name: '4 Marks' }, { id: 'LA', name: '5 Marks' }];
 export const difficultyChoices = [{ id: 'Easy', name: 'Easy' }, { id: 'Medium', name: 'Medium' }, { id: 'Hard', name: 'Hard' }];
-export const questionStatusChoices = [{ id: 'Active', name: 'Active' }, { id: 'Need-Review', name: 'Need Review' }, { id: 'In-Active', name: 'In Active' }];
+export const questionStatusChoices = [{ id: 'active', name: 'Active' }, { id: 'need_correction', name: 'Need Correction' }, { id: 'need_verification', name: 'Need Verification' }, { id: 'in_active', name: 'In Active' }];
 
 const filters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Chapter" through='concept.chapter_id' show />,
@@ -42,7 +42,7 @@ const filters = [
 
 export const QuestionsList = (props: ListProps) => {
     return (
-        <List {...listDefaults(props)} filterDefaultValues={{ status: "Active" }}>
+        <List {...listDefaults(props)} filterDefaultValues={{ status: "active" }}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 <DataTable.Col source="id" />
                 <DataTable.Col source='concept.chapter_id' field={ChaptersReferenceField} />
@@ -90,7 +90,7 @@ const QuestionForm = (props: any) => {
             <Box>
                 <SelectInput label="Status" source="status" choices={questionStatusChoices} />
                 <FormDataConsumer>
-                    {({ formData }) => formData.status && formData.status !== 'Active' && (
+                    {({ formData }) => formData.status && formData.status !== 'active' && (
                         <>
                             <TextInput multiline source='comment' label={`Comment (${formData.status})`} minRows={4}/>
                             <FileInput source='comment_attachments' label="Attachments" multiple>
@@ -116,7 +116,7 @@ const QuestionEdit = (props: any) => {
 const QuestionCreate = (props: any) => {
     return (
         <Create {...createDefaults(props)}>
-            <QuestionForm defaultValues={{ status: 'Active' }}/>
+            <QuestionForm defaultValues={{ status: 'active' }}/>
         </Create>
     )
 }
@@ -132,7 +132,7 @@ const QuestionShowContent = () => {
                 <ConceptsReferenceField source="concept_id" />
                 <BooleanField label="Is derived" source="is_invented" />
                 <SelectField label="Status" source="status" choices={questionStatusChoices} />
-                <WithRecord render={(record: any) => record.status && record.status !== 'Active' && (
+                <WithRecord render={(record: any) => record.status && record.status !== 'active' && (
                     <Labeled label="Comment">
                         <>
                             <TextField source='comment' label={`Comment (${record.status})`} />
