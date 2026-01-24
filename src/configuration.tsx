@@ -1,4 +1,4 @@
-import { getLocalStorage, OmniSearchBox } from "@mahaswami/swan-frontend";
+import { getLocalStorage, OmniSearchBox, remoteLog, removeLocalStorage, setLocalStorage } from "@mahaswami/swan-frontend";
 import { Peak10Logo } from "./components/Peak10Logo";
 import { peak10Themes } from './theme/peak10Theme';
 import { createStudentLoginActivity } from "./logic/activities";
@@ -13,15 +13,42 @@ export const canAccess = async (params: any) => {
     return undefined;           
 }
 
+const checkIsStudentHasDiagnosticTest = async (dataProvider: any, user: any) => {
+    try {
+        let hasDiagnosticTest = false;
+        const { data: diagnosticTests } = await dataProvider.getList('diagnostic_tests', {
+            filter: {
+                user_id: user.id,
+                status: 'completed'
+            }
+        });
+        if (diagnosticTests.length > 0) {
+            hasDiagnosticTest = true;
+        }
+        setLocalStorage("has_diagnostic_test", hasDiagnosticTest);
+    } catch (error) {
+        console.log("Error checking if student has diagnostic test: ", error);
+        remoteLog("Error checking if student has diagnostic test: ", error);
+    }
+}
+
+export const hasDiagnosticTests = () => {
+    return getLocalStorage("has_diagnostic_test") === true;
+}
+
 export const postLogin = async (dataProvider: any, user: any) => {
     if (user.role === 'student') {
         // Create student login activity.
         await createStudentLoginActivity(dataProvider, user);
+        // Check if student has diagnostic test to hide menus (Revision, Test, Concept scores)
+        await checkIsStudentHasDiagnosticTest(dataProvider, user);
     }
 }    
 
 export const postLogout = () => {
-    
+    if (getLocalStorage('role') === 'student') {
+        removeLocalStorage("has_diagnostic_test");
+    }
 }    
 
 export const customLogoBox = (_permissions: any, _isHorizontalLayout: boolean) => {

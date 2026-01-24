@@ -73,13 +73,13 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
     }
    // const dbTransactionId = await dataProvider.beginTransaction();
     const {data: existingQuestions} = await dataProvider.getList('questions', {filter: {concept_id: concepts.map(c => c.id)}});
-    if (!isInventQuestions && existingQuestions.length > 0) {
+    /*if (!isInventQuestions && existingQuestions.length > 0) {
         await dataProvider.deleteMany('questions', {
             ids: existingQuestions.map((exQ: {
                 id: any;
             }) => exQ.id)
         });
-    }
+    }*/
     /*for (const questionRecord of questionRecords) {
         await dataProvider.create('questions', {data: questionRecord});
     }*/

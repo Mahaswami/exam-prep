@@ -86,6 +86,9 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     initialTiming,
     questionCorrectness,
     userName,
+    addConceptName = false,
+    submitLabel = "Submit",
+    submitLoadingLabel = "Submitting...",
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
     const isReviewMode = !onComplete;
@@ -131,7 +134,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         setIndex(i => i - 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (isSubmitting || !onComplete) return;
         setIsSubmitting(true);
         const finalTimeMap = saveCurrentQuestionTime();
@@ -150,7 +153,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
             },
         };
 
-        onComplete(result);
+        await onComplete(result);
     };
 
     const handleAnswer = (result: AnswerResult) => {
@@ -200,7 +203,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                     ) : (
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <Typography variant="subtitle1" fontWeight={600} sx={{ flex: 1 }}>
-                                {title}
+                                {title} {addConceptName && ` - ${question?.concept?.name}`}
                             </Typography>
                             <Typography variant="body2" fontWeight={600} color="text.secondary">
                                 {index + 1} / {sortedQuestions.length}
@@ -215,6 +218,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                 <CardContent sx={{ px: 2, py: 1.5 }}>
                     <QuestionDisplay
                         question={question}
+                        key={question.id}
                         mode={mode}
                         allowHint={allowHint}
                         allowSolution={allowSolution}
@@ -225,16 +229,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         timeTaken={currentTimeTaken}
                         isCorrect={currentCorrectness}
                     />
-                    {allowAnswer && !canProceed() && (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            align="center"
-                            sx={{ mt: 1 }}
-                        >
-                            Please answer the question to continue
-                        </Typography>
-                    )}
+                    
                 </CardContent>
                 
                 {/* Footer with navigation */}
@@ -249,7 +244,16 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         >
                             ← Back
                         </Button>
-
+                        {allowAnswer && !canProceed() && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                align="center"
+                                sx={{ mt: 1 }}
+                            >
+                                Please answer the question to continue
+                            </Typography>
+                        )}
                         {isReviewMode ? (
                             <Button
                                 size="small"
@@ -268,7 +272,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                                 onClick={handleSubmit}
                                 startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit'}
+                                {isSubmitting ? submitLoadingLabel : submitLabel}
                             </Button>
                         ) : (
                             <Button

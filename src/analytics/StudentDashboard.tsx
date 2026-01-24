@@ -68,17 +68,17 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
         title: 'Comfort Level',
         layout: { columnSpan: 4 },
         dimensions: [{ field: 'comfort_level' }],
-        measures: [{ field: 'id', aggregation: 'count' }],
+        measures: [{ field: 'id', aggregation: 'sum' }],
         showPercentage: true
     },
     {
         id: 'progress-trend',
-        type: 'area',
+        type: 'bar',
         title: 'Activity Over Time',
         layout: { columnSpan: 4 },
-        dimensions: [{ field: 'updated_timestamp', bucket: 'day' }],
+        dimensions: [{ field: 'activity_timestamp', bucket: 'day' }],
         measures: [{ field: 'id', aggregation: 'count', label: 'Updates' }],
-        sort: { field: 'updated_timestamp', order: 'ASC' }
+        sort: { field: 'activity_timestamp', order: 'ASC' }
     },
     // Row 3: Chapter progress (full width)
     {
@@ -87,7 +87,8 @@ const STUDENT_WIDGETS: WidgetConfig[] = [
         title: 'Progress by Chapter',
         layout: { columnSpan: 12, height: 300 },
         dimensions: [{ field: 'chapter', label: 'Chapter' }],
-        measures: [{ field: 'mastery', aggregation: 'avg', label: 'Mastery %', valueFormatter: (v: number) => `${(v * 100).toFixed(0)}%` }],
+        measures: [{ field: 'mastery', aggregation: 'avg', label: 'Mastery %', 
+            valueFormatter: (v: number) => `${(v * 100).toFixed(0)}%` }],
         chartOptions: { layout: 'horizontal' }
     }
 ];
@@ -131,9 +132,14 @@ export const StudentDashboard = () => {
         filter: {is_active: true}
     });
 
+    const { data: activities = [], isLoading: activitiesLoading} = useGetList('activities', {
+        pagination: { page: 1, perPage: 1000 },
+        sort: { field: 'activity_timestamp', order: 'ASC' },
+    });    
+
     useEffect(() => {
         const computeMasteryData = async () => {
-            if (chaptersLoading || conceptsLoading || !effectiveUserId) return;
+            if (chaptersLoading || conceptsLoading || !effectiveUserId || activitiesLoading) return;
             
             try {
                 const scoresRes = await dataProvider.getList('concept_scores', {
@@ -160,7 +166,26 @@ export const StudentDashboard = () => {
                 const chapterNames = new Map(filteredChapters.map((c: any) => [c.id, c.name]));
                 
                 const total = filteredData.length;
-                const mastered = filteredData.filter((d: any) => d.comfort_level === 'very_good').length;
+               const masteredConcepts = filteredData.filter((d: any) => d.comfort_level === 'very_good' ||
+            d.initial_comfort_level === 'very_good');
+             const mastered = masteredConcepts.length;
+
+            const goodConcepts = filteredData
+                        .filter(element => !masteredConcepts.includes(element))
+                        .filter((d: any) => d.comfort_level === 'good'
+            || d.initial_comfort_level === 'good')
+            const goodCount = goodConcepts.length;
+
+            const needsWorkConcepts =  filteredData
+                        .filter(element => !masteredConcepts.includes(element))
+                        .filter(element => !goodConcepts.includes(element))
+                        .filter((d: any) => d.comfort_level === 'needs_improvement'
+            || d.initial_comfort_level === 'needs_improvement')
+                      
+
+            const needsWorkCount = needsWorkConcepts.length;            
+            
+                
                 const masteryRate = total > 0 ? mastered / total : 0;
                 
                 // Count improved: current level > initial level
@@ -174,11 +199,11 @@ export const StudentDashboard = () => {
                 // Compute progress by chapter
                 const chapterStats = new Map<number, { total: number; mastered: number }>();
                 filteredData.forEach((d: any) => {
-                    const chapterId = conceptToChapter.get(d.concept_id);
+                    const chapterId = conceptToChapter.get(Number(d.concept_id));
                     if (!chapterId) return;
                     const stats = chapterStats.get(chapterId) || { total: 0, mastered: 0 };
                     stats.total++;
-                    if (d.comfort_level === 'very_good') stats.mastered++;
+                    if ( d.initial_comfort_level === 'very_good' ||  d.comfort_level === 'very_good') stats.mastered++;
                     chapterStats.set(chapterId, stats);
                 });
                 
@@ -195,31 +220,23 @@ export const StudentDashboard = () => {
                 });
 
                 // Count by comfort level for KPI widgets
-                const masteredCount = filteredData.filter((d: any) => d.comfort_level === 'very_good').length;
-                const goodCount = filteredData.filter((d: any) => d.comfort_level === 'good').length;
-                const needsWorkCount = filteredData.filter((d: any) => d.comfort_level === 'needs_improvement').length;
+
+
 
                 // Pie chart data for comfort level distribution
                 const comfortLevelData = [
-                    { comfort_level: 'very_good', id: masteredCount },
-                    { comfort_level: 'good', id: goodCount },
-                    { comfort_level: 'needs_improvement', id: needsWorkCount }
+                    { comfort_level: 'very_good', id: mastered },
+                    { comfort_level: 'good',id: goodCount },
+                    { comfort_level: 'needs_improvement',id: needsWorkCount }
                 ].filter(d => d.id > 0);
 
-                // Trend data: group by day
-                const trendByDay = new Map<string, number>();
-                filteredData.forEach((d: any) => {
-                    if (!d.updated_timestamp) return;
-                    const day = d.updated_timestamp.split('T')[0];
-                    trendByDay.set(day, (trendByDay.get(day) || 0) + 1);
-                });
-                const trendData = Array.from(trendByDay.entries())
-                    .map(([day, count]) => ({ updated_timestamp: day, id: count }))
-                    .sort((a, b) => a.updated_timestamp.localeCompare(b.updated_timestamp));
+
+                const trendData = activities.filter((d: any) => d.activity_type !=  'student_login')
+
 
                 const updatedWidgets = STUDENT_WIDGETS.map(widget => {
                     if (widget.id === 'concepts-mastered') {
-                        return { ...widget, mockData: [{ value: masteredCount }] };
+                        return { ...widget, mockData: [{ value: mastered }] };
                     }
                     if (widget.id === 'concepts-good') {
                         return { ...widget, mockData: [{ value: goodCount }] };
@@ -252,7 +269,8 @@ export const StudentDashboard = () => {
         };
         
         computeMasteryData();
-    }, [dataProvider, effectiveUserId, filterSubjectId, chapters, concepts, chaptersLoading, conceptsLoading]);
+    }, [dataProvider, effectiveUserId, filterSubjectId, chapters, concepts, 
+        chaptersLoading, conceptsLoading, activities, activitiesLoading]);
 
     
     // Fetch users for admin student picker
@@ -453,7 +471,6 @@ export const StudentDashboard = () => {
                         <TestPreparationButton
                             chapters={chapters}
                             title={dialogTitles.diagnostic}
-                            validateSelectOption={false}
                             variant="contained"
                             actionType="diagnostic"
                             startIcon={<AssignmentIcon />}
@@ -526,10 +543,9 @@ export const TestPreparationButton = (props: TestPreparationDialogProps & Button
 interface TestPreparationDialogProps {
     actionType: ActionType;
     chapters?: any[];
-    validateSelectOption?: boolean;
 }
 
-export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectOption = true }: TestPreparationDialogProps) => {
+export const TestPreparationDialog = ({ actionType, chapters=[]}: TestPreparationDialogProps) => {
     const notify = useNotify();
     const [selectedChapterId, setSelectedChapterId] = useState<number | null>(null);
     const [selectedConceptId, setSelectedConceptId] = useState<number | null>(null);
@@ -538,7 +554,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectO
         pagination: { page: 1, perPage: 1000 },
         sort: { field: 'id', order: 'ASC' },
         filter: { user_id: JSON.parse(getLocalStorage("user"))?.id },
-    }, { enabled: validateSelectOption });
+    });
     const { data: conceptsForChapter = [] } = useGetList('concepts', {
         pagination: { page: 1, perPage: 100 },
         sort: { field: 'name', order: 'ASC' },
@@ -555,9 +571,9 @@ export const TestPreparationDialog = ({ actionType, chapters=[], validateSelectO
     const finalChapters = chapters?.length ? chapters : fetchedChapters;
     
     const chapterIds = userDiagnosticTests?.map((c: any) => c.chapter_id).filter(Boolean);
-    const validChapters = validateSelectOption 
+    const validChapters = actionType !== 'diagnostic' 
         ? finalChapters.filter(chapter => chapterIds?.includes(chapter.id))
-        : finalChapters;
+        : finalChapters.filter(chapter => !chapterIds?.includes(chapter.id));
     
 
     const isStudent = getLocalStorage('role') === 'student';

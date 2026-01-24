@@ -103,7 +103,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     const correctAnswer = getCorrectAnswer(question);
     const isInteractive = mode === "interactive";
     const isReview = mode === "review";
-    const shouldHighlightCorrect = isReview && showCorrectAnswer;
+    const shouldHighlightCorrect = (isReview && solutionVisible) && showCorrectAnswer;
     const shouldHighlightUserAnswer = isReview && selectedAnswer;
     const isMCQ = question.type === "MCQ";
     const eligibleMarks = getEligibleMarks(question.type, question.marks_number);
@@ -129,7 +129,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                         variant="outlined"
                     />
                 )}
-                {timeTaken !== undefined && (
+                {!isInteractive && timeTaken !== undefined && (
                     <Chip
                         icon={<TimerOutlinedIcon sx={{ fontSize: 16 }} />}
                         label={formatTime(timeTaken)}
@@ -201,24 +201,28 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                         const highlightUserWrong = shouldHighlightUserAnswer && isSelected && !isOptionCorrect;
 
                         let borderColor = theme.palette.divider;
-                        let bgColor = "transparent";
+                        let bgColor = "transparent", color = "inherit";
                         let borderWidth = 1;
 
                         if (isInteractive && isSelected) {
-                            borderColor = theme.palette.primary.main;
+                            borderColor = theme.palette.info.main;
                             bgColor = theme.palette.info.light;
+                            color = theme.palette.info.contrastText;
                             borderWidth = 2;
                         } else if (highlightUserWrong) {
                             borderColor = theme.palette.error.main;
                             bgColor = theme.palette.error.light;
+                            color = theme.palette.error.contrastText;
                             borderWidth = 2;
                         } else if (highlightCorrect) {
                             borderColor = theme.palette.success.main;
                             bgColor = theme.palette.success.light;
+                            color = theme.palette.success.contrastText;
                             borderWidth = 2;
                         } else if (shouldHighlightUserAnswer && isSelected) {
                             borderColor = theme.palette.success.main;
                             bgColor = theme.palette.success.light;
+                            color = theme.palette.success.contrastText;
                             borderWidth = 2;
                         }
 
@@ -241,6 +245,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                                         borderRadius: 1,
                                         p: compact ? 0.5 : 0.75,
                                         border: `${borderWidth}px solid ${borderColor}`,
+                                        color,
                                         backgroundColor: bgColor,
                                         transition: "all 0.2s ease",
                                     }}
@@ -313,6 +318,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                 <Box
                     sx={{
                         backgroundColor: theme.palette.warning.light,
+                        color: theme.palette.success.contrastText,
                         borderRadius: 1,
                         p: 0.75,
                     }}
@@ -328,6 +334,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                 <Box
                     sx={{
                         backgroundColor: theme.palette.success.light,
+                        color: theme.palette.success.contrastText,
                         borderRadius: 1.5,
                         p: 1,
                     }}

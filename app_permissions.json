@@ -11,7 +11,11 @@
         "student": {
             "name": "Student",
             "description": "Students have limited access to their own data"
-        }
+        },
+         "school_admin": {
+            "name": "School Admin",
+            "description": "Schools have access to their students data"
+        }       
     },
     "permissions": {
         "super_admin": {"*": "*"},
@@ -46,6 +50,23 @@
             "revision_round_details": "create,list,show",
             "test_rounds": "create,list,show",
             "test_round_details": "create,list,show"
-        }    
+        },
+        "school_admin": {
+            "session_records": "list",
+            "document_templates": "*",
+            "digital_signatures": "*",
+            "error_logs": "list",            
+            "concept_scores": "*",
+            "diagnostic_tests": "*",
+            "diagnostic_test_details": "*",
+            "revision_rounds": "*",
+            "revision_round_details": "*",
+            "test_rounds": "*",
+            "test_round_details": "*",
+            "activities": "*",
+            "__SWAN_INSERT_PERMISSION__": "placeholder",
+            "history": "list,show,restoreHistory",
+            "users": "*"
+        }               
     }
 }
