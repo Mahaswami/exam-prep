@@ -112,27 +112,41 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
         const questionRecords = [];
         for (const questionId of questionIds) {
             const questionData = {
-                chapter_id: chapterId,
                 question_id: questionId,
                 question_order_number: questionRecords.length + 1,
             };
             questionRecords.push(questionData);
         }
-     //   const dbTransactionId = await dataProvider.beginTransaction();
-        const {data:existingQuestions} = await dataProvider.getList('chapter_diagnostic_questions',{filter:{chapter_id:chapterId}});
-        if(existingQuestions.length > 0) {
+
+        const { data: existingQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
+        if (existingQuestions.length > 0) {
             await dataProvider.deleteMany('chapter_diagnostic_questions', {
                 ids: existingQuestions.map((exQ: {
                     id: any;
                 }) => exQ.id)
             });
         }
+
+        const bulkCreateRequests = [];
         for (const questionRecord of questionRecords) {
-            await dataProvider.create('chapter_diagnostic_questions', {data: questionRecord});
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'chapter_diagnostic_questions',
+                    params: {
+                        data: {
+                            ...questionRecord
+                        }
+                    }
+                }
+            );
         }
-     //   await dataProvider.commitTransaction(dbTransactionId);
-    }
-    catch(Error){
+        if (bulkCreateRequests.length > 0) {
+            const dbTransactionId = await dataProvider.beginTransaction();
+            await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+            await dataProvider.commitTransaction(dbTransactionId);
+        }
+    } catch (Error) {
         console.log("Error uploading diagnostic questions: ", Error);
     }
 }
