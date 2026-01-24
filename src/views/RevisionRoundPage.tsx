@@ -50,7 +50,7 @@ export const RevisionRoundPage: React.FC = () => {
                     filter: {
                         concept_id: conceptId,
                         id_neq_any: Array.from(attemptedQuestionIds),
-                        status: "Active"
+                        status: "active"
                     },
                 })
 

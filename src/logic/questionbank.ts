@@ -66,7 +66,7 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             hint: question.hint,
             final_answer: question.final_answer,
             answer_stream: JSON.stringify(question.detailed_solution_stream),
-            status: "Need-Verification",
+            status: "need_verification",
             is_invented: isInventQuestions,
         };
         questionRecords.push(questionData);
