@@ -1,5 +1,6 @@
 import { getLocalStorage, swanAPI } from "@mahaswami/swan-frontend";
 import { RESOURCE } from "../views/questions"
+import { getSupportEmail } from "./email_helper";
 
 export const QuestionsLogic: any = {
     resource: RESOURCE,
@@ -46,7 +47,7 @@ async function removeCommentAndSendNotification(data: any) {
             Comment: ${data.comment}
         `
         const composedEmail = {
-            to: "lokeshwaran@mahaswami.com",
+            to: getSupportEmail(),
             subject: subject,
             message: message,
         }
