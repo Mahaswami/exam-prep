@@ -178,6 +178,7 @@ export const QuestionsResource = (
         edit={<QuestionEdit />}
         show={<QuestionShow />}
         hasLiveUpdate
+        hasHistory
     // {{SWAN:RESOURCE_OPTIONS}}
     />
 )
