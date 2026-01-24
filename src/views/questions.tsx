@@ -42,7 +42,7 @@ const filters = [
 
 export const QuestionsList = (props: ListProps) => {
     return (
-        <List {...listDefaults(props)} filterDefaultValues={{ status: "active" }}>
+        <List {...listDefaults(props)}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 <DataTable.Col source="id" />
                 <DataTable.Col source='concept.chapter_id' field={ChaptersReferenceField} />
