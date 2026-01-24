@@ -23,9 +23,7 @@ export const DiagnosticTestPage: React.FC = () => {
                 const dataProvider = window.swanAppFunctions.dataProvider;
                 const {data: chapter} = await dataProvider.getOne('chapters', {id: chapterId});
                 setChapterName(chapter.name);
-                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
-                })
+                const { data: diagnosticTestQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
                 const {data: questions} = await dataProvider.getList('questions', {
                     filter: {id_eq_any: diagnosticTestQuestions.map((dq: any) => dq.question_id)}
                 })
@@ -44,7 +42,9 @@ export const DiagnosticTestPage: React.FC = () => {
     const onCompleteDiagnosticTest = async ({ answers, timing }: QuestionRoundResult) => {
         console.log("Diagnostic Test Completed: ", { answers, timing });
         const dataProvider = window.swanAppFunctions.dataProvider;
-        
+        const dbTransactionId = await dataProvider.beginTransaction();
+
+
         const diagnosticDetails = questions.map(q => ({
             question_id: q.id,
             concept_id: q.concept_id,
@@ -64,14 +64,24 @@ export const DiagnosticTestPage: React.FC = () => {
             total_questions_number: diagnosticDetails.length,
             correct_answers_number: diagnosticDetails.filter(d => d.is_correct).length
         }});
-        for(const detail of diagnosticDetails){
-            await dataProvider.create('diagnostic_test_details',{data:{
-                diagnostic_test_id: master.id,
-                question_id: detail.question_id,
-                selected_answer: detail.selected_answer,
-                is_correct: detail.is_correct,
-                time_taken_seconds_number: detail.time_taken,
-            }});
+        const bulkCreateRequests = [];
+
+        for (const detail of diagnosticDetails) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'diagnostic_test_details',
+                    params: {
+                        data: {
+                            diagnostic_test_id: master.id,
+                            question_id: detail.question_id,
+                            selected_answer: detail.selected_answer,
+                            is_correct: detail.is_correct,
+                            time_taken_seconds_number: detail.time_taken,
+                        }
+                    }
+                }
+            );
         }
 
         console.log("Diagnostic Test Results saved successfully.");
@@ -85,13 +95,24 @@ export const DiagnosticTestPage: React.FC = () => {
         const conceptScores = calculateConceptScores(testResults)
         const user = JSON.parse(getLocalStorage('user') || '{}');
 
-        for(const conceptScore of conceptScores){
-            await dataProvider.create('concept_scores',{data:{
-                user_id: user.id,
-                concept_id: conceptScore.conceptId,
-                initial_comfort_level: conceptScore.score,
-                updated_timestamp: new Date().toISOString()}});
+        for (const conceptScore of conceptScores) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'concept_scores',
+                    params: {
+                        data: {
+                            user_id: user.id,
+                            concept_id: conceptScore.conceptId,
+                            initial_comfort_level: conceptScore.score,
+                            updated_timestamp: new Date().toISOString()
+                        }
+                    }
+                }
+            );
         }
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         console.log("Concept Scores updated successfully: ", conceptScores);
         notify('Diagnostic Test Completed Successfully')
         redirect('/concept_scores');

@@ -34,9 +34,7 @@ export const TestRoundPage: React.FC = () => {
                 const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
                 setConceptName(concept.name);
 
-                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
-                })
+                const { data: diagnosticTestQuestions } = await dataProvider.getList('chapter_diagnostic_questions')
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
                     filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
@@ -96,6 +94,7 @@ export const TestRoundPage: React.FC = () => {
 
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        const dbTransactionId = await dataProvider.beginTransaction();
 
         const userId = JSON.parse(getLocalStorage('user') || '{}').id
         let roundNumber = 1;
@@ -150,19 +149,28 @@ export const TestRoundPage: React.FC = () => {
                 comfort_score: comfortScore,
             }
         });
-
-        for(const detail of testRoundDetails){
-            await dataProvider.create('test_round_details',{data:{
-                test_round_id: master.id,
-                question_id: detail.question_id,
-                selected_answer: detail.selected_answer,
-                is_correct: detail.is_correct,
-                marks: detail.eligible_marks,
-                marks_obtained: detail.marks_obtained,
-                time_taken_seconds_number: detail.time_taken,
-            }});
+        const bulkCreateRequests = [];
+        for (const detail of testRoundDetails) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'test_round_details',
+                    params: {
+                        data: {
+                            test_round_id: master.id,
+                            question_id: detail.question_id,
+                            selected_answer: detail.selected_answer,
+                            is_correct: detail.is_correct,
+                            marks: detail.eligible_marks,
+                            marks_obtained: detail.marks_obtained,
+                            time_taken_seconds_number: detail.time_taken,
+                        }
+                    }
+                }
+            )
         }
-
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         // Update concept_scores
         console.log('Calculated Concept Scores: ', scores);
         const latestConceptScore = conceptScoreRecords[0];

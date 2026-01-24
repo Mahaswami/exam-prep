@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useParams} from "react-router-dom";
+import {data, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
@@ -32,10 +32,6 @@ export const RevisionRoundPage: React.FC = () => {
 
                 const {data: concept} = await dataProvider.getOne('concepts', {id: conceptId});
                 setConceptName(concept.name);
-
-                const {data: diagnosticTestQuestions} = await dataProvider.getList('chapter_diagnostic_questions', {
-                    filter: {chapter_id: chapterId}
-                })
 
                 const {data: previousRevisionRounds} = await dataProvider.getList('revision_rounds',{
                     filter: {concept_id:conceptId, status:'completed',user_id:user_id}});
@@ -88,6 +84,7 @@ export const RevisionRoundPage: React.FC = () => {
 
     const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        const dbTransactionId = await dataProvider.beginTransaction();
         let roundNumber = 1;
         const existingRounds = await getExistingRevisionRounds(Number(conceptId));
         if (existingRounds.length > 0) {
@@ -105,15 +102,24 @@ export const RevisionRoundPage: React.FC = () => {
                 status:'completed',
             }
         });
-        
-        for(const q of questions){
-            await dataProvider.create('revision_round_details',{data:{
-                revision_round_id: master.id,
-                question_id: q.id,
-                time_viewed_seconds_number: timing.perQuestion[q.id] ?? 0,
-            }});
+        const bulkCreateRequests = [];
+        for (const q of questions) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'revision_round_details',
+                    params: {
+                        data: {
+                            revision_round_id: master.id,
+                            question_id: q.id,
+                            time_viewed_seconds_number: timing.perQuestion[q.id] ?? 0,
+                        }
+                    }
+                }
+            );
         }
-        
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         notify('Revision Completed Successfully')
         redirect('/concept_scores');
     }

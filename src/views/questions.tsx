@@ -29,7 +29,7 @@ export const QuestionsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const QuestionsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 export const questionTypeChoices = [{ id: 'MCQ', name: 'MCQ' }, { id: 'VSA', name: '2 Marks' }, { id: 'SA', name: '3 Marks' },{ id: 'Case-Based', name: '4 Marks' }, { id: 'LA', name: '5 Marks' }];
 export const difficultyChoices = [{ id: 'Easy', name: 'Easy' }, { id: 'Medium', name: 'Medium' }, { id: 'Hard', name: 'Hard' }];
-export const questionStatusChoices = [{ id: 'Active', name: 'Active' }, { id: 'Need-Review', name: 'Need Review' }, { id: 'In-Active', name: 'In Active' }];
+export const questionStatusChoices = [{ id: 'Active', name: 'Active' }, { id: 'Need-Correction', name: 'Need Correction' }, { id: 'Need-Verification', name: 'Need Verification' }, { id: 'In-Active', name: 'In Active' }];
 
 const filters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Chapter" through='concept.chapter_id' show />,
