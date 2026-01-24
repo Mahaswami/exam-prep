@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
@@ -7,6 +7,7 @@ import { Loading, useNotify, useRedirect } from "react-admin";
 import { getExistingRevisionRounds } from "../logic/revisions.ts";
 import { getLocalStorage, remoteLog } from "@mahaswami/swan-frontend";
 import { updateActivity } from "../logic/activities.ts";
+import { sendQuestionExcusedEmail } from "../logic/email_helper.ts";
 
 const MAX_REVISION_QUESTIONS = 8;
 const MIN_REVISION_QUESTIONS = 6;
@@ -21,6 +22,7 @@ export const RevisionRoundPage: React.FC = () => {
     const [isInvalidRevisionRound, setIsInvalidRevisionRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const navigate = useNavigate();
     const user = JSON.parse(getLocalStorage('user') || '{}');
     // Status is used to avoid duplicate create calls in dev StrictMode
     const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
@@ -52,6 +54,8 @@ export const RevisionRoundPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        let isMounted = true
+
         const fetchRevisionRoundQuestions = async () => {
             try {
                 console.log("Fetching revisions for chapterId: ", parsedChapterId, parsedConceptId);
@@ -102,7 +106,18 @@ export const RevisionRoundPage: React.FC = () => {
                 }
                 if(selectedQuestions.length < MIN_REVISION_QUESTIONS){
                     setIsInvalidRevisionRound(true);
-                    notify('Not enough new questions available for test round. Please try again later or contact support.');
+                    if (isMounted) {
+                        notify("ra.notification.no_questions", { 
+                            multiLine: true,
+                            messageArgs: {
+                                chapterName: chapter.name,
+                                conceptName: concept.name,
+                                testName: "Test Round"
+                            }
+                        })
+                        sendQuestionExcusedEmail("Revision Round", chapter.name, concept.name);
+                        navigate(-1);
+                    }
                     return;
                 }
                 console.log("Fetched Revision questions: ", selectedQuestions);
@@ -115,6 +130,7 @@ export const RevisionRoundPage: React.FC = () => {
         }
 
         fetchRevisionRoundQuestions();
+        return () => { isMounted = false }
     }, [parsedChapterId, parsedConceptId]);
 
     const onCompleteRevisionRound = async ({ timing }: QuestionRoundResult) => {
@@ -166,11 +182,8 @@ export const RevisionRoundPage: React.FC = () => {
     }
 
 
-    if (isLoading) {
+    if (isLoading || !questions.length) {
         return <Loading />;
-    }
-    if (!questions.length) {
-        return <div>No questions found.</div>;
     }
     if(isInvalidRevisionRound){
         return <div>Not enough new questions available for revision round. Please try again later or contact support.</div>;

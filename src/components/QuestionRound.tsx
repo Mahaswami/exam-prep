@@ -27,16 +27,19 @@ const NavigationDots = ({
     questions, 
     currentIndex, 
     correctness,
+    partialness,
     onNavigate 
 }: { 
     questions: QuestionWithDifficulty[];
     currentIndex: number;
     correctness?: Record<string, boolean>;
+    partialness?: Record<string, boolean>;
     onNavigate: (index: number) => void;
 }) => (
     <Stack direction="row" spacing={0.75} flexWrap="wrap" justifyContent="center" sx={{ py: 0.5 }}>
         {questions.map((q, i) => {
             const isCorrect = correctness?.[q.id];
+            const isPartial = !isCorrect && partialness?.[q.id];
             const isCurrent = i === currentIndex;
             
             return (
@@ -46,6 +49,7 @@ const NavigationDots = ({
                     sx={(theme) => {
                         let bgColor = theme.palette.grey[300];
                         if (isCorrect === true) bgColor = theme.palette.success.main;
+                        else if (isPartial === true) bgColor = theme.palette.warning.main;
                         else if (isCorrect === false) bgColor = theme.palette.error.main;
                         
                         return {
@@ -85,6 +89,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     initialAnswers,
     initialTiming,
     questionCorrectness,
+    questionPartialness,
     userName,
     addConceptName = false,
     submitLabel = "Submit",
@@ -194,6 +199,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                             <Box sx={{ flex: 1, display: 'flex', justifyContent: userName ? 'flex-end' : 'center' }}>
                                 <NavigationDots
                                     questions={sortedQuestions}
+                                    partialness={questionPartialness}
                                     currentIndex={index}
                                     correctness={questionCorrectness}
                                     onNavigate={handleNavigate}
@@ -228,6 +234,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         onAnswer={allowAnswer ? handleAnswer : undefined}
                         timeTaken={currentTimeTaken}
                         isCorrect={currentCorrectness}
+                        isPartial={questionPartialness?.[question.id]}
                     />
                     
                 </CardContent>
