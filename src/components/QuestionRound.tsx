@@ -229,16 +229,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         timeTaken={currentTimeTaken}
                         isCorrect={currentCorrectness}
                     />
-                    {allowAnswer && !canProceed() && (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            align="center"
-                            sx={{ mt: 1 }}
-                        >
-                            Please answer the question to continue
-                        </Typography>
-                    )}
+                    
                 </CardContent>
                 
                 {/* Footer with navigation */}
@@ -253,7 +244,16 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         >
                             ← Back
                         </Button>
-
+                        {allowAnswer && !canProceed() && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                align="center"
+                                sx={{ mt: 1 }}
+                            >
+                                Please answer the question to continue
+                            </Typography>
+                        )}
                         {isReviewMode ? (
                             <Button
                                 size="small"
