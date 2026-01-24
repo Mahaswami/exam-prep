@@ -34,7 +34,7 @@ export const RevisionRoundPage: React.FC = () => {
             try {
                 const dataProvider = (window as any).swanAppFunctions.dataProvider;
                 const payload = {
-                    activity_type: 'revision_round_pending',
+                    activity_type: 'revision_round_in_progress',
                     user_id: user.id,
                     chapter_id: parsedChapterId,
                     concept_id: parsedConceptId,
@@ -186,6 +186,8 @@ export const RevisionRoundPage: React.FC = () => {
             allowSolution
             showCorrectAnswer
             onComplete={onCompleteRevisionRound}
+            submitLabel="Finish"
+            submitLoadingLabel="Finishing..."
         />
     );
 }

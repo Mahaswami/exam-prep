@@ -87,6 +87,8 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
     questionCorrectness,
     userName,
     addConceptName = false,
+    submitLabel = "Submit",
+    submitLoadingLabel = "Submitting...",
 }: QuestionRoundProps<T>): React.ReactElement => {
     const sortedQuestions = useMemo(() => sortByDifficulty(questions as QuestionWithDifficulty[]) as T[], [questions]);
     const isReviewMode = !onComplete;
@@ -224,19 +226,10 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         selectedAnswer={answersMap[question.id]?.selectedOption}
                         marksObtained={answersMap[question.id]?.marksObtained}
                         onAnswer={allowAnswer ? handleAnswer : undefined}
-                        timeTaken={isReviewMode ? currentTimeTaken : undefined}
+                        timeTaken={currentTimeTaken}
                         isCorrect={currentCorrectness}
                     />
-                    {allowAnswer && !canProceed() && (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            align="center"
-                            sx={{ mt: 1 }}
-                        >
-                            Please answer the question to continue
-                        </Typography>
-                    )}
+                    
                 </CardContent>
                 
                 {/* Footer with navigation */}
@@ -251,7 +244,16 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                         >
                             ← Back
                         </Button>
-
+                        {allowAnswer && !canProceed() && (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                align="center"
+                                sx={{ mt: 1 }}
+                            >
+                                Please answer the question to continue
+                            </Typography>
+                        )}
                         {isReviewMode ? (
                             <Button
                                 size="small"
@@ -270,7 +272,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
                                 onClick={handleSubmit}
                                 startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit'}
+                                {isSubmitting ? submitLoadingLabel : submitLabel}
                             </Button>
                         ) : (
                             <Button

@@ -129,7 +129,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                         variant="outlined"
                     />
                 )}
-                {timeTaken !== undefined && (
+                {!isInteractive && timeTaken !== undefined && (
                     <Chip
                         icon={<TimerOutlinedIcon sx={{ fontSize: 16 }} />}
                         label={formatTime(timeTaken)}

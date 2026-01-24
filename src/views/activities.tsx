@@ -23,9 +23,9 @@ export const activityTypeChoices = [
     { id: 'revision_round', name: 'Revision Round' },
     { id: 'test_round', name: 'Test Round' },
     { id: 'student_login', name: 'Logged In' },
-    { id: 'diagnostic_test_pending', name: 'Diagnostic Test Pending' },
-    { id: 'test_round_pending', name: 'Test Round Pending' },
-    { id: 'revision_round_pending', name: 'Revision Round Pending' },
+    { id: 'diagnostic_test_in_progress', name: 'Diagnostic Test In Progress' },
+    { id: 'test_round_in_progress', name: 'Test Round In Progress' },
+    { id: 'revision_round_in_progress', name: 'Revision Round In Progress' },
 ];
 
 const filters = [
