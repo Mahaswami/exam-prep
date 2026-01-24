@@ -141,7 +141,6 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
                 }
             );
         }
-
         return bulkCreateRequests;
     } catch (Error) {
         console.log("Error uploading diagnostic questions: ", Error);

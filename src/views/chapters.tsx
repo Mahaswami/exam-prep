@@ -225,14 +225,14 @@ export const ChaptersList = (props: ListProps) => {
                     const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
                     console.log('Generated Diagnostic Test Question IDs: ', questionIds);
                     const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
-                    bulkCreateRequests.push(...chapterGenerateDiagnostics);
+                    if (chapterGenerateDiagnostics)
+                        bulkCreateRequests.push(...chapterGenerateDiagnostics);
                 }
                 if (bulkCreateRequests.length > 0) {
                     const dbTransactionId = await dataProvider.beginTransaction();
                     await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
                     await dataProvider.commitTransaction(dbTransactionId);
                 }
-                console.log("ALl bulk: ", bulkCreateRequests)
                 notify("Generate Diagnostic Test Questions completed", { type: "info" });
             } catch (Error) {
                 notify("Error generating diagnostic test questions: " + Error, { type: "error" });
