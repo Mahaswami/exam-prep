@@ -33,7 +33,7 @@ export const TestRoundPage: React.FC = () => {
             try {
                 const dataProvider = (window as any).swanAppFunctions.dataProvider;
                 const payload = {
-                    activity_type: 'test_round_pending',
+                    activity_type: 'test_round_in_progress',
                     user_id: user.id,
                     chapter_id: parsedChapterId,
                     concept_id: parsedConceptId,
