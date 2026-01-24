@@ -24,7 +24,7 @@ export const sendQuestionExcusedEmail = async (testName:string, chapter: string,
             <p>Regards,<br/>${appName} Team</p>
         `
         await swanAPI("send_email", {
-            to: "lokeshwaran@mahaswami.com",
+            to: getSupportEmail(),
             subject, 
             message
         })
