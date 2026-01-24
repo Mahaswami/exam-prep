@@ -25,16 +25,13 @@ export const QuestionsLogic: any = {
     beforeGetOne: [],
     beforeUpdate: [],
     beforeUpdateMany: [],
-    beforeSave: [removeCommentAndSendNotification],
+    beforeSave: [],
     afterRead: [],
     afterSave: [],
 }
 
 async function removeCommentAndSendNotification(data: any) {
-    if (data.status && data.status == "active") {
-        data.comment = "";
-        data.comment_attachments = null;
-    } else if (data.status && data.status == "Need-Review") {
+    if (data.status && data.status == "need_correction") {
         const appConfigOptions = window.appConfigOptions
         let supportEmail = appConfigOptions?.environments[window.app_env].email.support_email;
         if (!supportEmail) {
