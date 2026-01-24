@@ -97,7 +97,10 @@ export const configureUserMenus = (permissions: any) => {
 }
 
 export const configureToolbarActions = (permissions: any) => {
-    return [<OmniSearchBox key="omni-search-box"/>];
+    return [
+        <OmniSearchBox key="omni-search-box"/>,
+        <AskSupport/>
+    ];
 }
 
 export const themes = (defaultThemes: any) => {
@@ -172,6 +175,7 @@ export const wrapCustomDataProvider = (queryClient: any, dataProvider: any) => {
 import polyglotI18nProvider from 'ra-i18n-polyglot';
 import englishMessages from './i18n/en';
 import frenchMessages from './i18n/fr';
+import { AskSupport } from "./components/SupportMenuItem";
 
 const messages = {
     // fr: frenchMessages,

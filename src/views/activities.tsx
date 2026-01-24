@@ -31,7 +31,7 @@ export const activityTypeChoices = [
 const filters = [
     <ReferenceLiveFilter show source="user_id" reference="users" label="User" />,
     <DateLiveFilter show source="activity_timestamp" label="Timestamp" />,
-    <ChoicesLiveFilter source="activity_type" label="Activity Type" choiceLabels={activityTypeChoices} />,
+    <ChoicesLiveFilter show source="activity_type" label="Activity Type" choiceLabels={activityTypeChoices} />,
     <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />
 ]

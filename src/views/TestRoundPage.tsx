@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {QuestionRound} from "../components/QuestionRound";
 import {getEligibleMarks, type QuestionRoundResult} from "../components/QuestionDisplay";
@@ -8,6 +8,7 @@ import {calculateConceptScores} from "../logic/score_helper.ts";
 import {getLocalStorage, remoteLog} from "@mahaswami/swan-frontend";
 import { getExistingTestRounds } from "../logic/tests.ts";
 import { updateActivity } from "../logic/activities.ts";
+import { sendQuestionExcusedEmail } from "../logic/email_helper.ts";
 
 const MAX_TEST_QUESTIONS = 8;
 const MIN_TEST_QUESTIONS = 6;
@@ -22,6 +23,7 @@ export const TestRoundPage: React.FC = () => {
     const [isInvalidTestRound, setIsInvalidTestRound] = React.useState(false);
     const notify = useNotify();
     const redirect=useRedirect();
+    const navigate = useNavigate();
     const user = JSON.parse(getLocalStorage('user') || '{}');
     // Status is used to avoid duplicate create calls in dev StrictMode
     const pendingActivityRef = React.useRef({ status: 'idle', pendingActivity: null });
@@ -53,6 +55,8 @@ export const TestRoundPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        let isMounted = true
+
         const fetchTestRoundQuestions = async () => {
             try {
                 console.log("Fetching tests for chapterId: ", parsedChapterId, parsedConceptId);
@@ -92,8 +96,10 @@ export const TestRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id: parsedConceptId
-                       // id_neq_any: Array.from(attemptedQuestionIds)
+                    filter: {
+                        concept_id: parsedConceptId,
+                        status: "active",
+                       id_neq_any: Array.from(attemptedQuestionIds)
                     },
                 })
 
@@ -112,7 +118,18 @@ export const TestRoundPage: React.FC = () => {
                 }
                 if(selectedQuestions.length < MIN_TEST_QUESTIONS){
                     setIsInvalidTestRound(true);
-                    notify('Not enough new questions available for test round. Please try again later or contact support.');
+                    if (isMounted) {
+                        notify("ra.notification.no_questions", { 
+                            multiLine: true,
+                            messageArgs: {
+                                chapterName: chapter.name,
+                                conceptName: concept.name,
+                                testName: "Test Round"
+                            }
+                        })
+                        sendQuestionExcusedEmail("Test Round", chapter.name, concept.name);
+                        navigate(-1);                    
+                    }
                     return;
                 }
                 console.log("Fetched Test questions: ", selectedQuestions);
@@ -125,10 +142,12 @@ export const TestRoundPage: React.FC = () => {
         }
 
         fetchTestRoundQuestions();
+        return () => { isMounted = false }
     }, [parsedChapterId, parsedConceptId]);
 
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        const dbTransactionId = await dataProvider.beginTransaction();
 
         let roundNumber = 1;
         const existingRounds = await getExistingTestRounds(parsedConceptId);
@@ -182,19 +201,26 @@ export const TestRoundPage: React.FC = () => {
                 comfort_score: comfortScore,
             }
         });
-
-        for(const detail of testRoundDetails){
-            await dataProvider.create('test_round_details',{data:{
-                test_round_id: master.id,
-                question_id: detail.question_id,
-                selected_answer: detail.selected_answer,
-                is_correct: detail.is_correct,
-                marks: detail.eligible_marks,
-                marks_obtained: detail.marks_obtained,
-                time_taken_seconds_number: detail.time_taken,
-            }});
+        const bulkCreateRequests = [];
+        for (const detail of testRoundDetails) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'test_round_details',
+                    params: {
+                        data: {
+                            test_round_id: master.id,
+                            question_id: detail.question_id,
+                            selected_answer: detail.selected_answer,
+                            is_correct: detail.is_correct,
+                            marks: detail.eligible_marks,
+                            marks_obtained: detail.marks_obtained,
+                            time_taken_seconds_number: detail.time_taken,
+                        }
+                    }
+                }
+            )
         }
-
         // Updating the pending activity
         if (pendingActivityRef.current.pendingActivity) {
             await updateActivity(pendingActivityRef.current.pendingActivity.id, {
@@ -202,6 +228,8 @@ export const TestRoundPage: React.FC = () => {
                 activity_timestamp: new Date().toISOString(),
             });
         }
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         // Update concept_scores
         console.log('Calculated Concept Scores: ', scores);
         const latestConceptScore = conceptScoreRecords[0];
@@ -215,11 +243,8 @@ export const TestRoundPage: React.FC = () => {
     }
 
 
-    if (isLoading) {
+    if (isLoading || !questions.length) {
         return <Loading />;
-    }
-    if (!questions.length) {
-        return <div>No questions found.</div>;
     }
     if(isInvalidTestRound){
         return <div>Not enough new questions available for test round. Please try again later or contact support.</div>;

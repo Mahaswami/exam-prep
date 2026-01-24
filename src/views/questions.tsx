@@ -10,7 +10,11 @@ import { Box, CardContent, CardHeader } from '@mui/material';
 import {
     Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout,
     TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext,
-    choices
+    choices,
+    FileInput,
+    FileField,
+    WithRecord,
+    Labeled
 } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
@@ -25,6 +29,7 @@ export const QuestionsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const QuestionsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 export const questionTypeChoices = [{ id: 'MCQ', name: 'MCQ' }, { id: 'VSA', name: '2 Marks' }, { id: 'SA', name: '3 Marks' },{ id: 'Case-Based', name: '4 Marks' }, { id: 'LA', name: '5 Marks' }];
 export const difficultyChoices = [{ id: 'Easy', name: 'Easy' }, { id: 'Medium', name: 'Medium' }, { id: 'Hard', name: 'Hard' }];
+export const questionStatusChoices = [{ id: 'active', name: 'Active' }, { id: 'need_correction', name: 'Need Correction' }, { id: 'need_verification', name: 'Need Verification' }, { id: 'in_active', name: 'In Active' }];
 
 const filters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Chapter" through='concept.chapter_id' show />,
@@ -32,6 +37,7 @@ const filters = [
     <ChoicesLiveFilter source="difficulty" label="Difficulty" choiceLabels={difficultyChoices} show />,
     <ChoicesLiveFilter source="type" label="Type" choiceLabels={questionTypeChoices} show />,
     <BooleanLiveFilter source="is_invented" label="Is derived" show />,
+    <ChoicesLiveFilter source="status" label="Status" choiceLabels={questionStatusChoices} />,
 ]
 
 export const QuestionsList = (props: ListProps) => {
@@ -44,7 +50,7 @@ export const QuestionsList = (props: ListProps) => {
                 <DataTable.Col source="type" field={(props: any) => <SelectField {...props} choices={questionTypeChoices} />} />
                 <DataTable.Col source="difficulty" field={(props: any) => <SelectField {...props} choices={difficultyChoices} />} />
                 <DataTable.Col source="is_invented" label="Is derived" field={(props: any) => <BooleanField {...props} />} />
-                <DataTable.Col source="is_active" field={(props: any) => <BooleanField {...props} />} />
+                <DataTable.Col source="status" field={(props: any) => <SelectField {...props} choices={questionStatusChoices} />} />
                 <RowActions />
             </DataTable>
         </List>
@@ -82,13 +88,17 @@ const QuestionForm = (props: any) => {
                 </Box>
                 <TextInput source="question_stream" multiline rows={4} fullWidth />
             </Box>
-            <TextInput source="answer_stream" multiline rows={4} />
+            <TextInput sx={{ gridColumn: '1 / -1' }} source="answer_stream" multiline rows={4} />
             <TextInput source="hint" multiline rows={4}/>
-            <TextInput source="options" multiline rows={4}/>
+            <TextInput source="options" multiline rows={4} />
             <TextInput source="final_answer" />
             <NumberInput source="marks_number" />
-            <BooleanInput source="is_active" />
+            <SelectInput label="Status" source="status" choices={questionStatusChoices} />
             <BooleanInput source="is_invented" label="Is derived" />
+            <TextInput multiline source='comment' label={`Comment`} minRows={4} />
+            <FileInput source='comment_attachments' label="Attachments" multiple>
+                <FileField source="src" title="title" />
+            </FileInput>
         </SimpleForm>
     )
 }
@@ -104,7 +114,7 @@ const QuestionEdit = (props: any) => {
 const QuestionCreate = (props: any) => {
     return (
         <Create {...createDefaults(props)}>
-            <QuestionForm />
+            <QuestionForm defaultValues={{ status: 'active' }}/>
         </Create>
     )
 }
@@ -119,7 +129,15 @@ const QuestionShowContent = () => {
                 <ChaptersReferenceField label="Chapter" source="concept.chapter_id" />
                 <ConceptsReferenceField source="concept_id" />
                 <BooleanField label="Is derived" source="is_invented" />
-                <BooleanField label="Is active" source="is_active" />
+                <SelectField label="Status" source="status" choices={questionStatusChoices} />
+                <WithRecord render={(record: any) => record.status && record.status !== 'active' && (
+                    <Labeled label="Comment">
+                        <>
+                            <TextField source='comment' label={`Comment (${record.status})`} />
+                            <FileField source="comment_attachments" label="Attachments" src="src" title="title"/>
+                        </>
+                    </Labeled>
+                )}/>
             </SimpleShowLayout>
             <QuestionDisplay
                 question={{
@@ -168,7 +186,7 @@ export const QuestionsResource = (
             answer_stream: {},
             final_answer: {},
             marks_number: {},
-            is_active: {},
+            status: { type: 'choice', ui: 'select', choices: questionStatusChoices },
             is_invented: {}
         }}
         filters={filters}
