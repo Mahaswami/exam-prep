@@ -11,7 +11,6 @@ import {
     Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout,
     TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext,
     choices,
-    FormDataConsumer,
     FileInput,
     FileField,
     WithRecord,
@@ -89,25 +88,17 @@ const QuestionForm = (props: any) => {
                 </Box>
                 <TextInput source="question_stream" multiline rows={4} fullWidth />
             </Box>
-            <TextInput source="answer_stream" multiline rows={4} />
+            <TextInput sx={{ gridColumn: '1 / -1' }} source="answer_stream" multiline rows={4} />
             <TextInput source="hint" multiline rows={4}/>
-            <TextInput source="options" multiline rows={4}/>
+            <TextInput source="options" multiline rows={4} />
             <TextInput source="final_answer" />
             <NumberInput source="marks_number" />
-            <Box>
-                <SelectInput label="Status" source="status" choices={questionStatusChoices} />
-                <FormDataConsumer>
-                    {({ formData }) => formData.status && formData.status !== 'active' && (
-                        <>
-                            <TextInput multiline source='comment' label={`Comment (${formData.status})`} minRows={4}/>
-                            <FileInput source='comment_attachments' label="Attachments" multiple>
-                                <FileField source="src" title="title" /> 
-                            </FileInput>
-                        </>
-                    )}
-                </FormDataConsumer>
-            </Box>
+            <SelectInput label="Status" source="status" choices={questionStatusChoices} />
             <BooleanInput source="is_invented" label="Is derived" />
+            <TextInput multiline source='comment' label={`Comment`} minRows={4} />
+            <FileInput source='comment_attachments' label="Attachments" multiple>
+                <FileField source="src" title="title" />
+            </FileInput>
         </SimpleForm>
     )
 }
