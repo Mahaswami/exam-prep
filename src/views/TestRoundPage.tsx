@@ -96,7 +96,9 @@ export const TestRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id: parsedConceptId,
+                    filter: {
+                        concept_id: parsedConceptId,
+                        status: "active",
                        id_neq_any: Array.from(attemptedQuestionIds)
                     },
                 })
@@ -145,6 +147,7 @@ export const TestRoundPage: React.FC = () => {
 
     const onCompleteTestRound = async ({ answers, timing }: QuestionRoundResult) => {
         const dataProvider = window.swanAppFunctions.dataProvider;
+        const dbTransactionId = await dataProvider.beginTransaction();
 
         let roundNumber = 1;
         const existingRounds = await getExistingTestRounds(parsedConceptId);
@@ -198,19 +201,26 @@ export const TestRoundPage: React.FC = () => {
                 comfort_score: comfortScore,
             }
         });
-
-        for(const detail of testRoundDetails){
-            await dataProvider.create('test_round_details',{data:{
-                test_round_id: master.id,
-                question_id: detail.question_id,
-                selected_answer: detail.selected_answer,
-                is_correct: detail.is_correct,
-                marks: detail.eligible_marks,
-                marks_obtained: detail.marks_obtained,
-                time_taken_seconds_number: detail.time_taken,
-            }});
+        const bulkCreateRequests = [];
+        for (const detail of testRoundDetails) {
+            bulkCreateRequests.push(
+                {
+                    type: 'create',
+                    resource: 'test_round_details',
+                    params: {
+                        data: {
+                            test_round_id: master.id,
+                            question_id: detail.question_id,
+                            selected_answer: detail.selected_answer,
+                            is_correct: detail.is_correct,
+                            marks: detail.eligible_marks,
+                            marks_obtained: detail.marks_obtained,
+                            time_taken_seconds_number: detail.time_taken,
+                        }
+                    }
+                }
+            )
         }
-
         // Updating the pending activity
         if (pendingActivityRef.current.pendingActivity) {
             await updateActivity(pendingActivityRef.current.pendingActivity.id, {
@@ -218,6 +228,8 @@ export const TestRoundPage: React.FC = () => {
                 activity_timestamp: new Date().toISOString(),
             });
         }
+        await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+        await dataProvider.commitTransaction(dbTransactionId);
         // Update concept_scores
         console.log('Calculated Concept Scores: ', scores);
         const latestConceptScore = conceptScoreRecords[0];
