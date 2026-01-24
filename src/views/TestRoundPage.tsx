@@ -59,7 +59,9 @@ export const TestRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id:conceptId, status: "Active"
+                    filter: {
+                        concept_id:conceptId,
+                        status: "Active"
                        // id_neq_any: Array.from(attemptedQuestionIds)
                     },
                 })

@@ -46,7 +46,6 @@ export const DiagnosticTestPage: React.FC = () => {
         const dataProvider = window.swanAppFunctions.dataProvider;
         const dbTransactionId = await dataProvider.beginTransaction();
 
-
         const diagnosticDetails = questions.map(q => ({
             question_id: q.id,
             concept_id: q.concept_id,

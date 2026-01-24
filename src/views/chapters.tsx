@@ -20,7 +20,7 @@ import {
     hideLoading
 } from '@mahaswami/swan-frontend';
 import {Book, Refresh, Timer,} from '@mui/icons-material';
-import {Box, CardContent, CardHeader, IconButton, Tooltip,CircularProgress, Button} from '@mui/material';
+import { IconButton, Tooltip,CircularProgress, Button} from '@mui/material';
 import {
     Create,
     DataTable,
@@ -40,7 +40,7 @@ import {
     AutocompleteInput,
     required,
     useUnique,
-    useRecordContext, useNotify, TopToolbar, CreateButton, useListContext
+    useRecordContext, useNotify, TopToolbar, CreateButton
 } from "react-admin";
 import { SubjectsReferenceField, SubjectsReferenceInput } from './subjects';
 import {identifyConceptsForChapter, prepareQuestions} from "../logic/questionbank.ts";
@@ -220,11 +220,19 @@ export const ChaptersList = (props: ListProps) => {
             showLoading();
             try {
                 const { data: chapters } = await dataProvider.getList('chapters');
+                const bulkCreateRequests = [];
                 for (const chapter of chapters) {
                     const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
                     console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                    await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                    const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                    bulkCreateRequests.push(...chapterGenerateDiagnostics);
                 }
+                if (bulkCreateRequests.length > 0) {
+                    const dbTransactionId = await dataProvider.beginTransaction();
+                    await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+                    await dataProvider.commitTransaction(dbTransactionId);
+                }
+                console.log("ALl bulk: ", bulkCreateRequests)
                 notify("Generate Diagnostic Test Questions completed", { type: "info" });
             } catch (Error) {
                 notify("Error generating diagnostic test questions: " + Error, { type: "error" });

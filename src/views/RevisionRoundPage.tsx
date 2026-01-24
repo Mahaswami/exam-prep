@@ -1,5 +1,5 @@
 import * as React from "react";
-import {data, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import {useEffect} from "react";
 import {QuestionRound} from "../components/QuestionRound";
 import {type QuestionRoundResult} from "../components/QuestionDisplay";
@@ -47,10 +47,11 @@ export const RevisionRoundPage: React.FC = () => {
                 ]);
 
                 const {data: questions} = await dataProvider.getList('questions', {
-                    filter: {concept_id:conceptId,
+                    filter: {
+                        concept_id: conceptId,
                         id_neq_any: Array.from(attemptedQuestionIds),
                         status: "Active"
-                        },
+                    },
                 })
 
                 //Select questions based on difficulty levels. Atleast 1 Hard, 2 Medium, 2 Easy. If not enough questions in a category, fill from other categories.
@@ -104,7 +105,7 @@ export const RevisionRoundPage: React.FC = () => {
             }
         });
         const bulkCreateRequests = [];
-        for (const q of questions) {
+        for (const question of questions) {
             bulkCreateRequests.push(
                 {
                     type: 'create',
@@ -112,8 +113,8 @@ export const RevisionRoundPage: React.FC = () => {
                     params: {
                         data: {
                             revision_round_id: master.id,
-                            question_id: q.id,
-                            time_viewed_seconds_number: timing.perQuestion[q.id] ?? 0,
+                            question_id: question.id,
+                            time_viewed_seconds_number: timing.perQuestion[question.id] ?? 0,
                         }
                     }
                 }

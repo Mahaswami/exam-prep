@@ -54,22 +54,22 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
     const questionRecords = [];
     for (const question of questions) {
-            const concept = concepts.find((c: any) => c.name === question.concept);
-            const conceptId = concept ? concept.id : null;
-            const questionData = {
-                type: question.type,
-                question_stream: JSON.stringify(question.question_stream),
-                options: JSON.stringify(question.options),
-                correct_option: question.correct_option,
-                difficulty: question.difficulty,
-                concept_id: conceptId,
-                hint: question.hint,
-                final_answer: question.final_answer,
-                answer_stream: JSON.stringify(question.detailed_solution_stream),
-                status: "Need-Verification",
-                is_invented: isInventQuestions,
-            };
-            questionRecords.push(questionData);
+        const concept = concepts.find((c: any) => c.name === question.concept);
+        const conceptId = concept ? concept.id : null;
+        const questionData = {
+            type: question.type,
+            question_stream: JSON.stringify(question.question_stream),
+            options: JSON.stringify(question.options),
+            correct_option: question.correct_option,
+            difficulty: question.difficulty,
+            concept_id: conceptId,
+            hint: question.hint,
+            final_answer: question.final_answer,
+            answer_stream: JSON.stringify(question.detailed_solution_stream),
+            status: "Need-Verification",
+            is_invented: isInventQuestions,
+        };
+        questionRecords.push(questionData);
     }
    // const dbTransactionId = await dataProvider.beginTransaction();
     const {data: existingQuestions} = await dataProvider.getList('questions', {filter: {concept_id: concepts.map(c => c.id)}});

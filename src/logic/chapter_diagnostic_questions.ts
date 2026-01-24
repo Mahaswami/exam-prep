@@ -141,11 +141,8 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
                 }
             );
         }
-        if (bulkCreateRequests.length > 0) {
-            const dbTransactionId = await dataProvider.beginTransaction();
-            await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
-            await dataProvider.commitTransaction(dbTransactionId);
-        }
+
+        return bulkCreateRequests;
     } catch (Error) {
         console.log("Error uploading diagnostic questions: ", Error);
     }
