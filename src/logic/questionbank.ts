@@ -71,34 +71,30 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
         };
         questionRecords.push(questionData);
     }
-   // const dbTransactionId = await dataProvider.beginTransaction();
-    const {data: existingQuestions} = await dataProvider.getList('questions', {filter: {concept_id: concepts.map(c => c.id)}});
-    if (!isInventQuestions && existingQuestions.length > 0) {
-        await dataProvider.deleteMany('questions', {
-            ids: existingQuestions.map((exQ: {
-                id: any;
-            }) => exQ.id)
+    const { data: existQuestions } = await dataProvider.getList('questions', {
+        filter: { concept_id: concepts.map(concept => concept.id) }
+    });
+    const bulkRequests = [];
+    if (!isInventQuestions) {
+        for (const existQuestion of existQuestions) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'questions',
+                params: { id: existQuestion.id }
+            });
+        }
+    }
+    for (const questionRecord of questionRecords) {
+        bulkRequests.push({
+            type: 'create',
+            resource: 'questions',
+            params: {
+                data: { ...questionRecord }
+            }
         });
     }
-    /*for (const questionRecord of questionRecords) {
-        await dataProvider.create('questions', {data: questionRecord});
-    }*/
-    const bulkCreateRequests = [];
-    for (const questionRecord of questionRecords) {
-        bulkCreateRequests.push(
-            {
-                type:'create',
-                resource:'questions',
-                params: {
-                    data: {
-                        ...questionRecord
-                    }
-                }
-            }
-        );
-    }
     const dbTransactionId = await dataProvider.beginTransaction();
-    await dataProvider.executeBatch(bulkCreateRequests, dbTransactionId);
+    await dataProvider.executeBatch(bulkRequests, dbTransactionId);
     await dataProvider.commitTransaction(dbTransactionId);
 }
 

@@ -118,30 +118,27 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
             };
             questionRecords.push(questionData);
         }
-        const {data:existingQuestions} = await dataProvider.getList('chapter_diagnostic_questions',{filter:{chapter_id:chapterId}});
-        if (existingQuestions.length > 0) {
-            await dataProvider.deleteMany('chapter_diagnostic_questions', {
-                ids: existingQuestions.map((exQ: {
-                    id: any;
-                }) => exQ.id)
+        const { data: chapterQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
+            filter: { chapter_id: chapterId }
+        });
+        const bulkRequests = [];
+        for (const chapterQuestion of chapterQuestions) {
+            bulkRequests.push({
+                type: 'delete',
+                resource: 'chapter_diagnostic_questions',
+                params: { id: chapterQuestion.id }
             });
         }
-
-        const bulkCreateRequests = [];
         for (const questionRecord of questionRecords) {
-            bulkCreateRequests.push(
-                {
-                    type: 'create',
-                    resource: 'chapter_diagnostic_questions',
-                    params: {
-                        data: {
-                            ...questionRecord
-                        }
-                    }
+            bulkRequests.push({
+                type: 'create',
+                resource: 'chapter_diagnostic_questions',
+                params: {
+                    data: { ...questionRecord }
                 }
-            );
+            });
         }
-        return bulkCreateRequests;
+        return bulkRequests;
     } catch (Error) {
         console.log("Error uploading diagnostic questions: ", Error);
     }
