@@ -231,7 +231,7 @@ export const StudentDashboard = () => {
                 ].filter(d => d.id > 0);
 
 
-                const trendData = activities.filter((d: any) => d.activity_type !=  'student_login' && d.user_id == effectiveUserId)
+                const trendData = activities.filter((d: any) => d.activity_type !=  'student_login')
 
 
                 const updatedWidgets = STUDENT_WIDGETS.map(widget => {
