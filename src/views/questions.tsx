@@ -20,6 +20,7 @@ import {
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
 import { ChaptersReferenceField } from './chapters';
+import { ReplaceSvgDialog } from '../components/ReplaceSvgDialog';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -81,7 +82,13 @@ const QuestionForm = (props: any) => {
             <SelectInput source="type" validate={required()} choices={questionTypeChoices} />
             <SelectInput source="difficulty" choices={difficultyChoices} />
             <TextInput source="correct_option" />
-            <TextInput source="question_stream" multiline rows={4} />
+            <Box sx={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <ReplaceSvgDialog fieldName="question_stream" buttonLabel="Replace Question SVG" />
+                    <ReplaceSvgDialog fieldName="answer_stream" buttonLabel="Replace Answer SVG" />
+                </Box>
+                <TextInput source="question_stream" multiline rows={4} fullWidth />
+            </Box>
             <TextInput source="answer_stream" multiline rows={4} />
             <TextInput source="hint" multiline rows={4}/>
             <TextInput source="options" multiline rows={4}/>
@@ -198,6 +205,7 @@ export const QuestionsResource = (
         edit={<QuestionEdit />}
         show={<QuestionShow />}
         hasLiveUpdate
+        hasHistory
     // {{SWAN:RESOURCE_OPTIONS}}
     />
 )

@@ -37,6 +37,7 @@ import { CancellationRefund } from './policies/CancellationRefund.tsx';
 import {RevisionRoundPage} from "./views/RevisionRoundPage.tsx";
 import {DiagnosticTestPage} from "./views/DiagnosticTestPage.tsx";
 import {TestRoundPage} from "./views/TestRoundPage.tsx";
+import { hasDiagnosticTests } from './configuration.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 
 const Welcome = () => {
@@ -102,7 +103,7 @@ export const configureResources = (permissions: any) => {
 }
 
 export const configureMenus = (permissions: any) => {
-
+    const showRevisionAndTestRounds = hasDiagnosticTests();
     //TODO: This could be done in a less verbose way by having a hash and use React.createElement style
 
         const superAdminMenus = 
@@ -137,15 +138,36 @@ export const configureMenus = (permissions: any) => {
             </NestedMenu>
             {/* {{SWAN:INSERT:MENU_ENTRY}} */}
         </>   
+
+         const schoolAdminMenusAll = 
+        <>
+            <NestedMenu label="Analytics" icon={<DashboardIcon />} defaultOpen={true}>
+                <Menu.Item to="/analytics/admin" primaryText="Dashboard" leftIcon={<AssessmentIcon />} />
+                <Menu.Item to="/analytics/student" primaryText="Student Progress" leftIcon={<SchoolIcon />} />
+            </NestedMenu>
+           <NestedMenu label="Learning" icon={<SchoolIcon />} defaultOpen={true}>
+                <ConceptScoresMenu />
+                <DiagnosticTestsMenu />
+                <RevisionRoundsMenu />
+                <TestRoundsMenu />
+                <ActivitiesMenu />
+            </NestedMenu>
+            <NestedMenu label="Settings" icon={<SettingsIcon />} defaultOpen={true}>
+                <UsersMenu />
+                {isDocumentGenerationModuleActive() && <DocumentTemplatesMenu />}
+                {isHistoryModuleActive() && <HistoryMenu />}
+            </NestedMenu>
+            {/* {{SWAN:INSERT:MENU_ENTRY}} */}
+        </>          
         
         const studentMenus = 
         <>
             <AutoLayoutMenu maxCount={6}>
             <Menu.Item to="/analytics/student" primaryText="My Progress" leftIcon={<AssessmentIcon />} />
-            <ConceptScoresMenu />
-            <DiagnosticTestsMenu />
-            <RevisionRoundsMenu />
-            <TestRoundsMenu />
+            {showRevisionAndTestRounds && <ConceptScoresMenu />}
+            {showRevisionAndTestRounds && <DiagnosticTestsMenu />}
+            {showRevisionAndTestRounds && <RevisionRoundsMenu />}
+            {showRevisionAndTestRounds && <TestRoundsMenu />}
             </AutoLayoutMenu>
         </>            
         
@@ -158,13 +180,16 @@ export const configureMenus = (permissions: any) => {
         if ('student' === permissions) {
             return studentMenus;
         }  
+        if ('school_admin' === permissions) {
+            return schoolAdminMenusAll;
+        }
         return null;
 
 }
 
 export const configureLandingPage = (permissions: any) => {
     let startPage = undefined 
-    if ([ 'admin'].includes( permissions )) {
+    if ([ 'school_admin','admin'].includes( permissions )) {
         startPage = "/analytics/admin"
     }
     if ([ 'student'].includes( permissions )) {
@@ -174,6 +199,7 @@ export const configureLandingPage = (permissions: any) => {
         "unauthenticated": "/signup",
         "super_admin": "/tenants",
         "admin": startPage,
+        'school_admin': startPage,
         "student": startPage,
     }
 }

@@ -2,7 +2,8 @@ import { Resource, createDefaults, tableDefaults,
 	editDefaults, formDefaults, listDefaults, 
 	showDefaults, RowActions, CardGrid,
 	createReferenceField,
-	createReferenceInput, ReferenceLiveFilter, DateLiveFilter, ChoicesLiveFilter, recordRep, getLocalStorage  } from '@mahaswami/swan-frontend';
+	createReferenceInput, ReferenceLiveFilter, DateLiveFilter, ChoicesLiveFilter, recordRep, getLocalStorage,  
+    RelativeDateField} from '@mahaswami/swan-frontend';
 import { LocalActivity } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
@@ -17,11 +18,19 @@ export const PREFETCH: string[] = ["users", "chapters", "concepts"]
 
 export const ActivitiesReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ActivitiesReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
-export const activityTypeChoices = [{ id: 'diagnostic_test', name: 'Diagnostic Test' }, { id: 'revision_round', name: 'Revision Round' }, { id: 'test_round', name: 'Test Round' }, {id: 'student_login', name: 'Logged In'}];
+export const activityTypeChoices = [
+    { id: 'diagnostic_test', name: 'Diagnostic Test' },
+    { id: 'revision_round', name: 'Revision Round' },
+    { id: 'test_round', name: 'Test Round' },
+    { id: 'student_login', name: 'Logged In' },
+    { id: 'diagnostic_test_in_progress', name: 'Diagnostic Test In Progress' },
+    { id: 'test_round_in_progress', name: 'Test Round In Progress' },
+    { id: 'revision_round_in_progress', name: 'Revision Round In Progress' },
+];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
-    <DateLiveFilter source="activity_timestamp" label="Activity Timestamp" />,
+    <ReferenceLiveFilter show source="user_id" reference="users" label="User" />,
+    <DateLiveFilter show source="activity_timestamp" label="Timestamp" />,
     <ChoicesLiveFilter source="activity_type" label="Activity Type" choiceLabels={activityTypeChoices} />,
     <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />
@@ -40,7 +49,7 @@ export const ActivitiesList = (props: ListProps) => {
         <List {...listDefaults({ ...props, filters: isStudent ? studentFilters : filters })}>
             <DataTable {...tableDefaults(RESOURCE)}>
                 {!isStudent && <DataTable.Col source="user_id" field={UsersReferenceField}/>}
-                <DataTable.Col source="activity_timestamp" field={(props: any) => <DateField {...props} showTime />}/>
+                <DataTable.Col source="activity_timestamp"  field={RelativeDateField}/>
                 <DataTable.Col source="activity_type" field={(props: any) => <SelectField {...props} choices={activityTypeChoices} />}/>
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField}/>
@@ -122,6 +131,7 @@ export const ActivitiesResource =  (
             concept_id: { resource: 'concepts' }
         }}
         filters={filters}
+        filtersPlacement='top'
         list={<ActivitiesList/>}
         // create={<ActivityCreate/>}
         // edit={<ActivityEdit/>}

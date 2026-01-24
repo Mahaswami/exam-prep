@@ -126,4 +126,7 @@ export type QuestionRoundProps<T extends QuestionData & { difficulty: Difficulty
     initialTiming?: Record<string, number>;
     questionCorrectness?: Record<string, boolean>;
     userName?: string;
+    addConceptName?: boolean;
+    submitLabel?: string;
+    submitLoadingLabel?: string
 };

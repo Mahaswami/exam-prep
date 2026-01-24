@@ -75,7 +75,7 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
         filter: { concept_id: concepts.map(concept => concept.id) }
     });
     const bulkRequests = [];
-    if (!isInventQuestions) {
+    /*if (!isInventQuestions) {
         for (const existQuestion of existQuestions) {
             bulkRequests.push({
                 type: 'delete',
@@ -83,7 +83,7 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
                 params: { id: existQuestion.id }
             });
         }
-    }
+    }*/
     for (const questionRecord of questionRecords) {
         bulkRequests.push({
             type: 'create',
