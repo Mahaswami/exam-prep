@@ -20,9 +20,9 @@ export const ActivitiesReferenceInput = createReferenceInput(RESOURCE, PREFETCH)
 export const activityTypeChoices = [{ id: 'diagnostic_test', name: 'Diagnostic Test' }, { id: 'revision_round', name: 'Revision Round' }, { id: 'test_round', name: 'Test Round' }, {id: 'student_login', name: 'Logged In'}];
 
 const filters = [
-    <ReferenceLiveFilter source="user_id" reference="users" label="User" show/>,
-    <DateLiveFilter source="activity_timestamp" label="Timestamp" show/>,
-    <ChoicesLiveFilter source="activity_type" label="Type" choiceLabels={activityTypeChoices} show/>,
+    <ReferenceLiveFilter source="user_id" reference="users" label="User" />,
+    <DateLiveFilter source="activity_timestamp" label="Activity Timestamp" />,
+    <ChoicesLiveFilter source="activity_type" label="Activity Type" choiceLabels={activityTypeChoices} />,
     <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" />
 ]
@@ -123,7 +123,6 @@ export const ActivitiesResource =  (
         }}
         filters={filters}
         list={<ActivitiesList/>}
-        filtersPlacement='top'
         // create={<ActivityCreate/>}
         // edit={<ActivityEdit/>}
         show={<ActivityShow/>}
