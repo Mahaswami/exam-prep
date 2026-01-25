@@ -99,7 +99,7 @@ export const configureUserMenus = (permissions: any) => {
 export const configureToolbarActions = (permissions: any) => {
     return [
         <OmniSearchBox key="omni-search-box"/>,
-        <AskSupport/>
+        <AskSupport key="ask-support"/>
     ];
 }
 
