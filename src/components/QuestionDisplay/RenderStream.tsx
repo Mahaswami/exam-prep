@@ -86,6 +86,11 @@ export const RenderMath: React.FC<RenderMathProps> = ({ content, block = true, p
 export const wrapMathFracWithDollar = (content: any): string => {
     if (!content || typeof content !== 'string') return content ?? '';
     
+    const trimmed = content.trim();
+    if (/^\$\$[\s\S]+\$\$$/.test(trimmed) || /^\$[^$]+\$$/.test(trimmed)) {
+        return content;
+    }
+    
     const extractBraced = (str: string, start: number): [string, number] => {
         if (str[start] !== '{') return ['', start];
         let depth = 0, i = start;

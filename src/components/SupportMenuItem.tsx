@@ -69,11 +69,9 @@ const AskSupportDialog = () => {
                 values.attachments = attachments;
             }
             await sendAskSupportEmail(values);
-            notify(translate("ra.notification.support_request_sent_success", {
-                smart_count: 1,
-                supportEmail: getSupportEmail(),
-            }), {
+            notify("ra.notification.support_request_sent_success", {
                 type: "success",
+                messageArgs: { smart_count: 1, supportEmail: getSupportEmail() },
             });
             closeDialog();
         } catch (error) {
