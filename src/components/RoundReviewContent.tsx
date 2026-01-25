@@ -190,6 +190,7 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
     const [initialAnswers, setInitialAnswers] = useState<Record<string, AnswerResult>>({});
     const [initialTiming, setInitialTiming] = useState<Record<string, number>>({});
     const [questionCorrectness, setQuestionCorrectness] = useState<Record<string, boolean>>({});
+    const [questionPartialness, setQuestionPartialness] = useState<Record<string, boolean>>({});
     const [correctCount, setCorrectCount] = useState(0);
 
     const config = ROUND_CONFIG[roundType];
@@ -206,11 +207,13 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
                     filter: { [config.masterIdField]: record.id },
                     meta: { prefetch: ['questions'] },
                 });
+                console.log('Fetched details:', details)
 
                 const questionsArr: QuestionWithDetails[] = [];
                 const answers: Record<string, AnswerResult> = {};
                 const timing: Record<string, number> = {};
                 const correctness: Record<string, boolean> = {};
+                const partialness: Record<string, boolean> = {};
                 let correct = 0;
 
                 for (const detail of details) {
@@ -237,12 +240,24 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
                         correctness[question.id] = Boolean(detail[config.correctnessField]);
                         if (detail[config.correctnessField]) correct++;
                     }
+
+                    if (config.marksField && detail?.[config.marksField] && question.type !== 'MCQ') {
+                        partialness[question.id] = detail[config.marksField] < question.marks_number;
+                        answers[question.id] = {
+                            selectedOption: "",
+                            marksObtained: config.marksField ? detail[config.marksField] ?? 0 : 0,
+                        };
+                        correctness[question.id] = detail[config.marksField] == question.marks_number
+                        if (detail[config.marksField] == question.marks_number) correct++;
+                    }
+
                 }
 
                 setQuestions(questionsArr);
                 setInitialAnswers(answers);
                 setInitialTiming(timing);
                 setQuestionCorrectness(correctness);
+                setQuestionPartialness(partialness)
                 setCorrectCount(correct);
             } catch (error) {
                 console.error('Error fetching round details:', error);
@@ -298,6 +313,7 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
                 initialAnswers={config.showUserAnswers ? initialAnswers : undefined}
                 initialTiming={initialTiming}
                 questionCorrectness={config.showUserAnswers ? questionCorrectness : undefined}
+                questionPartialness={config.showUserAnswers ? questionPartialness : undefined}
                 userName={!isStudent ? (record.user?.name || record.user?.email) : undefined}
             />
         </Box>
