@@ -11,6 +11,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 interface ReplaceSvgDialogProps {
     fieldName: string;
     buttonLabel?: string;
+    context?: 'question' | 'answer';
 }
 
 const GEMINI_MODELS = [
@@ -28,7 +29,7 @@ const cleanSvgOutput = (text: string): string => {
         .trim();
 };
 
-export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG' }: ReplaceSvgDialogProps) => {
+export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG', context }: ReplaceSvgDialogProps) => {
     const [open, setOpen] = useState(false);
     const [prompt, setPrompt] = useState('Convert this image to clean SVG markup. Return only the SVG code, no explanation.');
     const [model, setModel] = useState('gemini-3-pro-preview');
@@ -63,11 +64,6 @@ export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG' }: Rep
     };
     
     const handleRunPrompt = async () => {
-        if (!file) {
-            setError('Please select a file');
-            return;
-        }
-        
         setLoading(true);
         setError('');
         setOutput('');
@@ -76,7 +72,7 @@ export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG' }: Rep
             const response = await swanAPI('generic_ai', {
                 prompt,
                 model,
-            }, { files: [file] });
+            }, file ? { files: [file] } : undefined);
             
             setOutput(response.response || '');
         } catch (err: any) {
@@ -120,7 +116,7 @@ export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG' }: Rep
             </Button>
             
             <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-                <DialogTitle>Replace SVG with AI</DialogTitle>
+                <DialogTitle>Replace SVG with AI{context && ` (${context.charAt(0).toUpperCase() + context.slice(1)})`}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                         <TextField
@@ -160,7 +156,7 @@ export const ReplaceSvgDialog = ({ fieldName, buttonLabel = 'Replace SVG' }: Rep
                             <Button
                                 variant="contained"
                                 onClick={handleRunPrompt}
-                                disabled={loading || !file}
+                                disabled={loading}
                                 startIcon={loading ? <CircularProgress size={16} /> : null}
                             >
                                 {loading ? 'Processing...' : 'Run Prompt'}

@@ -83,8 +83,8 @@ const QuestionForm = (props: any) => {
             <TextInput source="correct_option" />
             <Box sx={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <ReplaceSvgDialog fieldName="question_stream" buttonLabel="Replace Question SVG" />
-                    <ReplaceSvgDialog fieldName="answer_stream" buttonLabel="Replace Answer SVG" />
+                    <ReplaceSvgDialog fieldName="question_stream" buttonLabel="Replace Question SVG" context="question" />
+                    <ReplaceSvgDialog fieldName="answer_stream" buttonLabel="Replace Answer SVG" context="answer" />
                 </Box>
                 <TextInput source="question_stream" multiline rows={4} fullWidth />
             </Box>
