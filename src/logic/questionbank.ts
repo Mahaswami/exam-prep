@@ -67,7 +67,7 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             final_answer: question.final_answer,
             answer_stream: JSON.stringify(question.detailed_solution_stream),
             status: "need_verification",
-            is_invented: isInventQuestions,
+            is_derived: isInventQuestions,
         };
         questionRecords.push(questionData);
     }

@@ -6,7 +6,7 @@ import { Resource, createDefaults, tableDefaults,
 import { Assignment } from '@mui/icons-material';
 import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
-    TextField, TextInput, type ListProps, NumberField, NumberInput, AutocompleteInput, required } from "react-admin";
+    TextField, TextInput, type ListProps, NumberField, NumberInput, AutocompleteInput, required, BooleanField } from "react-admin";
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
 import { QuestionsReferenceField, QuestionsReferenceInput } from './questions';
 
@@ -17,7 +17,7 @@ export const PREFETCH: string[] = ["chapters", "questions"]
 export const ChapterDiagnosticQuestionsReferenceField = createReferenceField(RESOURCE, PREFETCH);
 export const ChapterDiagnosticQuestionsReferenceInput = createReferenceInput(RESOURCE, PREFETCH);
 const filters = [
-    <ReferenceLiveFilter source="chapter_id" reference="chapters" label="Chapter" />,
+    <ReferenceLiveFilter show source="chapter_id" reference="chapters" label="Chapter" sx={{ minWidth: 350 }}/>,
     <ReferenceLiveFilter source="question_id" reference="questions" label="Question" />,
     <NumberLiveFilter source="question_order_number" label="Question Order" />
 ]
@@ -29,6 +29,7 @@ export const ChapterDiagnosticQuestionsList = (props: ListProps) => {
                 <DataTable.Col source="chapter_id" field={ChaptersReferenceField}/>
                 <DataTable.Col source="question_id" field={QuestionsReferenceField}/>
                 <DataTable.Col source="question_order_number" field={NumberField}/>
+                <DataTable.Col label="Is Derived" render={(record: any) => <BooleanField record={{is_derived: record.question?.is_derived}} source="is_derived" />}/>
                 <RowActions/>
             </DataTable>
         </List>
@@ -103,6 +104,7 @@ export const ChapterDiagnosticQuestionsResource =  (
             question_order_number: {}
         }}
         filters={filters}
+        filtersPlacement='top'
         list={<ChapterDiagnosticQuestionsList/>}
         create={<ChapterDiagnosticQuestionCreate/>}
         edit={<ChapterDiagnosticQuestionEdit/>}

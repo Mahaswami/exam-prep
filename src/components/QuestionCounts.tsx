@@ -12,7 +12,7 @@ export type QuestionCountsType = {
     activeQuestions: number;
     diagnosticQuestions: number;
     nonDiagnosticQuestions: number;
-    questionTypes: Record<string, number>;
+    questionTypes: Record<string, { E: number; M: number; H: number; total: number }>;
 };
 
 export const QuestionCounts = ({ questionCounts }: QuestionCountsProps) => {
@@ -31,11 +31,11 @@ export const QuestionCounts = ({ questionCounts }: QuestionCountsProps) => {
                 </Stack>
                 <Box>
                     <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                        {Object.entries(stats.questionTypes || {}).map(([type, count]) => (
+                        {Object.entries(stats.questionTypes || {}).map(([type, counts]) => (
                             <Chip
                                 key={type}
                                 size="small"
-                                label={`${questionTypeChoices.find(c => c.id === type)?.name || type}: ${count}`}
+                                label={`${questionTypeChoices.find(c => c.id === type)?.name || type}: ${counts.total} (${counts.E}E • ${counts.M}M • ${counts.H}H)`}
                                 sx={{ mb: 0.5 }}
                             />
                         ))}
@@ -93,10 +93,14 @@ export const getChaptersQuestionCounts = async () => {
         const nonDiagnosticQs = chapterQuestions.filter(q => !diagnosticQuestionIds.includes(q.id));
 
         const questionTypes = chapterQuestions.reduce(
-            (acc: Record<string, number>, q) => {
+            (acc: Record<string, { E: number; M: number; H: number; total: number }>, q) => {
                 const type = q.type;
                 if (type) {
-                    acc[type] = (acc[type] || 0) + 1;
+                    if (!acc[type]) acc[type] = { E: 0, M: 0, H: 0, total: 0 };
+                    acc[type].total++;
+                    if (q.difficulty === 'Easy') acc[type].E++;
+                    else if (q.difficulty === 'Medium') acc[type].M++;
+                    else if (q.difficulty === 'Hard') acc[type].H++;
                 }
                 return acc;
             }, {}
@@ -157,10 +161,14 @@ export const getConceptQuestionCounts = async () => {
         const nonDiagnosticQs = conceptQuestions.filter(q => !diagnosticQuestionIds.includes(q.id));
 
         const questionTypes = conceptQuestions.reduce(
-            (acc: Record<string, number>, q) => {
+            (acc: Record<string, { E: number; M: number; H: number; total: number }>, q) => {
                 const type = q.type;
                 if (type) {
-                    acc[type] = (acc[type] || 0) + 1;
+                    if (!acc[type]) acc[type] = { E: 0, M: 0, H: 0, total: 0 };
+                    acc[type].total++;
+                    if (q.difficulty === 'Easy') acc[type].E++;
+                    else if (q.difficulty === 'Medium') acc[type].M++;
+                    else if (q.difficulty === 'Hard') acc[type].H++;
                 }
                 return acc;
             }, {}

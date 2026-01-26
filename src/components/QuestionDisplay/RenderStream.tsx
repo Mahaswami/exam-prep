@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ContentBlock } from "./types";
+import { wrapBareLatexCommands, normalizeBlockMath } from "../../utils/latexUtils";
 
 type RenderStreamProps = {
     stream: ContentBlock[] | string;
@@ -59,7 +60,7 @@ export const RenderStream: React.FC<RenderStreamProps> = ({ stream }) => {
                         remarkPlugins={[remarkMath]}
                         rehypePlugins={[rehypeKatex]}
                     >
-                        {(block.content || "").replace(/\n/g, "  \n")}
+                        {normalizeBlockMath((block.content || "").replace(/\n/g, "  \n"))}
                     </ReactMarkdown>
                 );
             })}
@@ -82,44 +83,5 @@ export const RenderMath: React.FC<RenderMathProps> = ({ content, block = true, p
     );
 };
 
-
-export const wrapMathFracWithDollar = (content: any): string => {
-    if (!content || typeof content !== 'string') return content ?? '';
-    
-    const trimmed = content.trim();
-    if (/^\$\$[\s\S]+\$\$$/.test(trimmed) || /^\$[^$]+\$$/.test(trimmed)) {
-        return content;
-    }
-    
-    const extractBraced = (str: string, start: number): [string, number] => {
-        if (str[start] !== '{') return ['', start];
-        let depth = 0, i = start;
-        for (; i < str.length; i++) {
-            if (str[i] === '{') depth++;
-            else if (str[i] === '}') depth--;
-            if (depth === 0) return [str.slice(start, i + 1), i + 1];
-        }
-        return [str.slice(start), i];
-    };
-
-    let result = '', i = 0;
-    while (i < content.length) {
-        if (content[i] === '$') {
-            const end = content.indexOf('$', i + 1);
-            if (end !== -1) { result += content.slice(i, end + 1); i = end + 1; continue; }
-        }
-        if (content[i] === '\\' && /[a-zA-Z]/.test(content[i + 1] || '')) {
-            const cmdMatch = content.slice(i).match(/^\\[a-zA-Z]+/);
-            if (cmdMatch) {
-                let cmd = cmdMatch[0], pos = i + cmd.length;
-                while (content[pos] === '{') {
-                    const [braced, newPos] = extractBraced(content, pos);
-                    cmd += braced; pos = newPos;
-                }
-                result += `$${cmd}$`; i = pos; continue;
-            }
-        }
-        result += content[i++];
-    }
-    return result;
-}
+// Re-export for backwards compatibility
+export const wrapMathFracWithDollar = wrapBareLatexCommands;

@@ -34,9 +34,8 @@ import { PrivacyPolicy } from './policies/PrivacyPolicy.tsx';
 import { TermsConditions } from './policies/TermsConditions.tsx';
 import { ContactUs } from './policies/ContactUs.tsx';
 import { CancellationRefund } from './policies/CancellationRefund.tsx';
-import {RevisionRoundPage} from "./views/RevisionRoundPage.tsx";
+import { RevisionRoundPage, TestRoundPage } from "./views/PracticeRoundPage.tsx";
 import {DiagnosticTestPage} from "./views/DiagnosticTestPage.tsx";
-import {TestRoundPage} from "./views/TestRoundPage.tsx";
 import { hasDiagnosticTests } from './configuration.tsx';
 // {{SWAN:INSERT:RESOURCE_IMPORTS}}
 

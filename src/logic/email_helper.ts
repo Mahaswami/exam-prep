@@ -6,14 +6,15 @@ export const getSupportEmail = () => {
     return environments[appEnv].email.support_email || 'support@peak10.in';
 }
 
-export const sendQuestionExcusedEmail = async (testName:string, chapter: string, concept?: string) => {
+export const sendQuestionExhaustedEmail = async (testName:string, chapter: string, concept?: string) => {
     try {
         const appName = (window as any).app_title
+        const env = (window as any).app_env
         const user = JSON.parse(getLocalStorage('user') || '{}');
-        const subject = `${appName} - Question Excused`
+        const subject = `(${env}) All Questions Exhausted - ${chapter} - ${concept}`
         const message = `
             <p>Hello,</p>
-            <p>A question has been excused for the following:</p>
+            <p>All questions have been exhausted for the following:</p>
             <ul>
                 <li><strong>Test:</strong> ${testName}</li>
                 <li><strong>Chapter:</strong> ${chapter}</li>
@@ -29,8 +30,8 @@ export const sendQuestionExcusedEmail = async (testName:string, chapter: string,
             message
         })
     } catch (error) {
-        remoteLog("Error in sendQuestionExcusedEmail: ", error)
-        console.log("Error in sendQuestionExcusedEmail: ", error)
+        remoteLog("Error in sendQuestionExhaustedEmail: ", error)
+        console.log("Error in sendQuestionExhaustedEmail: ", error)
     }
 }
 

@@ -3,18 +3,18 @@ import {
     editDefaults, formDefaults, listDefaults,
     showDefaults, RowActions, CardGrid,
     createReferenceField,
-    createReferenceInput, RichTextField, RichTextInput, ReferenceLiveFilter, ChoicesLiveFilter, NumberLiveFilter, BooleanLiveFilter, TextLiveFilter, recordRep
+    createReferenceInput, ReferenceLiveFilter, ChoicesLiveFilter, BooleanLiveFilter, recordRep
 } from '@mahaswami/swan-frontend';
 import { Quiz } from '@mui/icons-material';
-import { Box, CardContent, CardHeader } from '@mui/material';
+import { Box } from '@mui/material';
 import {
     Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout,
-    TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, SelectField, SelectInput, AutocompleteInput, required, useRecordContext,
-    choices,
+    TextField, TextInput, type ListProps, BooleanField, BooleanInput, SelectField, SelectInput, AutocompleteInput, required,
     FileInput,
     FileField,
     WithRecord,
-    Labeled
+    Labeled,
+    useRecordContext
 } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
@@ -22,6 +22,9 @@ import { ChaptersReferenceField } from './chapters';
 import { ReplaceSvgDialog } from '../components/ReplaceSvgDialog';
 import { BatchOperationsMenuItem } from '../components/BatchOperationsDialog';
 import { questionOperations } from '../operations/questionOperations';
+import { GenerateVariantButton, DerivationStatus } from '../components/QuestionComparisonDialog';
+import { ExportExamplesButton } from '../components/ExportExamplesButton';
+import { BulkGeneratorMenuItem } from '../components/BulkGeneratorDialog';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -38,20 +41,20 @@ const filters = [
     <ReferenceLiveFilter source="concept_id" reference="concepts" label="Concept" show />,
     <ChoicesLiveFilter source="difficulty" label="Difficulty" choiceLabels={difficultyChoices} show />,
     <ChoicesLiveFilter source="type" label="Type" choiceLabels={questionTypeChoices} show />,
-    <BooleanLiveFilter source="is_invented" label="Is derived" show />,
+    <BooleanLiveFilter source="is_derived" label="Is derived" show />,
     <ChoicesLiveFilter source="status" label="Status" choiceLabels={questionStatusChoices} />,
 ]
 
 export const QuestionsList = (props: ListProps) => {
     return (
-        <List {...listDefaults(props)}>
+        <List {...listDefaults(props)} >
             <DataTable {...tableDefaults(RESOURCE)}>
                 <DataTable.Col source="id" />
                 <DataTable.Col source='concept.chapter_id' field={ChaptersReferenceField} />
                 <DataTable.Col source="concept_id" field={ConceptsReferenceField} />
                 <DataTable.Col source="type" field={(props: any) => <SelectField {...props} choices={questionTypeChoices} />} />
                 <DataTable.Col source="difficulty" field={(props: any) => <SelectField {...props} choices={difficultyChoices} />} />
-                <DataTable.Col source="is_invented" label="Is derived" field={(props: any) => <BooleanField {...props} />} />
+                <DataTable.Col source="is_derived" label="Is derived" field={(props: any) => <BooleanField {...props} />} />
                 <DataTable.Col source="status" field={(props: any) => <SelectField {...props} choices={questionStatusChoices} />} />
                 <RowActions />
             </DataTable>
@@ -95,7 +98,7 @@ const QuestionForm = (props: any) => {
             <TextInput source="options" multiline rows={4} />
             <TextInput source="final_answer" />
             <SelectInput label="Status" source="status" choices={questionStatusChoices} />
-            <BooleanInput source="is_invented" label="Is derived" />
+            <BooleanInput source="is_derived" label="Is derived" />
             <TextInput multiline source='comment' label={`Comment`} minRows={4} />
             <FileInput source='comment_attachments' label="Attachments" multiple>
                 <FileField source="src" title="title" />
@@ -129,7 +132,7 @@ const QuestionShowContent = () => {
             <SimpleShowLayout display={'grid'} gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }} columnGap="0.5rem">
                 <ChaptersReferenceField label="Chapter" source="concept.chapter_id" />
                 <ConceptsReferenceField source="concept_id" />
-                <BooleanField label="Is derived" source="is_invented" />
+                <DerivationStatus />
                 <SelectField label="Status" source="status" choices={questionStatusChoices} />
                 <WithRecord render={(record: any) => record.status && record.status !== 'active' && (
                     <Labeled label="Comment">
@@ -187,7 +190,7 @@ export const QuestionsResource = (
             answer_stream: {},
             final_answer: {},
             status: { type: 'choice', ui: 'select', choices: questionStatusChoices },
-            is_invented: {}
+            is_derived: {}
         }}
         filters={filters}
         filtersPlacement='top'
@@ -195,7 +198,11 @@ export const QuestionsResource = (
         create={<QuestionCreate />}
         edit={<QuestionEdit />}
         show={<QuestionShow />}
-        listActions={<BatchOperationsMenuItem operations={questionOperations} typeChoices={questionTypeChoices} />}
+        listActions={<BulkGeneratorMenuItem />}
+        // listActions={<BatchOperationsMenuItem operations={questionOperations} typeChoices={questionTypeChoices} />}
+        // listActions={<ExportExamplesButton />}
+        detailActions={<GenerateVariantButton label="Generate Variant" />}
+        
         hasLiveUpdate
         hasHistory
     // {{SWAN:RESOURCE_OPTIONS}}

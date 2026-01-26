@@ -1,4 +1,12 @@
 import { RESOURCE } from "../views/chapter_diagnostic_questions"
+import { shuffle } from "./roundConfigs"
+import { SELECTION_CONFIGS } from "./selectionConfigs"
+
+interface Question {
+    id: number;
+    concept_id: number;
+    [key: string]: any;
+}
 
 export const ChapterDiagnosticQuestionsLogic: any = {
     resource: RESOURCE,
@@ -28,38 +36,37 @@ export const ChapterDiagnosticQuestionsLogic: any = {
     afterSave: [],
 }
 
-const DEFAULT_DIAGNOSTIC_SIZE = 10;
-const MIN_DIAGNOSTIC_SIZE = 8;
+const diagnosticConfig = SELECTION_CONFIGS.diagnostic;
+
 export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
     try{
         const dataProvider = (window as any).swanAppFunctions.dataProvider;
-        //Filter MCQs for the chapter
+        const { type, status } = diagnosticConfig.poolFilter;
         const {data:mcqs} = await dataProvider.getList('questions',{
             meta:{prefetch:['concepts']},
-            filter:{concept:{chapter_id:chapterId },type:'MCQ', status: 'active'}}
+            filter:{concept:{chapter_id:chapterId }, type, status}}
             );
         console.log("Fetched Questions for Diagnostic: ", mcqs);
         if (mcqs.length === 0) return [];
 
-        // Step 2: Diagnostic size
         const totalMcqs = mcqs.length;
-        const concepts = [...new Set(mcqs.map(q => q.conceptId))];
+        const concepts = [...new Set(mcqs.map((q: Question) => q.concept_id))];
         const totalConcepts = concepts.length;
 
         let diagnosticSize;
-        if (totalMcqs <= 15) diagnosticSize = Math.min(MIN_DIAGNOSTIC_SIZE, totalMcqs);
-        else if (totalMcqs <= 60) diagnosticSize = Math.max(MIN_DIAGNOSTIC_SIZE, Math.round(totalMcqs * 0.25));
-        else diagnosticSize = DEFAULT_DIAGNOSTIC_SIZE;
+        if (totalMcqs <= 15) diagnosticSize = Math.min(diagnosticConfig.minSize, totalMcqs);
+        else if (totalMcqs <= 60) diagnosticSize = Math.max(diagnosticConfig.minSize, Math.round(totalMcqs * 0.25));
+        else diagnosticSize = diagnosticConfig.maxSize;
 
         // Step 3: Group by concept
-        const byConcept = {};
+        const byConcept: Record<number, Question[]> = {};
         for (const q of mcqs) {
-            byConcept[q.conceptId] ??= [];
-            byConcept[q.conceptId].push(q);
+            byConcept[q.concept_id] ??= [];
+            byConcept[q.concept_id].push(q);
         }
 
         // Step 4: Allocate per concept
-        const allocation = {};
+        const allocation: Record<number, number> = {};
         const remainingSlots = Math.max(0, diagnosticSize - totalConcepts);
 
         for (const [conceptId, conceptQuestions] of Object.entries(byConcept)) {
@@ -73,15 +80,24 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
             );
         }
 
-        // Step 5: Random pick
-        const shuffle = arr => arr.sort(() => Math.random() - 0.5);
-
-        let selected = [];
+        let selected: Question[] = [];
         for (const [conceptId, conceptQuestions] of Object.entries(byConcept)) {
             const count = allocation[conceptId] ?? 0;
-            selected.push(
-                ...shuffle(conceptQuestions).slice(0, count)
-            );
+            if (count === 0) continue;
+            
+            const hard = shuffle(conceptQuestions.filter(q => q.difficulty === 'Hard'));
+            const medium = shuffle(conceptQuestions.filter(q => q.difficulty === 'Medium'));
+            const easy = shuffle(conceptQuestions.filter(q => q.difficulty === 'Easy'));
+            
+            const conceptSelected: Question[] = [];
+            const hardToTake = Math.min(hard.length, diagnosticConfig.perConceptMinHard, count);
+            conceptSelected.push(...hard.slice(0, hardToTake));
+            
+            const remaining = count - conceptSelected.length;
+            const fillPool = [...medium, ...easy, ...hard.slice(hardToTake)];
+            conceptSelected.push(...fillPool.slice(0, remaining));
+            
+            selected.push(...conceptSelected);
         }
 
         if (selected.length < diagnosticSize) {
@@ -100,9 +116,9 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
         selected = shuffle(selected).slice(0, diagnosticSize);
 
         return selected.map(q => q.id);
-    }
-    catch(Error){
-        console.log("Error generating diagnostic questions: ", Error);
+    } catch (error) {
+        console.error("Error generating diagnostic questions: ", error);
+        return [];
     }
 }
 
@@ -139,7 +155,8 @@ export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds
             });
         }
         return bulkRequests;
-    } catch (Error) {
-        console.log("Error uploading diagnostic questions: ", Error);
+    } catch (error) {
+        console.error("Error uploading diagnostic questions: ", error);
+        return [];
     }
 }
