@@ -196,7 +196,7 @@ export const configureLandingPage = (permissions: any) => {
         startPage = "/analytics/student"
     }
     return {
-        "unauthenticated": "/signup",
+        // "unauthenticated": "/signup",
         "super_admin": "/tenants",
         "admin": startPage,
         'school_admin': startPage,
