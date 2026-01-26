@@ -176,7 +176,7 @@ export const QuestionRound = <T extends QuestionWithDifficulty>({
         const entry = answersMap[question.id];
         if (!entry) return false;
         if (question.type === 'MCQ') return Boolean(entry.selectedOption);
-        const eligible = getEligibleMarks(question.type, question.marks_number);
+        const eligible = getEligibleMarks(question.type);
         return entry.marksObtained >= 0 && entry.marksObtained <= eligible;
     };
 

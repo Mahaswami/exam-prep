@@ -11,7 +11,7 @@ import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import { useDataProvider, useRecordContext, usePermissions } from "react-admin";
 import { RelativeDateField } from "@mahaswami/swan-frontend";
 import { QuestionRound } from "./QuestionRound";
-import { type QuestionData, type AnswerResult, type Difficulty } from "./QuestionDisplay";
+import { type QuestionData, type AnswerResult, type Difficulty, getEligibleMarks } from "./QuestionDisplay";
 import { ComfortLevelWithTrend } from "./ComfortLevelChip";
 
 type RoundType = 'diagnostic' | 'revision' | 'test';
@@ -242,13 +242,14 @@ export const RoundReviewContent: React.FC<RoundReviewContentProps> = ({ roundTyp
                     }
 
                     if (config.marksField && detail?.[config.marksField] && question.type !== 'MCQ') {
-                        partialness[question.id] = detail[config.marksField] < question.marks_number;
+                        const eligibleMarks = getEligibleMarks(question.type);
+                        partialness[question.id] = detail[config.marksField] < eligibleMarks;
                         answers[question.id] = {
                             selectedOption: "",
                             marksObtained: config.marksField ? detail[config.marksField] ?? 0 : 0,
                         };
-                        correctness[question.id] = detail[config.marksField] == question.marks_number
-                        if (detail[config.marksField] == question.marks_number) correct++;
+                        correctness[question.id] = detail[config.marksField] == eligibleMarks
+                        if (detail[config.marksField] == eligibleMarks) correct++;
                     }
 
                 }

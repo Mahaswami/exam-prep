@@ -107,7 +107,7 @@ export const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
     const shouldHighlightCorrect = (isReview && solutionVisible) && showCorrectAnswer;
     const shouldHighlightUserAnswer = isReview && selectedAnswer;
     const isMCQ = question.type === "MCQ";
-    const eligibleMarks = getEligibleMarks(question.type, question.marks_number);
+    const eligibleMarks = getEligibleMarks(question.type);
     const hasHint = Boolean(getHintContent(question));
     const hasSolution = Boolean(getSolutionContent(question));
 

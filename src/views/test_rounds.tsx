@@ -247,7 +247,6 @@ const TestRoundDetailShowContent = () => {
                         hint: question.hint,
                         answer_stream: question.answer_stream,
                         final_answer: question.final_answer,
-                        marks_number: record.eligible_marks_number,
                     }}
                     mode="review"
                     showCorrectAnswer

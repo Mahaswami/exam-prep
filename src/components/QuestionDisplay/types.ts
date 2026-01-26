@@ -16,18 +16,14 @@ export const difficultyOrder: Record<Difficulty, number> = {
 export const sortByDifficulty = <T extends { difficulty: Difficulty }>(questions: T[]): T[] =>
     [...questions].sort((a, b) => difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]);
 
-export const getEligibleMarks = (type: string, marksNumber?: number): number => {
-    if (marksNumber) return marksNumber;
+export const getEligibleMarks = (type: string): number => {
     switch (type) {
         case 'MCQ': return 1;
-        case '2M': return 2;
-        case '3M': return 3;
-        case '5M': return 5;
         case 'VSA': return 2;
         case 'SA': return 3;
         case 'Case-Based': return 4;
         case 'LA': return 5;
-        default: return 0;
+        default: throw new Error(`Unknown question type: ${type}`);
     }
 };
 
@@ -76,7 +72,6 @@ export type QuestionData = {
     answer_stream?: string | ContentBlock[];
     solution_html?: string;
     final_answer?: string;
-    marks_number?: number;
 };
 
 export type QuestionDisplayMode = "view" | "interactive" | "review";

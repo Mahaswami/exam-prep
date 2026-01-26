@@ -20,6 +20,8 @@ import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
 import { ChaptersReferenceField } from './chapters';
 import { ReplaceSvgDialog } from '../components/ReplaceSvgDialog';
+import { BatchOperationsMenuItem } from '../components/BatchOperationsDialog';
+import { questionOperations } from '../operations/questionOperations';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -92,7 +94,6 @@ const QuestionForm = (props: any) => {
             <TextInput source="hint" multiline rows={4}/>
             <TextInput source="options" multiline rows={4} />
             <TextInput source="final_answer" />
-            <NumberInput source="marks_number" />
             <SelectInput label="Status" source="status" choices={questionStatusChoices} />
             <BooleanInput source="is_invented" label="Is derived" />
             <TextInput multiline source='comment' label={`Comment`} minRows={4} />
@@ -185,7 +186,6 @@ export const QuestionsResource = (
             question_stream:{},
             answer_stream: {},
             final_answer: {},
-            marks_number: {},
             status: { type: 'choice', ui: 'select', choices: questionStatusChoices },
             is_invented: {}
         }}
@@ -195,6 +195,7 @@ export const QuestionsResource = (
         create={<QuestionCreate />}
         edit={<QuestionEdit />}
         show={<QuestionShow />}
+        listActions={<BatchOperationsMenuItem operations={questionOperations} typeChoices={questionTypeChoices} />}
         hasLiveUpdate
         hasHistory
     // {{SWAN:RESOURCE_OPTIONS}}
