@@ -8,7 +8,7 @@ import { Box, CardContent, CardHeader } from '@mui/material';
 import { Create, DataTable, Edit, List, Menu, Show, SimpleForm, SimpleShowLayout, 
     TextField, TextInput, type ListProps, BooleanField, BooleanInput, NumberField, NumberInput, AutocompleteInput, required } from "react-admin";
 import { ChaptersReferenceField, ChaptersReferenceInput } from './chapters';
-import { getConceptQuestionCounts, QuestionCounts, type QuestionCountsType } from '../components/QuestionCounts';
+import { getConceptQuestionCounts, QuestionCounts, ShowQuestionDetails, type QuestionCountsType } from '../components/QuestionCounts';
 import { useEffect, useState } from 'react';
 
 export const RESOURCE = "concepts"
@@ -74,12 +74,15 @@ export const ConceptsCardGrid = (props: ListProps) => {
 const ConceptForm = (props: any) => {
     return (
         <SimpleForm {...formDefaults(props)}>
-            <ChaptersReferenceInput source="chapter_id">
-                <AutocompleteInput validate={required()} />
-            </ChaptersReferenceInput>
-            <NumberInput source="concept_order_number" />
-            <TextInput source="name" validate={required()} />
-            <BooleanInput source="is_active" />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, columnGap: '1rem', width: '100%' }}>
+                <ChaptersReferenceInput source="chapter_id">
+                    <AutocompleteInput validate={required()} />
+                </ChaptersReferenceInput>
+                <TextInput source="name" validate={required()} />
+                <NumberInput source="concept_order_number" />
+                <BooleanInput source="is_active" />
+                <ShowQuestionDetails />
+            </Box>
         </SimpleForm>
     )
 }
@@ -104,11 +107,12 @@ const ConceptShow = (props: any) => {
     
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
+            <SimpleShowLayout display={'grid'} gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}>
                 <ChaptersReferenceField source="chapter_id" />
-                <NumberField source="concept_order_number" />
                 <TextField source="name" />
+                <NumberField source="concept_order_number" />
                 <BooleanField source="is_active" />
+                <ShowQuestionDetails />
             </SimpleShowLayout>
         </Show>
     )

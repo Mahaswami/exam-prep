@@ -1,5 +1,8 @@
-import { Box, Chip, Stack } from "@mui/material";
-import { useRecordContext } from "react-admin";
+import { humanize } from "@mahaswami/swan-frontend";
+import { Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import { stringify } from "query-string";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useRecordContext, useResourceContext } from "react-admin";
 import { questionTypeChoices } from "../views/questions";
 
 
@@ -22,26 +25,19 @@ export const QuestionCounts = ({ questionCounts }: QuestionCountsProps) => {
     if (!stats) return null;
     return (
         <Box sx={{ p: 2 }}>
-            <Stack spacing={1} sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Stack direction="row" spacing={2}>
-                    <Chip label={`Total Questions: ${stats.totalQuestions}`} />
-                    <Chip label={`Active Questions: ${stats.activeQuestions}`} color="success" />
-                    <Chip label={`Diagnostic Questions: ${stats.diagnosticQuestions}`} color="warning" />
-                    <Chip label={`Non-Diagnostic Questions: ${stats.nonDiagnosticQuestions}`} color="info" />
+            <Box>
+                <Stack direction="row" spacing={0.5} gap="0.5em" flexWrap="wrap">
+                    <Chip size="small" label={`Total Questions: ${stats.totalQuestions}`} />
+                    {Object.entries(stats.questionTypes || {}).map(([type, counts]: any) => (
+                        <Chip
+                            key={type}
+                            size="small"
+                            label={`${questionTypeChoices.find(c => c.id === type)?.name || type}: ${counts.total} (${counts.E}E • ${counts.M}M • ${counts.H}H)`}
+                            sx={{ mb: 0.5 }}
+                        />
+                    ))}
                 </Stack>
-                <Box>
-                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                        {Object.entries(stats.questionTypes || {}).map(([type, counts]) => (
-                            <Chip
-                                key={type}
-                                size="small"
-                                label={`${questionTypeChoices.find(c => c.id === type)?.name || type}: ${counts.total} (${counts.E}E • ${counts.M}M • ${counts.H}H)`}
-                                sx={{ mb: 0.5 }}
-                            />
-                        ))}
-                    </Stack>
-                </Box>
-            </Stack>
+            </Box>
         </Box>
     );
 };
@@ -184,3 +180,104 @@ export const getConceptQuestionCounts = async () => {
 
     return questionCounts;
 }
+
+type QuestionStatus =
+    | "in_active"
+    | "need_verification"
+    | "need_correction"
+    | "active";
+
+const INITIAL_VALUES: Record<QuestionStatus, number> = {
+    in_active: 0,
+    need_verification: 0,
+    need_correction: 0,
+    active: 0,
+};
+
+export const ShowQuestionDetails = () => {
+    const resource = useResourceContext();
+    const isConcept = resource === "concepts";
+    const record = useRecordContext();
+    const [questions, setQuestions] = useState<any>(INITIAL_VALUES);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [filter, setFilter] = useState<any>({ concept_id: record?.id });
+    const dataProvider = (window as any).swanAppFunctions.dataProvider;
+
+    useEffect(() => {
+        if (!record?.id) return;
+
+        const fetchQuestions = async () => {
+            setLoading(true);
+            try {
+                let newFilter: any = {};
+
+                if (isConcept) {
+                    newFilter = { concept_id: record.id };
+                } else {
+                    const { data: chapterConcepts } =
+                        await dataProvider.getList("concepts", {
+                            filter: { chapter_id: record.id },
+                            pagination: { page: 1, perPage: 1000 },
+                        });
+
+                    const conceptIds = chapterConcepts
+                        .map((c: any) => c.id)
+                        .filter(Boolean);
+
+                    newFilter = { concept_id_eq_any: conceptIds };
+                }
+                setFilter(newFilter);
+                const { data: questions } = await dataProvider.getList("questions", {
+                    filter: newFilter,
+                    pagination: { page: 1, perPage: 1000 },
+                });
+
+                const grouped = questions.reduce((acc: any, question: any) => {
+                    const status = question.status;
+                    if (!acc[status]) acc[status] = 0;
+                    acc[status]++;
+                    return acc;
+                }, { ...INITIAL_VALUES });
+
+                setQuestions(grouped);
+            } catch (error) {
+                console.log("Error fetching questions:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchQuestions();
+    }, [record, resource]);
+
+    const buildQuestionsLink = useCallback(
+        (extraFilter = {}) => ({
+            pathname: "/questions",
+            search: stringify({
+                filter: JSON.stringify({
+                    ...filter,
+                    ...extraFilter,
+                }),
+            }),
+        }),
+        [filter]
+    );
+
+    if (loading) return <Skeleton height={120} />;
+    if (!record) return <Typography>No questions found.</Typography>;
+
+
+    return (
+        <Box display="flex" flexDirection="column" gap="0.5em" width={"100%"}>
+            <Typography variant="caption">Questions Details</Typography>
+            {Object.entries(questions).map(([status, count]: any) => (
+                <Box key={status}>
+                    <Link to={buildQuestionsLink({ status })}>
+                        <Typography variant="body1">
+                            {humanize(status)} – ({count})
+                        </Typography>
+                    </Link>
+                </Box>
+            ))}
+        </Box>
+    );
+};
