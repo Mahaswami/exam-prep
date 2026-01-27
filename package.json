@@ -10,7 +10,7 @@
     "format": "prettier --write ./src"
   },
   "dependencies": {
-    "@mahaswami/swan-frontend": "^2.0.103",
+    "@mahaswami/swan-frontend": "^2.0.104",
     "@mui/x-charts": "^7.24.1",
     "@tiptap/suggestion": "^2.11.5",
     "buffer": "^6.0.3",
