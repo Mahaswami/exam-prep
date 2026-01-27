@@ -109,6 +109,7 @@ export const StudentDashboard = () => {
     const [onboardingSubjectId, setOnboardingSubjectId] = useState<number | null>(null);
     const [onboardingChapterId, setOnboardingChapterId] = useState<number | null>(null);
     const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
+    const [isDiagnosticTestLoading, setIsDiagnosticTestLoading] = useState(false);
     
     const effectiveUserId = isStudent ? identity?.id : selectedStudentId;
 
@@ -199,7 +200,7 @@ export const StudentDashboard = () => {
                 // Compute progress by chapter
                 const chapterStats = new Map<number, { total: number; mastered: number }>();
                 filteredData.forEach((d: any) => {
-                    const chapterId = conceptToChapter.get(Number(d.concept_id));
+                    const chapterId = conceptToChapter.get(d.concept_id);
                     if (!chapterId) return;
                     const stats = chapterStats.get(chapterId) || { total: 0, mastered: 0 };
                     stats.total++;
@@ -230,8 +231,8 @@ export const StudentDashboard = () => {
                     { comfort_level: 'needs_improvement',id: needsWorkCount }
                 ].filter(d => d.id > 0);
 
-
-                const trendData = activities.filter((d: any) => d.activity_type !=  'student_login' 
+                const studentActivityTypes = ['revision_round', 'test_round', 'diagnostic_test'];
+                const trendData = activities.filter((d: any) => studentActivityTypes.includes(d.activity_type)
                     && d.user_id == effectiveUserId)
 
 
@@ -398,14 +399,18 @@ export const StudentDashboard = () => {
                         size="large"
                         startIcon={<AssignmentIcon />}
                         disabled={!onboardingChapterId}
+                        loading={isDiagnosticTestLoading}
+                        loadingPosition="start"
                         onClick={async () => {
-                            const exists = await checkIfDiagnosticsExist(onboardingSubjectId)
+                            setIsDiagnosticTestLoading(true);
+                            const exists = await checkIfDiagnosticsExist(onboardingChapterId)
                             if (!exists) {
                                 redirect(`/diagnostic/start/${onboardingChapterId}/`)
                             } else {
                                 console.log("Diagnostic test already exists for student: ");
-                                notify("You have already taken Diagnostic Test for this chapter.","info");
+                                notify("You have already taken Diagnostic Test for this chapter.", {type: "info"});
                             }
+                            setIsDiagnosticTestLoading(false);
                         }}
                         fullWidth
                         sx={{
@@ -591,7 +596,7 @@ export const TestPreparationDialog = ({ actionType, chapters=[]}: TestPreparatio
                 const existingTests = await checkIfDiagnosticsExist(selectedChapterId)
                 if (existingTests) {
                     console.log("Diagnostic test already exists for student: ");
-                    notify("You have already taken Diagnostic Test for this chapter.","info");
+                    notify("You have already taken Diagnostic Test for this chapter.", {type: "info"});
                     return
                 }    
             }
