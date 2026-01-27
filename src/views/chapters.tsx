@@ -263,7 +263,7 @@ export const ChaptersCardGrid = (props: ListProps) => {
     )
 }
 
-const GenerateDiagnosticButton = ({ chapterId }) => {
+const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
     const notify = useNotify();
     const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
 
@@ -273,14 +273,16 @@ const GenerateDiagnosticButton = ({ chapterId }) => {
         if (!chapterId) showLoading();
         try {
             const dataProvider = (window as any).swanAppFunctions.dataProvider;
+            const { data: diagnosticQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
+            const chapterFilter: any = chapterId ? { id: chapterId } : {};
             const { data: chapters } = await dataProvider.getList('chapters', {
-                filter: { id:  chapterId }
+                filter: chapterFilter
             });
             const bulkCreateRequests = [];
             for (const chapter of chapters) {
                 const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
                 console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds, diagnosticQuestions);
                 if (chapterGenerateDiagnostics)
                     bulkCreateRequests.push(...chapterGenerateDiagnostics);
             }
@@ -311,7 +313,7 @@ const GenerateDiagnosticButton = ({ chapterId }) => {
                     <GenerateDiagnosticIcon />
                 </IconButton>
             </Tooltip> :
-            <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+            <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest} sx={{ gap: 1 }}>
                 <GenerateDiagnosticIcon />
                 Generate Diagnostic Test
             </Button>

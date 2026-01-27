@@ -122,36 +122,27 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
     }
 }
 
-export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds:any[]) => {
-    try{
-        const dataProvider = (window as any).swanAppFunctions.dataProvider;
-        const questionRecords = [];
+export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds:any[], diagnosticQuestions) => {
+    try {
+        const bulkRequests = [];
         for (const questionId of questionIds) {
-            const questionData = {
+            const questionData: any = {
                 chapter_id: chapterId,
                 question_id: questionId,
-                question_order_number: questionRecords.length + 1,
+                question_order_number: bulkRequests.length + 1,
             };
-            questionRecords.push(questionData);
+            bulkRequests.push({
+                type: 'create',
+                resource: 'chapter_diagnostic_questions',
+                params: { data: questionData }
+            });
         }
-        const { data: chapterQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
-            filter: { chapter_id: chapterId }
-        });
-        const bulkRequests = [];
+        const chapterQuestions = diagnosticQuestions.filter((question: any) => question.chapter_id == chapterId);
         for (const chapterQuestion of chapterQuestions) {
             bulkRequests.push({
                 type: 'delete',
                 resource: 'chapter_diagnostic_questions',
                 params: { id: chapterQuestion.id }
-            });
-        }
-        for (const questionRecord of questionRecords) {
-            bulkRequests.push({
-                type: 'create',
-                resource: 'chapter_diagnostic_questions',
-                params: {
-                    data: { ...questionRecord }
-                }
             });
         }
         return bulkRequests;
