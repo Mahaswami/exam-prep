@@ -273,8 +273,11 @@ const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
         if (!chapterId) showLoading();
         try {
             const dataProvider = (window as any).swanAppFunctions.dataProvider;
-            const { data: diagnosticQuestions } = await dataProvider.getList('chapter_diagnostic_questions');
+            const diagnosticQuestionFilter: any = chapterId ? { chapter_id: chapterId } : {};
             const chapterFilter: any = chapterId ? { id: chapterId } : {};
+            const { data: diagnosticQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
+                filter: diagnosticQuestionFilter
+            });
             const { data: chapters } = await dataProvider.getList('chapters', {
                 filter: chapterFilter
             });
