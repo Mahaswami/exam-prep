@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { versionPlugin } from '@mahaswami/swan-frontend/versionPlugin';
 //import basicSsl from '@vitejs/plugin-basic-ssl';
 // https://vitejs.dev/config/
 
@@ -8,6 +9,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [react(),
+        versionPlugin(),
         visualizer({
             filename: './bundle-stats.html', // Output file name
             open: false,
