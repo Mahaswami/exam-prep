@@ -5,10 +5,7 @@ export const PaymentsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('PaymentsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],

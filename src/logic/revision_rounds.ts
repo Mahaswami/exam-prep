@@ -5,10 +5,7 @@ export const RevisionRoundsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('RevisionRoundsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],
@@ -33,10 +30,7 @@ export const RevisionRoundDetailsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('RevisionRoundDetailsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],

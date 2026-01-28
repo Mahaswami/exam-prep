@@ -7,10 +7,7 @@ export const QuestionsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('QuestionsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],

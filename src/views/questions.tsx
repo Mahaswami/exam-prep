@@ -14,7 +14,12 @@ import {
     FileField,
     WithRecord,
     Labeled,
-    useRecordContext
+    useRecordContext,
+    TopToolbar,
+    ShowButton,
+    PrevNextButtons,
+    EditButton,
+    ShowContext
 } from "react-admin";
 import { ConceptsReferenceField, ConceptsReferenceInput } from './concepts';
 import { QuestionDisplay } from '../components/QuestionDisplay';
@@ -25,6 +30,7 @@ import { questionOperations } from '../operations/questionOperations';
 import { GenerateVariantButton, DerivationStatus } from '../components/QuestionComparisonDialog';
 import { ExportExamplesButton } from '../components/ExportExamplesButton';
 import { BulkGeneratorMenuItem } from '../components/BulkGeneratorDialog';
+import { useContext } from 'react';
 
 export const RESOURCE = "questions"
 export const ICON = Quiz
@@ -107,9 +113,21 @@ const QuestionForm = (props: any) => {
     )
 }
 
+const PrevNextTopToolbar = ({ children }: any) => {
+    const inShowPage = useContext(ShowContext);
+    return (
+        <TopToolbar sx={{ justifyContent: 'space-between' }}>
+            <PrevNextButtons linkType={inShowPage ? 'show' : 'edit'}/>
+            <Box>
+                {children}
+            </Box>
+        </TopToolbar>
+    )
+}
+
 const QuestionEdit = (props: any) => {
     return (
-        <Edit {...editDefaults(props)}>
+        <Edit {...editDefaults(props)} actions={<PrevNextTopToolbar><ShowButton /></PrevNextTopToolbar>}>
             <QuestionForm />
         </Edit>
     )
@@ -166,7 +184,7 @@ const QuestionShowContent = () => {
 
 const QuestionShow = (props: any) => {
     return (
-        <Show {...showDefaults(props)}>
+        <Show {...showDefaults(props)} actions={<PrevNextTopToolbar><EditButton /></PrevNextTopToolbar>}>
             <QuestionShowContent />
         </Show>
     )
