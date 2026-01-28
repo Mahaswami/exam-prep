@@ -14,7 +14,7 @@ export const ChapterDiagnosticQuestionsLogic: any = {
     afterDelete: [],
     afterDeleteMany: [],
     afterGetList: [(params: any) => {
-        console.log('ChapterDiagnosticQuestionsLogic: Sample: afterGetList hook executed');
+        console.log('*ChapterDiagnosticQuestionsLogic: Sample: afterGetList hook executed');
         return params;
     }],
     afterGetMany: [],
