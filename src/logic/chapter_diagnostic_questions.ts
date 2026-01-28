@@ -38,14 +38,8 @@ export const ChapterDiagnosticQuestionsLogic: any = {
 
 const diagnosticConfig = SELECTION_CONFIGS.diagnostic;
 
-export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
-    try{
-        const dataProvider = (window as any).swanAppFunctions.dataProvider;
-        const { type, status } = diagnosticConfig.poolFilter;
-        const {data:mcqs} = await dataProvider.getList('questions',{
-            meta:{prefetch:['concepts']},
-            filter:{concept:{chapter_id:chapterId }, type, status}}
-            );
+export const generateChapterDiagnosticQuestions = (mcqs: any) => {
+    try {
         console.log("Fetched Questions for Diagnostic: ", mcqs);
         if (mcqs.length === 0) return [];
 
@@ -122,7 +116,7 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
     }
 }
 
-export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds:any[], diagnosticQuestions) => {
+export const bulkCreateForDiagnosticQuestions = (chapterId: any, questionIds: any[], diagnosticQuestions: any) => {
     try {
         const bulkRequests = [];
         for (const questionId of questionIds) {
