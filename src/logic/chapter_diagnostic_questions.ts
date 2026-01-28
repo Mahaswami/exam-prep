@@ -38,14 +38,8 @@ export const ChapterDiagnosticQuestionsLogic: any = {
 
 const diagnosticConfig = SELECTION_CONFIGS.diagnostic;
 
-export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
-    try{
-        const dataProvider = (window as any).swanAppFunctions.dataProvider;
-        const { type, status } = diagnosticConfig.poolFilter;
-        const {data:mcqs} = await dataProvider.getList('questions',{
-            meta:{prefetch:['concepts']},
-            filter:{concept:{chapter_id:chapterId }, type, status}}
-            );
+export const generateChapterDiagnosticQuestions = (mcqs: any) => {
+    try {
         console.log("Fetched Questions for Diagnostic: ", mcqs);
         if (mcqs.length === 0) return [];
 
@@ -122,36 +116,26 @@ export const generateChapterDiagnosticQuestions =  async(chapterId:any) => {
     }
 }
 
-export const uploadChapterDiagnosticQuestions = async(chapterId:any, questionIds:any[]) => {
-    try{
-        const dataProvider = (window as any).swanAppFunctions.dataProvider;
-        const questionRecords = [];
+export const bulkCreateForDiagnosticQuestions = (chapterId: any, questionIds: any[], chapterDiagnosticQuestions: any[]) => {
+    try {
+        const bulkRequests = [];
         for (const questionId of questionIds) {
-            const questionData = {
+            const questionData: any = {
                 chapter_id: chapterId,
                 question_id: questionId,
-                question_order_number: questionRecords.length + 1,
+                question_order_number: bulkRequests.length + 1,
             };
-            questionRecords.push(questionData);
+            bulkRequests.push({
+                type: 'create',
+                resource: 'chapter_diagnostic_questions',
+                params: { data: questionData }
+            });
         }
-        const { data: chapterQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
-            filter: { chapter_id: chapterId }
-        });
-        const bulkRequests = [];
-        for (const chapterQuestion of chapterQuestions) {
+        for (const chapterQuestion of chapterDiagnosticQuestions) {
             bulkRequests.push({
                 type: 'delete',
                 resource: 'chapter_diagnostic_questions',
                 params: { id: chapterQuestion.id }
-            });
-        }
-        for (const questionRecord of questionRecords) {
-            bulkRequests.push({
-                type: 'create',
-                resource: 'chapter_diagnostic_questions',
-                params: {
-                    data: { ...questionRecord }
-                }
             });
         }
         return bulkRequests;

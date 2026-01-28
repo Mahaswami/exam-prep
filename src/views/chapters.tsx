@@ -46,11 +46,12 @@ import { SubjectsReferenceField, SubjectsReferenceInput } from './subjects';
 import {identifyConceptsForChapter, prepareQuestions} from "../logic/questionbank.ts";
 import {
     generateChapterDiagnosticQuestions,
-    uploadChapterDiagnosticQuestions
+    bulkCreateForDiagnosticQuestions
 } from "../logic/chapter_diagnostic_questions.ts";
 import {uploadChapterConcepts} from "../logic/questionbank.ts";
 import {useEffect, useState} from "react";
 import { getChaptersQuestionCounts, QuestionCountsType, QuestionCounts, ShowQuestionDetails } from '../components/QuestionCounts.tsx';
+import { SELECTION_CONFIGS } from '../logic/selectionConfigs.ts';
 
 export const RESOURCE = "chapters"
 export const ICON = Book
@@ -263,9 +264,10 @@ export const ChaptersCardGrid = (props: ListProps) => {
     )
 }
 
-const GenerateDiagnosticButton = ({ chapterId }) => {
+const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
     const notify = useNotify();
     const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
+    const diagnosticPoolFilters = SELECTION_CONFIGS.diagnostic.poolFilter;
 
     const handleGenerateDiagnosticTest = async (e) => {
         e.stopPropagation();
@@ -273,14 +275,30 @@ const GenerateDiagnosticButton = ({ chapterId }) => {
         if (!chapterId) showLoading();
         try {
             const dataProvider = (window as any).swanAppFunctions.dataProvider;
-            const { data: chapters } = await dataProvider.getList('chapters', {
-                filter: { id:  chapterId }
-            });
+            const diagnosticQuestionFilter: any = chapterId ? { chapter_id: chapterId } : {};
+            const questionFilter: any = chapterId ? { concept: { chapter_id: chapterId }} : {};
+            const chapterFilter: any = chapterId ? { id: chapterId } : {};
+
+            const [{ data: diagnosticQuestions }, { data: chapters }, { data: questions }] = await Promise.all([
+                dataProvider.getList('chapter_diagnostic_questions', {
+                    filter: diagnosticQuestionFilter
+                }),
+                dataProvider.getList('chapters', {
+                    filter: chapterFilter
+                }),
+                dataProvider.getList('questions', {
+                    pagination: false,
+                    meta: { prefetch: ['concepts'] },
+                    filter: { ...questionFilter, ...diagnosticPoolFilters }
+                })
+            ]);
             const bulkCreateRequests = [];
             for (const chapter of chapters) {
-                const questionIds = await generateChapterDiagnosticQuestions(chapter.id);
+                const mcqQuestions = questions.filter((question: any) => question?.concept?.chapter_id == chapter.id);
+                const questionIds = generateChapterDiagnosticQuestions(mcqQuestions);
                 console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                const chapterGenerateDiagnostics: any = await uploadChapterDiagnosticQuestions(chapter.id, questionIds);
+                const chapterQuestions = diagnosticQuestions.filter((question: any) => question.chapter_id == chapter.id);
+                const chapterGenerateDiagnostics: any = bulkCreateForDiagnosticQuestions(chapter.id, questionIds, chapterQuestions);
                 if (chapterGenerateDiagnostics)
                     bulkCreateRequests.push(...chapterGenerateDiagnostics);
             }
@@ -311,7 +329,7 @@ const GenerateDiagnosticButton = ({ chapterId }) => {
                     <GenerateDiagnosticIcon />
                 </IconButton>
             </Tooltip> :
-            <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest}>
+            <Button size="small" disabled={loadingDiagnostic} onClick={handleGenerateDiagnosticTest} sx={{ gap: 1 }}>
                 <GenerateDiagnosticIcon />
                 Generate Diagnostic Test
             </Button>
