@@ -267,7 +267,7 @@ export const ChaptersCardGrid = (props: ListProps) => {
 const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
     const notify = useNotify();
     const [loadingDiagnostic, setLoadingDiagnostic] = useState(false);
-    const diagnosticConfigFilters = SELECTION_CONFIGS.diagnostic.poolFilter;
+    const diagnosticPoolFilters = SELECTION_CONFIGS.diagnostic.poolFilter;
 
     const handleGenerateDiagnosticTest = async (e) => {
         e.stopPropagation();
@@ -276,7 +276,7 @@ const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
         try {
             const dataProvider = (window as any).swanAppFunctions.dataProvider;
             const diagnosticQuestionFilter: any = chapterId ? { chapter_id: chapterId } : {};
-            const questionFilter = chapterId ? { ...diagnosticConfigFilters, id: chapterId } : diagnosticConfigFilters;
+            const questionFilter: any = chapterId ? { concept: { chapter_id: chapterId }} : {};
             const chapterFilter: any = chapterId ? { id: chapterId } : {};
             const { data: diagnosticQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
                 filter: diagnosticQuestionFilter
@@ -285,8 +285,9 @@ const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
                 filter: chapterFilter
             });
             const { data: questions } = await dataProvider.getList('questions', {
+                pagination: false,
                 meta: { prefetch: ['concepts'] },
-                filter: questionFilter
+                filter: { ...questionFilter, ...diagnosticPoolFilters }
             });
             const bulkCreateRequests = [];
             for (const chapter of chapters) {
