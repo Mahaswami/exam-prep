@@ -17,6 +17,7 @@
   "sessionTimeoutMinutes": 30,
   "sessionWarningMinutes": 5,
   "session_ttl_hours": 24,
+  "refresh_interval": 120000,
   "environments": {
     "dev": {
       "gsheet": "1Y4a8a3nuXCe6fRdH22g8WKhIrKhAitbCrUs_rjt8ZEA",
