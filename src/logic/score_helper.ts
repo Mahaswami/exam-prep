@@ -59,7 +59,7 @@ export const calculateConceptScores = (
         );
 
         return {
-            conceptId,
+            conceptId: Number(conceptId),
             score: getScore(percentage),
         };
     });

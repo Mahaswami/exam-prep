@@ -20,7 +20,7 @@ import {
     hideLoading
 } from '@mahaswami/swan-frontend';
 import {Book, Refresh, Timer,} from '@mui/icons-material';
-import { IconButton, Tooltip,CircularProgress, Button} from '@mui/material';
+import { IconButton, Tooltip,CircularProgress, Button, Box} from '@mui/material';
 import {
     Create,
     DataTable,
@@ -50,8 +50,8 @@ import {
 } from "../logic/chapter_diagnostic_questions.ts";
 import {uploadChapterConcepts} from "../logic/questionbank.ts";
 import {useEffect, useState} from "react";
-import { getChaptersQuestionCounts, QuestionCountsType, QuestionCounts } from '../components/QuestionCounts.tsx';
-import {SELECTION_CONFIGS} from "../logic/selectionConfigs.ts";
+import { getChaptersQuestionCounts, QuestionCountsType, QuestionCounts, ShowQuestionDetails } from '../components/QuestionCounts.tsx';
+import { SELECTION_CONFIGS } from '../logic/selectionConfigs.ts';
 
 export const RESOURCE = "chapters"
 export const ICON = Book
@@ -336,14 +336,19 @@ const ChapterForm = (props: any) => {
     const unique = useUnique();
     return (
         <SimpleForm {...formDefaults(props)}>
-            <SubjectsReferenceInput source="subject_id">
-                <AutocompleteInput validate={required()} />
-            </SubjectsReferenceInput>
-            <NumberInput source="chapter_number" validate={required()} />
-            <TextInput source="name" validate={[required(), unique()]} />
-            <SimpleFileInput source="questions_attachment_file_id" />
-            <SimpleFileField source="questions_attachment_file_id" title={"questions_attachment_file"}/>
-            <BooleanInput source="is_active" />
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, columnGap: '1rem', width: '100%' }}>
+                <SubjectsReferenceInput source="subject_id">
+                    <AutocompleteInput validate={required()} />
+                </SubjectsReferenceInput>
+                <NumberInput source="chapter_number" validate={required()} />
+                <TextInput source="name" validate={[required(), unique()]} />
+                <BooleanInput source="is_active" />
+                <SimpleFileInput source="questions_attachment_file_id" />
+                <SimpleFileField source="questions_attachment_file_id" title={"questions_attachment_file"} />
+            </Box>
+            <Box sx={{display: "grid", width: "50%", mt: "2rem"}}>
+                <ShowQuestionDetails />
+            </Box>
         </SimpleForm>
     )
 }
@@ -368,11 +373,12 @@ const ChapterShow = (props: any) => {
     
     return (
         <Show {...showDefaults(props)}>
-            <SimpleShowLayout>
+            <SimpleShowLayout display={'grid'} gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr' }}>
                 <SubjectsReferenceField source="subject_id" />
-                <NumberField source="chapter_number" />
                 <TextField source="name" />
+                <NumberField source="chapter_number" />
                 <BooleanField source="is_active" />
+                <ShowQuestionDetails />
             </SimpleShowLayout>
         </Show>
     )
