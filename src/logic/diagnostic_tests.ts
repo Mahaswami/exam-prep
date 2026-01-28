@@ -5,10 +5,7 @@ export const DiagnosticTestsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('DiagnosticTestsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],
@@ -33,10 +30,7 @@ export const DiagnosticTestDetailsLogic: any = {
     afterCreate: [],
     afterDelete: [],
     afterDeleteMany: [],
-    afterGetList: [(params: any) => {
-        console.log('DiagnosticTestDetailsLogic: Sample: afterGetList hook executed');
-        return params;
-    }],
+    afterGetList: [],
     afterGetMany: [],
     afterGetManyReference: [],
     afterGetOne: [],
