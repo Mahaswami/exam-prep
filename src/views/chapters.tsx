@@ -278,23 +278,27 @@ const GenerateDiagnosticButton = ({ chapterId }: { chapterId?: number }) => {
             const diagnosticQuestionFilter: any = chapterId ? { chapter_id: chapterId } : {};
             const questionFilter: any = chapterId ? { concept: { chapter_id: chapterId }} : {};
             const chapterFilter: any = chapterId ? { id: chapterId } : {};
-            const { data: diagnosticQuestions } = await dataProvider.getList('chapter_diagnostic_questions', {
-                filter: diagnosticQuestionFilter
-            });
-            const { data: chapters } = await dataProvider.getList('chapters', {
-                filter: chapterFilter
-            });
-            const { data: questions } = await dataProvider.getList('questions', {
-                pagination: false,
-                meta: { prefetch: ['concepts'] },
-                filter: { ...questionFilter, ...diagnosticPoolFilters }
-            });
+
+            const [{ data: diagnosticQuestions }, { data: chapters }, { data: questions }] = await Promise.all([
+                dataProvider.getList('chapter_diagnostic_questions', {
+                    filter: diagnosticQuestionFilter
+                }),
+                dataProvider.getList('chapters', {
+                    filter: chapterFilter
+                }),
+                dataProvider.getList('questions', {
+                    pagination: false,
+                    meta: { prefetch: ['concepts'] },
+                    filter: { ...questionFilter, ...diagnosticPoolFilters }
+                })
+            ]);
             const bulkCreateRequests = [];
             for (const chapter of chapters) {
                 const mcqQuestions = questions.filter((question: any) => question?.concept?.chapter_id == chapter.id);
                 const questionIds = generateChapterDiagnosticQuestions(mcqQuestions);
                 console.log('Generated Diagnostic Test Question IDs: ', questionIds);
-                const chapterGenerateDiagnostics: any = bulkCreateForDiagnosticQuestions(chapter.id, questionIds, diagnosticQuestions);
+                const chapterQuestions = diagnosticQuestions.filter((question: any) => question.chapter_id == chapter.id);
+                const chapterGenerateDiagnostics: any = bulkCreateForDiagnosticQuestions(chapter.id, questionIds, chapterQuestions);
                 if (chapterGenerateDiagnostics)
                     bulkCreateRequests.push(...chapterGenerateDiagnostics);
             }

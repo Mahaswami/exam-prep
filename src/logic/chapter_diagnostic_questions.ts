@@ -116,7 +116,7 @@ export const generateChapterDiagnosticQuestions = (mcqs: any) => {
     }
 }
 
-export const bulkCreateForDiagnosticQuestions = (chapterId: any, questionIds: any[], diagnosticQuestions: any) => {
+export const bulkCreateForDiagnosticQuestions = (chapterId: any, questionIds: any[], chapterDiagnosticQuestions: any[]) => {
     try {
         const bulkRequests = [];
         for (const questionId of questionIds) {
@@ -131,8 +131,7 @@ export const bulkCreateForDiagnosticQuestions = (chapterId: any, questionIds: an
                 params: { data: questionData }
             });
         }
-        const chapterQuestions = diagnosticQuestions.filter((question: any) => question.chapter_id == chapterId);
-        for (const chapterQuestion of chapterQuestions) {
+        for (const chapterQuestion of chapterDiagnosticQuestions) {
             bulkRequests.push({
                 type: 'delete',
                 resource: 'chapter_diagnostic_questions',
