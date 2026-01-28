@@ -13,6 +13,10 @@
   "default_currency": "INR",
   "default_locale": "en-IN",
   "logo": "swan_app_logo.svg",
+  "enableSessionTimeout": true,
+  "sessionTimeoutMinutes": 30,
+  "sessionWarningMinutes": 5,
+  "session_ttl_hours": 24,
   "environments": {
     "dev": {
       "gsheet": "1Y4a8a3nuXCe6fRdH22g8WKhIrKhAitbCrUs_rjt8ZEA",
