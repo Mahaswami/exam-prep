@@ -15,7 +15,7 @@
   "logo": "swan_app_logo.svg",
   "enableSessionTimeout": true,
   "sessionTimeoutMinutes": 30,
-  "sessionWarningMinutes": 5,
+  "sessionWarningMinutes": 25,
   "session_ttl_hours": 24,
   "refresh_interval": 120000,
   "environments": {
