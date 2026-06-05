@@ -52,7 +52,7 @@ async function extractConceptsFromQB(questions_attachment_file: any) {
 
 async function uploadPreparedQuestions(questions: any[],concepts: any[],isInventQuestions = false) {
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
-    const questionRecords = [];
+    const bulkRequests = [];
     for (const question of questions) {
         const concept = concepts.find((c: any) => c.name === question.concept);
         const conceptId = concept ? concept.id : null;
@@ -69,13 +69,17 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             status: "need_verification",
             is_derived: isInventQuestions,
         };
-        questionRecords.push(questionData);
+        bulkRequests.push({
+            type: 'create',
+            resource: 'questions',
+            params: { data: questionData }
+        });
     }
-    const { data: existQuestions } = await dataProvider.getList('questions', {
+    /*const { data: existQuestions } = await dataProvider.getList('questions', {
         filter: { concept_id: concepts.map(concept => concept.id) }
     });
-    const bulkRequests = [];
-    /*if (!isInventQuestions) {
+
+    if (!isInventQuestions) {
         for (const existQuestion of existQuestions) {
             bulkRequests.push({
                 type: 'delete',
@@ -84,15 +88,6 @@ async function uploadPreparedQuestions(questions: any[],concepts: any[],isInvent
             });
         }
     }*/
-    for (const questionRecord of questionRecords) {
-        bulkRequests.push({
-            type: 'create',
-            resource: 'questions',
-            params: {
-                data: { ...questionRecord }
-            }
-        });
-    }
     const dbTransactionId = await dataProvider.beginTransaction();
     await dataProvider.executeBatch(bulkRequests, dbTransactionId);
     await dataProvider.commitTransaction(dbTransactionId);
@@ -126,34 +121,31 @@ export const prepareQuestions = async(chapterId:any,questions_attachment_file: a
 }
 
 export const uploadChapterConcepts = async(chapterId:any,conceptualMap:any[]) => {
-    const concepts = [];
     const dataProvider = (window as any).swanAppFunctions.dataProvider;
     try {
-        for (const concept of conceptualMap){
-            concepts.push({
+        const bulkRequests = [];
+        for (const concept of conceptualMap) {
+            const conceptData: any = {
                 chapter_id: chapterId,
                 name: concept.broad_concept,
-                concept_order_number: concepts.length + 1,
+                concept_order_number: bulkRequests.length + 1,
                 weightage: concept.weightage,
                 is_active: true
-            })
+            }
+            bulkRequests.push({
+                type: 'create',
+                resource: 'concepts',
+                params: { data: conceptData }
+            });
         }
         const { data: chapterConcepts } = await dataProvider.getList('concepts', {
             filter: { chapter_id: chapterId }
         });
-        const bulkRequests = [];
         for (const chapterConcept of chapterConcepts) {
             bulkRequests.push({
                 type: 'delete',
                 resource: 'concepts',
                 params: { id: chapterConcept.id }
-            });
-        }
-        for (const concept of concepts) {
-            bulkRequests.push({
-                type: 'create',
-                resource: 'concepts',
-                params: { data: {...concept} }
             });
         }
         const dbTransactionId = await dataProvider.beginTransaction();
